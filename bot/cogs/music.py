@@ -1,20 +1,27 @@
+from array import ArrayType
+import asyncio
+import enum
+import logging
 from typing import Mapping, Optional
+from urllib import request
+import math
+
+import discord
+import toml
+import youtube_dl
 from discord import embeds
 from discord.ext import commands
-import discord
-from discord_slash import cog_ext, SlashContext
-import asyncio
+from discord_slash import SlashContext, cog_ext
 from discord_slash.model import OptionData
 from discord_slash.utils.manage_commands import create_option
-import youtube_dl
-import logging
-import toml
-from urllib import request
+
 from ..video import Video
+from ..util import *
 
 FFMPEG_BEFORE_OPTS = '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'
 config = toml.load("./config.toml")
 GUILD = config["lamz"]
+QUEUE_PAGE_SIZE = 15
 
 async def audio_playing(ctx):
     # Checks that audio is currently playing before continuing.
@@ -122,6 +129,8 @@ class Music(commands.Cog):
         def after_playing(err):
             if not self.looping:
                 if len(state.playlist) > 0:
+                    if len(state.playlist) % QUEUE_PAGE_SIZE == 0 and len(state.playlist) > 1:
+                        state.pages -= 1
                     next_song = state.playlist.pop(0)
                     self._play_song(client, state, next_song)
                 else:
@@ -132,35 +141,78 @@ class Music(commands.Cog):
         client.play(source, after=after_playing)
         if loading_message != None and author != None:
             asyncio.run_coroutine_threadsafe(
-                loading_message.edit(content=":arrow_forward: Song found. Now playing:", embeds=[state.now_playing.get_embed(author)]),
+                loading_message.edit(content=":arrow_forward: Song found. Now playing:", embeds=[state.now_playing.get_embed(author, state)]),
                 self.bot.loop
             )
 
     @cog_ext.cog_slash(
         name="list",
         description="Lists current play queue",
+        options=[
+            create_option(
+                option_type=4,
+                name="page",
+                description="View page of queue. Broken up into groups of 15.",
+                required=False
+            )
+        ],
         guild_ids=[GUILD]
     )
-    async def _list(self, ctx: SlashContext,):
+    async def _list(self, ctx: SlashContext, page: int=None):
         if not await audio_playing(ctx):
             await ctx.send("No queue to display.")
         else:
             state = self.get_state(ctx.guild)
-            await ctx.send(self._queue_text(state.playlist, ctx))
+            if page == None:
+                await ctx.send("", embed=self._queue_compose(state.playlist, ctx))
+            else:
+                if state.pages >= page:
+                    await ctx.send("", embed=self._queue_compose(state.playlist, ctx, page))
+                else:
+                    await ctx.send(":warning: 404 Page not found. Check /list more more info.")
 
-    def _queue_text(self, queue, ctx):
+    def _queue_compose(self, queue: list[Video], ctx: SlashContext, page: int=None) -> discord.Embed:
         # Returns a block of text describing a given song queue.
-        if len(queue) >= 0:
-            message = [f"{len(queue)} songs in queue:"]
-            state = self.get_state(ctx.guild)
-            message += [f"  0. **{state.now_playing.title}** :loud_sound:"]
-            message += [
-                f"  {index+1}. **{song.title}**"
-                for (index, song) in enumerate(queue)
-            ]  # add individual songs
-            return "\n".join(message)
-        else:
-            return "The play queue is empty."
+
+        state = self.get_state(ctx.guild)
+
+        # Split up to 16 queue items into a page
+        page = (1 if page == None else page)
+        page_start = (page - 1) * QUEUE_PAGE_SIZE
+        page_end = page * QUEUE_PAGE_SIZE if page * QUEUE_PAGE_SIZE <= len(queue) else len(queue)
+        queue_page = queue[page_start:page_end]
+
+        # Set up embed
+        embed = discord.Embed(
+            title=f"Now playing <a:sound_playing:889724154373345290>  ***{state.now_playing.title}***",
+            url=f"{state.now_playing.video_url}",
+            description=f"\u200b"
+        )
+
+        # Add author details / thumbnail
+        embed.set_author(
+            name=f"Current playlist: Showing {page_start + 1} to {page_end} of {len(queue)} items in queue.",
+            url=f"https://tinyurl.com/boomermusic",
+            icon_url="https://i.imgur.com/dpVBIer.png"
+        )
+        embed.set_thumbnail(
+            url=f"https://i.ytimg.com/vi/{state.now_playing.video_code}/mqdefault.jpg"
+        )
+
+        # Add songs
+        for i, track in enumerate(queue_page):
+            embed.add_field(
+                name=f"**{page_start + i + 1}.** *{track.title}*",
+                value="\u200b",
+                inline=True
+            )
+
+        # Add footer
+        embed.set_footer(
+            text=f"Page {1 if page == None else page} of {state.pages}. Do /list [page #] for specific pages."
+        )
+
+        return embed
 
     @cog_ext.cog_slash(
         name="clear",
@@ -169,11 +221,11 @@ class Music(commands.Cog):
             create_option(
                 option_type=4,
                 name="index",
-                description="Clear specific song from the queue",
+                description="Clear specific song from the queue.",
                 required=False
             )
         ],
-        guild_ids=[GUILD],
+        guild_ids=[GUILD]
     )
     async def _clear(self, ctx: SlashContext, index:int=None):
         if await audio_playing(ctx):
@@ -181,19 +233,23 @@ class Music(commands.Cog):
                 state = self.get_state(ctx.guild)
                 if index == None:
                     state.playlist = []
+                    state.pages = 1
                     await ctx.send(":x: Queue cleared.")
                 else:
                     index -= 1
                     if index < len(state.playlist) and index >= 0:
+                        if len(state.playlist) % QUEUE_PAGE_SIZE == 0:
+                            state.pages -= 1
                         message = await ctx.send(f":x: Queue item {index + 1} cleared.\n:musical_note: {state.playlist[index].title}")
                         state.playlist.pop(index)
                         await message.edit(
-                            content=message.content + f"\n\n{self._queue_text(state.playlist, ctx)}"
+                            content=message.content, embeds=[self._queue_compose(state.playlist, ctx)]
                         )
                     else:
                         await ctx.send(":warning: Index out of bounds. Might want to double check /list.")
             else:
                 await ctx.send("You don't have permission to clear queue.")
+
 
     @cog_ext.cog_slash(
         name="play",
@@ -216,7 +272,10 @@ class Music(commands.Cog):
                     logging.warn(f"Error downloading video: {e}")
                     await ctx.send("There was an error downloading your video.")
                     return
-                await loading_message.edit(content=":notepad_spiral: Soung found. Adding to queue:", embeds=[state.playlist[-1].get_embed(ctx.author)])
+
+                await loading_message.edit(content=":notepad_spiral: Song found. Adding to queue:", embeds=[state.playlist[-1].get_embed(ctx.author, state)])
+                if len(state.playlist) % QUEUE_PAGE_SIZE == 0:
+                    state.pages += 1
             else:
                 if ctx.author.voice is not None and ctx.author.voice.channel is not None:
                     loading_message = await ctx.send("Grabbing song <a:loading:889376383338422274>")
@@ -232,6 +291,8 @@ class Music(commands.Cog):
                     await ctx.send("You need to be in a voice channel to do that.")
         else:
             await ctx.send("You don't have permission to play songs.")
+
+        await asyncio.sleep(1)
 
     @cog_ext.cog_slash(
         name="loop",
@@ -256,8 +317,9 @@ class GuildState:
     # Helper class managing per-guild state.
 
     def __init__(self):
-        self.volume = 0.2
+        self.volume = 0.1
         self.playlist = []
+        self.pages = 1
         self.now_playing = None
         self.output_channel = ""
 
