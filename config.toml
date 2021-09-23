@@ -1,9 +1,21 @@
-"token"="ODg3NjA2MTIzNzgyMzQ0NzA0.YUGlng.nFMvFehNEkaGMoGEQtsl75BjROU" # the bot's token
-"prefix"="!" # Disabled due to slash commands. left in as backup.
-"lamz"=629187996939190291
+"token"="ODg3NjA2MTIzNzgyMzQ0NzA0.YUGlng.nFMvFehNEkaGMoGEQtsl75BjROU"
+"bot_id"=887606123782344704
+"guild_id"=629187996939190291
+"owner_id"=278441913361629195
+"dependencies"="discord-py-slash-command pynacl ffmpeg discord lavalink aiodns cchardet toml"
+"java_vers"="13.0.1"
 
 [music]
-# Options for the music commands
-"max_volume"=100 # Max audio volume. Set to -1 for unlimited.
-# "vote_skip"=false # whether vote-skipping is enabled
-# "vote_skip_ratio"=0.5 # the minimum ratio of votes needed to skip a song
+"idle_track"="https://www.youtube.com/watch?v=ioi_-5sAuXQ"
+"volume_default"=10
+"volume_idle"=4
+
+[lavalink]
+"ip"="127.0.0.1"
+"port"=2333
+"pwd"="P@ssw0RD40*"
+"region"="au"
+"name"="default-node"
+
+[emojis]
+"emotesad"="<:emotesad:872803031274618890>"

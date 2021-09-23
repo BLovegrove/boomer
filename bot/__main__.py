@@ -1,20 +1,20 @@
-from . import bot
-import logging
+from discord.ext import commands
+from discord_slash.client import SlashCommand
 from . import config
 
-if __name__ == "__main__":
-    formatter = logging.Formatter(
-        fmt="[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s"
-    )
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
+cfg = config.load_config()
 
-    file_handler = logging.FileHandler("bot.log")
-    file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
+bot = commands.Bot(command_prefix="!")
+slash = SlashCommand(bot, sync_commands=True)
 
-    console_handler = logging.StreamHandler()
-    console_handler.setFormatter(formatter)
-    logger.addHandler(console_handler)
 
-    bot.run()
+@bot.event
+async def on_ready():
+    print(f'{bot.user} has logged in.')
+
+def main():
+    bot.load_extension('bot.cogs.music')
+    bot.run(cfg['token'])
+
+if __name__ == '__main__':
+    main()
