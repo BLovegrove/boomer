@@ -2,11 +2,11 @@
 "bot_id"=887606123782344704
 "guild_id"=629187996939190291
 "owner_id"=278441913361629195
-"dependencies"="discord-py-slash-command pynacl ffmpeg discord lavalink aiodns cchardet toml"
-"java_vers"="13.0.1"
+"java_vers"="11 or 13"
 
 [music]
-"idle_track"="https://www.youtube.com/watch?v=ioi_-5sAuXQ"
+"queue_page_len"=9
+"idle_track"="https://www.youtube.com/watch?v=78cyA-aGaKc"
 "volume_default"=10
 "volume_idle"=4
 

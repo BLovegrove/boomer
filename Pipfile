@@ -4,6 +4,14 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+discord-py-slash-command="*"
+pynacl="*"
+ffmpeg="*"
+discord="*"
+lavalink="*"
+aiodns="*"
+cchardet="*"
+toml="*"
 
 [dev-packages]
 
