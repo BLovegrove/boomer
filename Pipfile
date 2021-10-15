@@ -4,16 +4,11 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-discord-py-slash-command="*"
-pynacl="*"
-ffmpeg="*"
-discord="*"
-lavalink="*"
-aiodns="*"
-cchardet="*"
-toml="*"
+discord = "*"
+discord-py-slash-command = "*"
+lavalink = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.9"
+python_version = "3.10"
