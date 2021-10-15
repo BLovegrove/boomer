@@ -1,11 +1,11 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "d3bf733959c42ca5dca561e7e15982f370ccf816cef97a171cf93a87532ffd57"
+            "sha256": "5d4611c1b5172a8c71fb28f51502816921a94644727c13fb9b2bf3f197fa463d"
         },
         "pipfile-spec": 6,
         "requires": {
-            "python_version": "3.10"
+            "python_version": "3.8"
         },
         "sources": [
             {
@@ -56,7 +56,6 @@
                 "sha256:84ab92ed1c4d4f16916e05906b6b75a6c0fb5db821cc65e70cbd64a3e2a5eaae",
                 "sha256:fc323ffcaeaed0e0a02bf4d117757b98aed530d9ed4531e3e15460124c106691"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'",
             "version": "==3.0.4"
         },
         "discord": {
@@ -120,6 +119,14 @@
             ],
             "markers": "python_version >= '3.5'",
             "version": "==4.7.6"
+        },
+        "toml": {
+            "hashes": [
+                "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b",
+                "sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f"
+            ],
+            "index": "pypi",
+            "version": "==0.10.2"
         },
         "yarl": {
             "hashes": [
