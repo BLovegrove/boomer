@@ -3,11 +3,13 @@ import re
 import __main__
 import time
 import math
+from typing import Dict, List
 from discord import emoji, permissions, player
 import discord_slash
 from discord_slash.client import SlashCommand
 from discord_slash.context import ComponentContext
 from discord_slash.model import SlashCommandPermissionType
+from discord_slash.utils import manage_commands
 from discord_slash.utils.manage_commands import create_option, create_permission
 from discord_slash.utils import manage_components
 from discord_slash.model import ButtonStyle
@@ -19,6 +21,7 @@ import discord
 import lavalink
 from discord.ext import commands
 from discord_slash import SlashContext, cog_ext
+import json
 
 url_rx = re.compile(r'https?://(?:www\.)?.+')
 cfg = config.load_config()
@@ -39,9 +42,7 @@ class Music(commands.Cog):
         bot.lavalink.add_node(cfg_lava['ip'], cfg_lava['port'], cfg_lava['pwd'], cfg_lava['region'], cfg_lava['name'])
         bot.add_listener(bot.lavalink.voice_update_handler,'on_socket_response')
 
-        self.looping = False
-
-        lavalink.add_event_hook(self._hooks)
+        lavalink.add_event_hook(self.hooks)
 
     # ---------------------------------------------------------------------------- #
     #                         SECTION[id=callbacks] -EVENTS                        #
@@ -51,14 +52,32 @@ class Music(commands.Cog):
     # Runs whenever an event is raised by the player. Run things like EndQueue and 
     # EndTrack etc. 
 
-    async def _hooks(self, event):
+    async def hooks(self, event):
+
+        # if isinstance(event, lavalink.events.TrackStartEvent):
+        #     print(f"Track that is playing:\n{event.track.title}")
+
+        # if isinstance(event, lavalink.events.TrackEndEvent):
+
+        #     player = event.player
+        #     interrupt = player.fetch('interrupt_time')
+
+        #     if interrupt:
+        #         player.store('interrupt_time', None)
+        #         print('cleared interrupt flag')
+        #         player.add(cfg['bot_id'], player.fetch('interrupt_track'), 0)
+        #         print('added song to queue')
+        #         await player.play(start_time=20000)
+        #         print('playing song')
+        #         print(f"Track that should be playing:\n{player.fetch('interrupt_track').title}")
 
         if isinstance(event, lavalink.events.TrackEndEvent):
 
             player = event.player
-            track = player.fetch('repeat_one')
-            if track:
-                player.add(requester=cfg['bot_id'], track=track, index=0)
+            repeat_track = player.fetch('repeat_one')
+
+            if repeat_track:
+                player.add(requester=cfg['bot_id'], track=repeat_track, index=0)
 
         if isinstance(event, lavalink.events.QueueEndEvent):
             # Play idle music when no tracks are left in queue
@@ -77,7 +96,7 @@ class Music(commands.Cog):
             results = await player.node.get_tracks(cfg['music']['idle_track'])
 
             if not results or not results['tracks'] or results['loadType'] != 'TRACK_LOADED':
-                await player.queue.clear()
+                player.queue.clear()
                 await player.stop()
                 await guild.change_voice_state(channel=None)
                 return print('Nothing found for idle music! look for a new video.')
@@ -91,18 +110,62 @@ class Music(commands.Cog):
     # ---------------------------- ANCHOR LIST BUTTONS --------------------------- #
     # Callbacks for list button slash commands
 
+    # Common func for getting page numer x of y in [x,y] format from a list embed
+    def get_list_page(self, btx: ComponentContext) -> List[int]:
+        page_string = btx.origin_message.embeds[0].description
+        page_numbers = []
+
+        for part in page_string.split():
+            part = part.strip(".,:")
+            if part.isdigit():
+                page_numbers.append(int(part))
+
+        return page_numbers
+
     # Go back a page
     @cog_ext.cog_component()
     async def list_page_prev(self, btx: ComponentContext):
-        page_string = btx.origin_message.embeds[0].description
-        page = [int(s) for s in page_string.split() if s.isdigit()][0]
 
-        await btx.send(f"{page}")
+        player = self.fetch_player(btx)
+
+        try:
+            page = self.get_list_page(btx)[0]
+        except IndexError:
+            await btx.send(f"Something went wrong while extracting the page numbers from the embeds description. Contact <@{cfg['owner_id']}>.")
+            return
+
+        if page <= 1:
+            embed = self.embed_list(player, page)
+            await btx.edit_origin(embeds=[embed])
+            return
+
+        embed = self.embed_list(player, page - 1)
+        await btx.edit_origin(embeds=[embed])
+
 
     # Go forward a page
     @cog_ext.cog_component()
     async def list_page_next(self, btx: ComponentContext):
-        await btx.send("You pressed the next button!")
+
+        player = self.fetch_player(btx)
+        if not player:
+            return
+
+        try:
+            page_data = self.get_list_page(btx)
+            page = page_data[0]
+            pages = page_data[1]
+        except IndexError:
+            await btx.send(f"Something went wrong while extracting the page numbers from the embeds description. Contact <@{cfg['owner_id']}>.")
+            return
+
+        if page >= pages:
+            embed = self.embed_list(player, page)
+            await btx.edit_origin(embeds=[embed])
+            return
+
+        embed = self.embed_list(player, page + 1)
+        await btx.edit_origin(embeds=[embed])
 
     # Clear selected track
     @cog_ext.cog_component()
@@ -117,7 +180,7 @@ class Music(commands.Cog):
     # Select track multichoice
     @cog_ext.cog_component()
     async def list_track_select(self, btx: ComponentContext):
-        player = self._fetch_player(btx)
+        player = self.fetch_player(btx)
         player.store('list_track_selected', player.queue[int(btx.values[0])])
 
     # --------------------------------- !SECTION --------------------------------- #
@@ -130,7 +193,7 @@ class Music(commands.Cog):
     # Returns the bots player if one exists otherwise sets up the default one and
     # returns that
 
-    def _fetch_player(self, ctx: SlashContext) -> lavalink.DefaultPlayer:
+    def fetch_player(self, ctx: SlashContext) -> lavalink.DefaultPlayer:
         # Create returns a player if one exists, otherwise creates.
         return self.bot.lavalink.player_manager.create(
             ctx.guild.id, endpoint=str(ctx.guild.region)
@@ -141,13 +204,13 @@ class Music(commands.Cog):
     # i.e. anything that plays or queues a song). Otherwise makes sure you're in the 
     # the same voice channel as the bot to run things.
 
-    async def _ensure_voice(self, ctx: SlashContext) -> lavalink.DefaultPlayer or None:
+    async def ensure_voice(self, ctx: SlashContext) -> lavalink.DefaultPlayer or None:
         # This check ensures that the bot and command author are in the same voicechannel.
 
-        player = self._fetch_player(ctx)
+        player = self.fetch_player(ctx)
 
         # These are commands that require the bot to join a voicechannel.
-        should_connect = ctx.command in ('play','ok','lofi')
+        should_connect = ctx.command in ('play','ok','lofi','test','best')
 
         if not ctx.author.voice or not ctx.author.voice.channel:
             await ctx.send('Join a voicechannel first.')
@@ -169,7 +232,7 @@ class Music(commands.Cog):
 
             return player
 
-    def _get_playing(self, player: lavalink.DefaultPlayer) -> lavalink.AudioTrack:
+    def get_playing(self, player: lavalink.DefaultPlayer) -> lavalink.AudioTrack:
         if player.current:
             track = player.current
         elif self.looping:
@@ -183,9 +246,9 @@ class Music(commands.Cog):
     # Plays frist result directly if nothign else in in the queue and kills idle state / resets
     # volume if needed.
 
-    async def _play(self, ctx: SlashContext, query: str):
+    async def play(self, ctx: SlashContext, query: str):
         # Adds a song to the queue, plays the queue if it hasn't been started, or adds to the queue if a song is already playing.
-        player = await self._ensure_voice(ctx)
+        player = await self.ensure_voice(ctx)
         if not url_rx.match(query):
             query = f"ytsearch:{query}"
 
@@ -273,16 +336,16 @@ class Music(commands.Cog):
             math.ceil(len(player.queue) / cfg['music']['queue_page_len'])
         )
 
-    # ----------------------------- ANCHOR MAKE LIST ----------------------------- #
+    # ----------------------------- ANCHOR EMBED LIST ---------------------------- #
     # Used by the list command to put a queue summary together
 
-    def _make_list(self, player: lavalink.DefaultPlayer, page: int) -> discord.Embed:
+    def embed_list(self, player: lavalink.DefaultPlayer, page: int) -> discord.Embed:
         queue_start = (page - 1) * cfg['music']['queue_page_len']
-        queue_end = queue_start + ( cfg['music']['queue_page_len'] - 1) if page < player.fetch('pages') else len(player.queue) - queue_start - 1
+        queue_end = queue_start + ( cfg['music']['queue_page_len'] - 1) if page < player.fetch('pages') else len(player.queue) - 1
         if queue_end == 0:
             queue_end += 1
 
-        track = self._get_playing(player)
+        track = self.get_playing(player)
 
         modifiers = ""
         if player.fetch('repeat_one'):
@@ -311,22 +374,18 @@ class Music(commands.Cog):
             url=f"https://i.ytimg.com/vi/{track.identifier}/mqdefault.jpg"
         )
         for i in range(queue_start, queue_end + 1):
-            try:
-                track: lavalink.AudioTrack = player.queue[i]
-                play_time = lavalink.format_time(track.duration)
+            track: lavalink.AudioTrack = player.queue[i]
+            play_time = lavalink.format_time(track.duration)
 
-                # Strip hour from a video if its less than an hour long
-                if play_time.startswith("00:"):
-                    play_time = play_time.replace("00:", "")
+            # Strip hour from a video if its less than an hour long
+            if play_time.startswith("00:"):
+                play_time = play_time.replace("00:", "")
 
-                embed.add_field(
-                    name=f"{i + 1}. *{track.title}*",
-                    value=f"Play time: {play_time}"
-                )
-            except IndexError:
-                print("Index Out Of Range: _make_list")
-                print(
-                    f"Queue len: {len(player.queue)} | Page: {page} | Queue_start: {queue_start} | Queue_end: {queue_end}| Index: {i}")
+            embed.add_field(
+                name=util.truncate_string(f"{i + 1}. *{track.title}*", cfg['music']['list_char_len']),
+                value=f"{play_time}",
+                inline=False
+            )
 
         embed.set_footer(
             text=f"<> for page +/-, dropdown to select track, ❌/⏭️ to clear/skip to track."
@@ -334,10 +393,10 @@ class Music(commands.Cog):
 
         return embed
 
-    # ----------------------------- ANCHOR MAKE EMBED ---------------------------- #
+    # ---------------------------- ANCHOR EMBED TRACK ---------------------------- #
     # Constructs and returns an embed for a single track. Action gets prepended to author title
 
-    async def _make_embed(self, ctx: SlashContext, track: lavalink.AudioTrack, action: str , queue_len: int) -> discord.Embed:
+    async def embed_track(self, ctx: SlashContext, track: lavalink.AudioTrack, action: str , queue_len: int) -> discord.Embed:
         # Construct feedback embed
         embed = discord.Embed(
             color=discord.Color.blurple(),
@@ -358,6 +417,66 @@ class Music(commands.Cog):
 
         return embed
 
+    # -------------------------------- ANCHOR SKIP ------------------------------- #
+    # Skips either the next song in queue or if specified skips all songs up to a specific index
+
+    async def skip(self, ctx, player: DefaultPlayer, index: int = None):
+        embed_action = "Track skipped"
+
+        try:
+            do_reply = ctx.origin_message != None
+        except:
+            do_reply = False
+
+        if len(player.queue) > 0 or player.fetch('repeat_one'):
+            # Get next track in playlist info
+
+            if player.fetch('repeat_one'):
+                next_track = player.fetch('repeat_one')
+                queue_len = len(player.queue)
+                embed = await self.embed_track(
+                    ctx,
+                    track=next_track,
+                    action=embed_action,
+                    queue_len=queue_len
+                )
+                if do_reply:
+                    await ctx.send(":repeat_one: Looping enabled - repeating song.", embed=embed)
+
+                await player.seek(0)
+
+            elif player.shuffle:
+                await player.skip()
+                next_track = player.current
+                embed = await self.embed_track(
+                    ctx,
+                    track=next_track,
+                    action=embed_action,
+                    queue_len=len(player.queue)
+                )
+                if do_reply:
+                    await ctx.send(embed=embed)
+
+            else:
+                if index:
+                    next_track = player.queue[index]
+                    player.queue.insert(0, player.queue.pop(index))
+                else:
+                    next_track = player.queue[0]
+
+                embed = await self.embed_track(
+                    ctx,
+                    track=next_track,
+                    action=embed_action,
+                    queue_len=len(player.queue)
+                )
+                if do_reply:
+                    await ctx.send(embed=embed)
+                await player.skip()
+        else:
+            await ctx.send(":notepad_spiral: End of queue - time for your daily dose of idle tunes.")
+
+
     # --------------------------------- !SECTION --------------------------------- #
 
     # ---------------------------------------------------------------------------- #
@@ -373,18 +492,21 @@ class Music(commands.Cog):
         description="Summons Boomer into a voice channel without playing anything",
         guild_ids=[cfg['guild_id']]
     )
-    async def _okboomer(self, ctx: SlashContext):
-        player = await self._ensure_voice(ctx)
-        
+    async def okboomer(self, ctx: SlashContext):
+        player = await self.ensure_voice(ctx)
+        if not player:
+            return
+
         if player.is_playing:
             await ctx.send(f"I'm already in <#{player.fetch('voice').id}> zoomer.")
         else:
             await ctx.send(f"Joined <#{player.fetch('voice').id}>")
             await player.set_volume(10)
-            await self._hooks(lavalink.QueueEndEvent(player))
+            await self.hooks(lavalink.QueueEndEvent(player))
 
     # ----------------------------- ANCHOR LOFI RADIO ---------------------------- #
-    # Simple shortcut for lofi beats because lavalink doesnt like searching for livestreams for some reason
+    # Simple shortcut for lofi beats because lavalink doesnt like searching for 
+    # livestreams for some reason
 
     @cog_ext.cog_subcommand(
         base="lofi",
@@ -392,9 +514,58 @@ class Music(commands.Cog):
         description="Plays the Lofi Hip Hop radio livestream.",
         guild_ids=[cfg['guild_id']]
     )
-    async def _lofi_radio(self, ctx: SlashContext):
+    async def lofi_radio(self, ctx: SlashContext):
+        player = await self.ensure_voice(ctx)
+        if not player:
+            return
+
         query = "https://www.youtube.com/watch?v=5qap5aO4i9A"
-        await self._play(ctx, query)
+        await self.play(ctx, query)
+
+    # ----------------------------- ANCHOR TEST LIST ----------------------------- #
+    # Queues up my default test playlist on youtube. Good for testing list function
+    # and others.
+
+    @cog_ext.cog_subcommand(
+        base="test",
+        name="list",
+        description="Queue up test playlist from youtube containing a few pages of items.",
+        guild_ids=[cfg['guild_id']]
+    )
+    async def test_list(self, ctx: SlashContext):
+        player = await self.ensure_voice(ctx)
+        if not player:
+            return
+
+        query = "https://www.youtube.com/watch?v=1hUvUWY0TgA&list=PLe6BSc2t2vrfW4BY1D0JZD2wMQURH9bqk"
+        await self.play(ctx, query)
+
+    # ------------------------------- ANCHOR PIRATE ------------------------------ #
+    # Do you even need to ask?
+
+    # @cog_ext.cog_subcommand(
+    #     base="best",
+    #     name="pirate",
+    #     description="DUH-DUH-DUH DAH, DUH-DUH-DUH DAH, DUH-DUH-DUH DAH DUH-DUH-DUH-DUH",
+    #     guild_ids=[cfg['guild_id']]
+    # )
+    # async def best_pirate(self, ctx: SlashContext):
+    #     player = await self.ensure_voice(ctx)
+    #     if not player:
+    #         return
+
+    #     track_time = player.position
+    #     track = player.current
+
+    #     results = await player.node.get_tracks("https://www.youtube.com/watch?v=5GHbtOx8-cw")
+    #     # player.add(ctx.author.id, player.current, 0)
+    #     player.add(ctx.author.id, results['tracks'][0], 0)
+
+    #     await player.play(start_time=1000)
+    #     await ctx.send("So it would seem...")
+
+    #     player.store('interrupt_time', track_time)
+    #     player.store('interrupt_track', track)
 
     # --------------------------------- !SECTION --------------------------------- #
 
@@ -403,11 +574,12 @@ class Music(commands.Cog):
     # ---------------------------------------------------------------------------- #
 
     # -------------------------------- ANCHOR PLAY ------------------------------- #
-    # Calls self._play and passes along song request / message context
+    # Calls self.play and passes along song request / message context
 
     @cog_ext.cog_slash(
         name="play",
         description="Plays a song from given query / url.",
+        guild_ids=[cfg['guild_id']],
         options=[
             create_option(
                 name="song",
@@ -417,8 +589,8 @@ class Music(commands.Cog):
             )
         ]
     )
-    async def _play_command(self, ctx: SlashContext, song: str):
-        await self._play(ctx, song)
+    async def play_command(self, ctx: SlashContext, song: str):
+        await self.play(ctx, song)
 
     # ------------------------------- ANCHOR LEAVE ------------------------------- #
     # Leave voice chat if in one. Also resets the queue
@@ -428,8 +600,8 @@ class Music(commands.Cog):
         description="Disconnects Boomer from voice and clears the queue",
         guild_ids=[cfg['guild_id']]
     )
-    async def _leave(self, ctx: SlashContext):
-        player = await self._ensure_voice(ctx)
+    async def leave(self, ctx: SlashContext):
+        player = await self.ensure_voice(ctx)
         if not player:
             return
 
@@ -456,8 +628,8 @@ class Music(commands.Cog):
             )
         ]
     )
-    async def _volume(self, ctx: SlashContext, level: int = None):
-        player = await self._ensure_voice(ctx)
+    async def volume(self, ctx: SlashContext, level: int = None):
+        player = await self.ensure_voice(ctx)
         volume = level # Make dealing with volume more sensible
         if not player:
             return
@@ -465,8 +637,10 @@ class Music(commands.Cog):
         if volume:
             if ctx.author.id != cfg['owner_id']:
                 volume = util.clamp(volume, 0, 100)
+                await player.set_volume(math.ceil(volume / 2))
+            else:
+                await player.set_volume(volume)
 
-            await player.set_volume(math.ceil(volume / 2))
         else:
             volume = player.volume
 
@@ -496,8 +670,8 @@ class Music(commands.Cog):
             )
         ]
     )
-    async def _list(self, ctx: SlashContext, page: int=1):
-        player = await self._ensure_voice(ctx)
+    async def list(self, ctx: SlashContext, page: int=1):
+        player = await self.ensure_voice(ctx)
         if not player:
             return
 
@@ -512,7 +686,8 @@ class Music(commands.Cog):
         queue_start = (page - 1) * cfg['music']['queue_page_len']
         queue_end = queue_start + ( cfg['music']['queue_page_len'] - 1) if page < player.fetch('pages') else len(player.queue) - queue_start - 1
 
-        options = components = []
+        components = []
+        options = []
         for i in range(queue_start, queue_end + 1):
             options.append(manage_components.create_select_option(
                 label=f"{i + 1}. {player.queue[i].title}",
@@ -520,15 +695,13 @@ class Music(commands.Cog):
             ))
 
         if len(options) > 0:
-            list_select = [
-                manage_components.create_select(
-                    options=options,
-                    custom_id="list_track_select",
-                    placeholder="Select one of the tracks on the current page",
-                )
-            ]
+            select_input = manage_components.create_select(
+                options=options,
+                custom_id="list_track_select",
+                placeholder="Select one of the tracks on the current page",
+            )
 
-            select_row = manage_components.create_actionrow(list_select)
+            select_row = manage_components.create_actionrow(select_input)
             components.append(select_row)
 
         list_buttons = [
@@ -557,10 +730,9 @@ class Music(commands.Cog):
         button_row = manage_components.create_actionrow(*list_buttons)
         components.append(button_row)
 
-        print(components)
-
-        embed = self._make_list(player, page)
-        await ctx.send(embed=embed, components=components)
+        embed = self.embed_list(player, page)
+        message = await ctx.send(embed=embed, components=components)
+        await message.edit(content=message.content)
 
     # -------------------------------- ANCHOR SKIP ------------------------------- #
     # Skip current song or to a specific song in queue with the optional 'index' 
@@ -569,53 +741,22 @@ class Music(commands.Cog):
     @cog_ext.cog_slash(
         name="skip",
         description="Skips current track.",
-        guild_ids=[cfg['guild_id']]
+        guild_ids=[cfg['guild_id']],
+        options=[
+            manage_commands.create_option(
+                name="index",
+                description="Specify specific place in queue to skip to",
+                option_type=int,
+                required=False
+            )
+        ]
     )
-    async def _skip(self, ctx: SlashCommand):
-        player = await self._ensure_voice(ctx)
+    async def skip_command(self, ctx: SlashCommand, index: int=None):
+        player = await self.ensure_voice(ctx)
         if not player:
             return
 
-        embed_action = "Track skipped"
-
-        if len(player.queue) > 0 or player.fetch('repeat_one'):
-            # Get next track in playlist info
-
-            if player.fetch('repeat_one'):
-                next_track = player.fetch('repeat_one')
-                queue_len = len(player.queue)
-                embed = await self._make_embed(
-                    ctx,
-                    track=next_track,
-                    action=embed_action,
-                    queue_len=queue_len
-                )
-                await ctx.send(":repeat_one: Looping enabled - repeating song.", embed=embed)
-                await player.seek(0)
-
-            elif player.shuffle:
-                await player.skip()
-                next_track = player.current
-                embed = await self._make_embed(
-                    ctx,
-                    track=next_track,
-                    action=embed_action,
-                    queue_len=len(player.queue)
-                )
-                await ctx.send(embed=embed)
-
-            else:
-                next_track = player.queue[0]
-                embed = await self._make_embed(
-                    ctx,
-                    track=next_track,
-                    action=embed_action,
-                    queue_len=len(player.queue)
-                )
-                await ctx.send(embed=embed)
-        else:
-            await ctx.send(message=":notepad_spiral: End of queue - time for your daily dose of idle tunes.")
-
+        await self.skip(ctx, player, index)
 
     # -------------------------------- ANCHOR LOOP ------------------------------- #
     # Loop either the current track or the entire playlist with a subcommand 'queue'
@@ -627,8 +768,8 @@ class Music(commands.Cog):
         description="Repeats current song.",
         guild_ids=[cfg['guild_id']]
     )
-    async def _loop(self, ctx: SlashCommand):
-        player = await self._ensure_voice(ctx)
+    async def loop(self, ctx: SlashCommand):
+        player = await self.ensure_voice(ctx)
         if not player:
             return
 
@@ -636,7 +777,7 @@ class Music(commands.Cog):
             player.store('repeat_one', None)
             await ctx.send(":arrow_forward: Stopped looping track.")
         else:
-            track = self._get_playing(player)
+            track = self.get_playing(player)
             player.store('repeat_one', track)
             await ctx.send(":repeat_one: Current track now looping.")
 
@@ -647,8 +788,8 @@ class Music(commands.Cog):
         description="Repeats entire queue.",
         guild_ids=[cfg['guild_id']]
     )
-    async def _loop_queue(self, ctx: SlashCommand):
-        player = await self._ensure_voice(ctx)
+    async def loop_queue(self, ctx: SlashCommand):
+        player = await self.ensure_voice(ctx)
         if not player:
             return
 
@@ -666,8 +807,8 @@ class Music(commands.Cog):
         description="Shuffles the current queue. Works well with /loop queue.",
         guild_ids=[cfg['guild_id']]
     )
-    async def _shuffle(self, ctx: SlashCommand):
-        player = await self._ensure_voice(ctx)
+    async def shuffle(self, ctx: SlashCommand):
+        player = await self.ensure_voice(ctx)
         if not player:
             return
         
@@ -699,14 +840,14 @@ class Music(commands.Cog):
         }
     )
     async def _die(self, ctx: SlashContext):
-        player = self._fetch_player(ctx)
+        player = self.fetch_player(ctx)
 
         if player:
             player.queue.clear()
             await player.stop()
             await ctx.guild.change_voice_state(channel=None)
         await ctx.send(f"My battery is low and it's getting dark {self.emojis['emotesad']}")
-        await ctx.bot.logout()
+        await ctx.bot.close()
 
     # --------------------------------- !SECTION --------------------------------- #
 

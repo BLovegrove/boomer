@@ -9,6 +9,7 @@
 "idle_track"="https://www.youtube.com/watch?v=78cyA-aGaKc"
 "volume_default"=10
 "volume_idle"=4
+"list_char_len"=64
 
 [lavalink]
 "ip"="127.0.0.1"
