@@ -4,6 +4,8 @@ import __main__
 import time
 import math
 from typing import Dict, List
+from datetime import datetime
+import textwrap
 from discord import emoji, permissions, player
 import discord_slash
 from discord_slash.client import SlashCommand
@@ -23,20 +25,26 @@ from discord.ext import commands
 from discord_slash import SlashContext, cog_ext
 import json
 
-url_rx = re.compile(r'https?://(?:www\.)?.+')
+standard_rx = re.compile(r'https?://(?:www\.)?.+')
+spotify_rx = re.compile
 cfg = config.load_config()
+
+
+async def timestamp():
+    print(f"time: {datetime.now()}")
 
 # ------------------------------- ANCHOR CLASS ------------------------------- #
 
 class Music(commands.Cog):
     def __init__(self, bot):
-        self.bot = bot
+        self.bot: discord.Client = bot
+        self.activity_idle = discord.Streaming(name="nothing.", url="https://tinyurl.com/lamzterms")
 
         self.emojis = {}
         for emoji in cfg['emojis']:
             self.emojis[emoji] = cfg['emojis'][emoji]
             
-        bot.lavalink = lavalink.Client(cfg['bot_id'])
+        bot.lavalink = lavalink.Client(cfg['bot']['id'])
         # Host, Port, Password, Region, Name
         cfg_lava = cfg['lavalink']
         bot.lavalink.add_node(cfg_lava['ip'], cfg_lava['port'], cfg_lava['pwd'], cfg_lava['region'], cfg_lava['name'])
@@ -65,7 +73,7 @@ class Music(commands.Cog):
         #     if interrupt:
         #         player.store('interrupt_time', None)
         #         print('cleared interrupt flag')
-        #         player.add(cfg['bot_id'], player.fetch('interrupt_track'), 0)
+        #         player.add(cfg['bot']['id'], player.fetch('interrupt_track'), 0)
         #         print('added song to queue')
         #         await player.play(start_time=20000)
         #         print('playing song')
@@ -77,7 +85,7 @@ class Music(commands.Cog):
             repeat_track = player.fetch('repeat_one')
 
             if repeat_track:
-                player.add(requester=cfg['bot_id'], track=repeat_track, index=0)
+                player.add(requester=cfg['bot']['id'], track=repeat_track, index=0)
 
         if isinstance(event, lavalink.events.QueueEndEvent):
             # Play idle music when no tracks are left in queue
@@ -103,8 +111,9 @@ class Music(commands.Cog):
 
             player.store('idle', True)
             track = results['tracks'][0]
-            player.add(requester=cfg['bot_id'], track=track)
+            player.add(requester=cfg['bot']['id'], track=track)
             if not player.is_playing:
+                await self.update_status(player)
                 await player.play()
 
     # ---------------------------- ANCHOR LIST BUTTONS --------------------------- #
@@ -122,7 +131,7 @@ class Music(commands.Cog):
 
         return page_numbers
 
-    # Go back a page
+    # Go backward in /list to the previous page
     @cog_ext.cog_component()
     async def list_page_prev(self, btx: ComponentContext):
 
@@ -142,8 +151,7 @@ class Music(commands.Cog):
         embed = self.embed_list(player, page - 1)
         await btx.edit_origin(embeds=[embed])
 
-
-    # Go forward a page
+    # Go forward in /list to the next page
     @cog_ext.cog_component()
     async def list_page_next(self, btx: ComponentContext):
 
@@ -167,27 +175,26 @@ class Music(commands.Cog):
         embed = self.embed_list(player, page + 1)
         await btx.edit_origin(embeds=[embed])
 
-    # Clear selected track
-    @cog_ext.cog_component()
-    async def list_track_clear(self, btx: ComponentContext):
-        await btx.send("You pressed the clear button!")
-
-    # Jump to selected track
-    @cog_ext.cog_component()
-    async def list_track_jump(self, btx: ComponentContext):
-        await btx.send("You pressed the jump button!")
-
-    # Select track multichoice
-    @cog_ext.cog_component()
-    async def list_track_select(self, btx: ComponentContext):
-        player = self.fetch_player(btx)
-        player.store('list_track_selected', player.queue[int(btx.values[0])])
-
     # --------------------------------- !SECTION --------------------------------- #
 
     # ---------------------------------------------------------------------------- #
     #                       SECTION[id=helpers] -HELPERS                           #
     # ---------------------------------------------------------------------------- #
+
+    # ---------------------------- ANCHOR UPDATE STATUS -------------------------- #
+    # Updates boomers status message with whatever song is currently playing
+
+    async def update_status(self, player: DefaultPlayer):
+
+        if player.current:
+            activity = discord.Game(player.current.title)
+            status = discord.Status.online
+
+        else:
+            activity = discord.Game("nothing.")
+            status = discord.Status.idle
+            
+        await self.bot.change_presence(activity=activity, status=status)
 
     # ---------------------------- ANCHOR FETCHPLAYER ---------------------------- #
     # Returns the bots player if one exists otherwise sets up the default one and
@@ -229,6 +236,7 @@ class Music(commands.Cog):
         else:
             if int(player.channel_id) != ctx.author.voice.channel.id:
                 await ctx.send(f"You need to be in <#{player.channel_id}> to do that.")
+                return
 
             return player
 
@@ -241,6 +249,14 @@ class Music(commands.Cog):
             track = player.queue[0]
         return track
 
+
+    # ---------------------------- ANCHOR UPDATE PAGES --------------------------- #
+    # Updates the number of pages defined in the config file as queue_page_len 
+
+    def update_pages(self, player: lavalink.DefaultPlayer):
+        player.store('pages', math.ceil(len(player.queue) / cfg['music']['queue_page_len']))
+
+
     # -------------------------------- ANCHOR PLAY ------------------------------- #
     # Core method for this class. Takes query and uses lavalink to grab / enqueue results.
     # Plays frist result directly if nothign else in in the queue and kills idle state / resets
@@ -249,7 +265,7 @@ class Music(commands.Cog):
     async def play(self, ctx: SlashContext, query: str):
         # Adds a song to the queue, plays the queue if it hasn't been started, or adds to the queue if a song is already playing.
         player = await self.ensure_voice(ctx)
-        if not url_rx.match(query):
+        if not standard_rx.match(query):
             query = f"ytsearch:{query}"
 
         results = await player.node.get_tracks(query)
@@ -285,7 +301,7 @@ class Music(commands.Cog):
             else:
                 embed.title = f"Added {tracks[0]['info']['title']} and {len(tracks) - 1} more to queue"
                 embed.set_footer(
-                    text=f"Songs are #{len(player.queue) + 1} to #{len(player.queue) + len(tracks)} in queue."
+                    text=f"Songs are #{len(player.queue)} to #{len(player.queue) + len(tracks)} in queue."
                 )
 
             # Add all tracks to the queue
@@ -331,10 +347,8 @@ class Music(commands.Cog):
             await player.set_volume(cfg['music']['volume_default'])
             await player.play()
 
-        player.store(
-            'pages',
-            math.ceil(len(player.queue) / cfg['music']['queue_page_len'])
-        )
+        await self.update_status(player)
+        self.update_pages(player)
 
     # ----------------------------- ANCHOR EMBED LIST ---------------------------- #
     # Used by the list command to put a queue summary together
@@ -377,12 +391,12 @@ class Music(commands.Cog):
             track: lavalink.AudioTrack = player.queue[i]
             play_time = lavalink.format_time(track.duration)
 
-            # Strip hour from a video if its less than an hour long
+            # Strip 00: hour from a video if its less than an hour long
             if play_time.startswith("00:"):
-                play_time = play_time.replace("00:", "")
+                play_time = play_time[3:]
 
             embed.add_field(
-                name=util.truncate_string(f"{i + 1}. *{track.title}*", cfg['music']['list_char_len']),
+                name=textwrap.shorten(f"{i + 1}. *{track.title}*", width=cfg['music']['list_char_len']),
                 value=f"{play_time}",
                 inline=False
             )
@@ -394,39 +408,62 @@ class Music(commands.Cog):
         return embed
 
     # ---------------------------- ANCHOR EMBED TRACK ---------------------------- #
-    # Constructs and returns an embed for a single track. Action gets prepended to author title
 
-    async def embed_track(self, ctx: SlashContext, track: lavalink.AudioTrack, action: str , queue_len: int) -> discord.Embed:
+    async def embed_track(self, ctx: SlashContext, track: lavalink.AudioTrack, action: str, queue_len: int, footer: str="", author: str="") -> discord.Embed:
+        """Constructs and returns and embed for a single track. 
+        Action gets prepended to author title (action by user. Now playing: ). 
+        Author overrides entire author name section ('now playing' by default).
+
+        Args:
+            ctx (SlashContext): Discord context for the command
+            track (AudioTrack): Lavalink track to grab information from
+            action (str): The action string. See desc. for example
+            queue_len (int): Length of player queue at time of embed request
+            footer (str): Optional arg for footer segment (blank by default)
+            author (str): Optional override for author segment of the embed (the 'now playing' segment by default)
+
+        Returns:
+            discord.Embed: Embed with track info filled in
+        """
+
         # Construct feedback embed
         embed = discord.Embed(
             color=discord.Color.blurple(),
             title=track.title,
             description=f"Song by: {track.author}",
         )
+
+        if author == "":
+            author_name = f"{action} by {ctx.author.display_name}. Now playing: "
+        else:
+            author_name = author
+
         embed.set_author(
-            name=f"{action} by {ctx.author.display_name}. Now playing: ",
+            name=author_name,
             url=track.uri,
             icon_url=ctx.author.avatar_url
         )
+
         embed.set_thumbnail(
             url=f"https://i.ytimg.com/vi/{track.identifier}/mqdefault.jpg"
         )
-        embed.set_footer(
-            text=f"Songs remaining in queue: {queue_len}"
-        )
+
+        if footer == "":
+            embed.set_footer(
+                text=f"Songs remaining in queue: {queue_len}"
+            )
+        else:
+            embed.set_footer(
+                text=footer
+            )
 
         return embed
 
     # -------------------------------- ANCHOR SKIP ------------------------------- #
     # Skips either the next song in queue or if specified skips all songs up to a specific index
 
-    async def skip(self, ctx, player: DefaultPlayer, index: int = None):
+    async def skip(self, ctx, player: DefaultPlayer, index: int=None):
         embed_action = "Track skipped"
-
-        try:
-            do_reply = ctx.origin_message != None
-        except:
-            do_reply = False
 
         if len(player.queue) > 0 or player.fetch('repeat_one'):
             # Get next track in playlist info
@@ -440,9 +477,8 @@ class Music(commands.Cog):
                     action=embed_action,
                     queue_len=queue_len
                 )
-                if do_reply:
-                    await ctx.send(":repeat_one: Looping enabled - repeating song.", embed=embed)
 
+                await ctx.send(":repeat_one: Looping enabled - repeating song.", embed=embed)
                 await player.seek(0)
 
             elif player.shuffle:
@@ -454,13 +490,23 @@ class Music(commands.Cog):
                     action=embed_action,
                     queue_len=len(player.queue)
                 )
-                if do_reply:
-                    await ctx.send(embed=embed)
+                await ctx.send(embed=embed)
 
             else:
                 if index:
-                    next_track = player.queue[index]
-                    player.queue.insert(0, player.queue.pop(index))
+
+                    if index <= 0:
+                        await ctx.send(":warning: That index is too low! Queue starts at #1.", hidden=True)
+                        return
+
+                    elif index > len(player.queue):
+                        await ctx.send(f":warning: That index is too high! Queue only {len(player.queue)} items long.", hidden=True)
+                        return
+
+                    else:
+                        del player.queue[:index]
+                        next_track = player.queue[0]
+
                 else:
                     next_track = player.queue[0]
 
@@ -470,11 +516,40 @@ class Music(commands.Cog):
                     action=embed_action,
                     queue_len=len(player.queue)
                 )
-                if do_reply:
-                    await ctx.send(embed=embed)
+                await ctx.send(embed=embed)
                 await player.skip()
         else:
             await ctx.send(":notepad_spiral: End of queue - time for your daily dose of idle tunes.")
+            await player.skip()
+
+        await self.update_status(player)
+        self.update_pages(player)
+
+    # ------------------------------- ANCHOR CLEAR ------------------------------- #
+    # Clears either the entire queue if no index is given or a single specific item
+    # from the queue.
+
+    async def clear(self, ctx: SlashContext, index: int=0):
+
+        player = await self.ensure_voice(ctx)
+        if not player:
+            return
+
+        if index == 0:
+            player.queue = []
+            player.store("pages", 0)
+            await ctx.send(":boom: Queue cleared!")
+        else:
+            cleared = player.queue.pop(index)
+            embed = await self.embed_track(
+                ctx=ctx, 
+                track=cleared, 
+                action="", 
+                queue_len=len(player.queue), 
+                author=f"{ctx.author.display_name} cleared a song from queue:"
+            )
+            self.update_pages(player)
+            await ctx.send(embed=embed)
 
 
     # --------------------------------- !SECTION --------------------------------- #
@@ -593,7 +668,7 @@ class Music(commands.Cog):
         await self.play(ctx, song)
 
     # ------------------------------- ANCHOR LEAVE ------------------------------- #
-    # Leave voice chat if in one. Also resets the queue
+    # Leave voice chat if in one. Also resets the queue and clears any modifiers.
 
     @cog_ext.cog_slash(
         name="leave",
@@ -605,11 +680,15 @@ class Music(commands.Cog):
         if not player:
             return
 
-        if player:
-            player.queue.clear()
-            await player.stop()
-            await ctx.guild.change_voice_state(channel=None)
-            await ctx.send(f":wave: Leaving <#{player.fetch('voice').id}> and clearing queue.")
+        player.queue.clear()
+        await player.stop()
+        await ctx.guild.change_voice_state(channel=None)
+        player.store('repeat_one', None)
+        player.set_repeat(False)
+        player.set_shuffle(False)
+        await ctx.send(f":wave: Leaving <#{player.fetch('voice').id}> and clearing queue.")
+        await self.update_status(player)
+
 
     # ------------------------------- ANCHOR VOLUME ------------------------------ #
     # Print volume, or ncrease / decrease volume. Capped at 0-50 (displayed as 0-100)
@@ -683,26 +762,7 @@ class Music(commands.Cog):
                 await ctx.send("Queue is empty - no list to show.")
             return
 
-        queue_start = (page - 1) * cfg['music']['queue_page_len']
-        queue_end = queue_start + ( cfg['music']['queue_page_len'] - 1) if page < player.fetch('pages') else len(player.queue) - queue_start - 1
-
         components = []
-        options = []
-        for i in range(queue_start, queue_end + 1):
-            options.append(manage_components.create_select_option(
-                label=f"{i + 1}. {player.queue[i].title}",
-                value=f"{i}"
-            ))
-
-        if len(options) > 0:
-            select_input = manage_components.create_select(
-                options=options,
-                custom_id="list_track_select",
-                placeholder="Select one of the tracks on the current page",
-            )
-
-            select_row = manage_components.create_actionrow(select_input)
-            components.append(select_row)
 
         list_buttons = [
             manage_components.create_button(
@@ -714,16 +774,6 @@ class Music(commands.Cog):
                 style=discord_slash.ButtonStyle.primary,
                 label=">",
                 custom_id="list_page_next"
-            ),
-            manage_components.create_button(
-                style=discord_slash.ButtonStyle.danger,
-                label="x",
-                custom_id="list_track_clear"
-            ),
-            manage_components.create_button(
-                style=discord_slash.ButtonStyle.success,
-                label=">>",
-                custom_id="list_track_jump",
             )
         ]
 
@@ -733,6 +783,22 @@ class Music(commands.Cog):
         embed = self.embed_list(player, page)
         message = await ctx.send(embed=embed, components=components)
         await message.edit(content=message.content)
+
+    # -------------------------------- ANCHOR NOW -------------------------------- #
+    # Displays details of the current song including playtime in a handy ascii layout
+    
+    @cog_ext.cog_slash(
+        name="now",
+        description="Display info on the current song",
+        guild_ids=[cfg['guild_id']]
+    )
+    async def now(self, ctx: SlashCommand):
+        player = await self.ensure_voice(ctx)
+        if not player:
+            return
+
+        embed = await self.embed_track(ctx, player.current, "Info requested", len(player.queue), footer=util.seek_bar(player))
+        await ctx.send(embed=embed)
 
     # -------------------------------- ANCHOR SKIP ------------------------------- #
     # Skip current song or to a specific song in queue with the optional 'index' 
@@ -745,7 +811,7 @@ class Music(commands.Cog):
         options=[
             manage_commands.create_option(
                 name="index",
-                description="Specify specific place in queue to skip to",
+                description="Specify place in queue to skip to.",
                 option_type=int,
                 required=False
             )
@@ -755,8 +821,49 @@ class Music(commands.Cog):
         player = await self.ensure_voice(ctx)
         if not player:
             return
+        
+        if index:
+            await self.skip(ctx, player, index - 1)
 
-        await self.skip(ctx, player, index)
+        else:
+            await self.skip(ctx, player)
+
+    # ------------------------------- ANCHOR CLEAR ------------------------------- #
+    # Clears the queue without making boomer leave the call. 
+
+    @cog_ext.cog_slash(
+        name="clear",
+        description="Clears current queue.",
+        guild_ids=[cfg['guild_id']],
+        options=[
+            manage_commands.create_option(
+                name="index",
+                description="Specify single song in queue to clear.",
+                option_type=int,
+                required=False
+            )
+        ]
+    )
+    async def clear_command(self, ctx: SlashContext, index: int=None):
+        player = await self.ensure_voice(ctx)
+        if not player:
+            return
+        
+        if not index:
+            await self.clear(ctx)
+
+        else:
+            if index <= 0:
+                await ctx.send(":warning: That index is too low! Queue starts at #1.", hidden=True)
+                return
+
+            elif index > len(player.queue):
+                await ctx.send(f":warning: That index is too high! Queue only {len(player.queue)} items long.", hidden=True)
+                return
+
+            else:
+                await self.clear(ctx, index - 1)
+
 
     # -------------------------------- ANCHOR LOOP ------------------------------- #
     # Loop either the current track or the entire playlist with a subcommand 'queue'
@@ -846,6 +953,8 @@ class Music(commands.Cog):
             player.queue.clear()
             await player.stop()
             await ctx.guild.change_voice_state(channel=None)
+
+        await self.update_status(player)
         await ctx.send(f"My battery is low and it's getting dark {self.emojis['emotesad']}")
         await ctx.bot.close()
 

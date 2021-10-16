@@ -1,12 +1,22 @@
+import os
+import discord
+from discord.enums import Status
 from discord.ext import commands
 from discord_slash.client import SlashCommand
+import argparse
 from . import config
 
-cfg = config.load_config()
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "-b", 
+    "--bot", 
+    help="Type of bot to run (0:boomer, 1:zoomer, 2:both)", 
+    type=int
+)
+args = parser.parse_args()
 
-bot = commands.Bot(command_prefix="!")
+bot = commands.Bot(command_prefix="!wat", activity=discord.Game(name="nothing."), status=Status.idle)
 slash = SlashCommand(bot, sync_commands=True)
-
 
 @bot.event
 async def on_ready():
@@ -14,7 +24,8 @@ async def on_ready():
 
 def main():
     bot.load_extension('bot.cogs.music')
-    bot.run(cfg['token'])
+    cfg = config.load_config()
+    bot.run(cfg['bot']['token'])
 
 if __name__ == '__main__':
     main()

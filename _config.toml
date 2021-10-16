@@ -1,0 +1,25 @@
+guild_id = 629187996939190291
+owner_id = 278441913361629195
+
+[bot]
+token = "ODg3NjA2MTIzNzgyMzQ0NzA0.YUGlng.nFMvFehNEkaGMoGEQtsl75BjROU"
+id = 887606123782344704
+
+[music]
+queue_page_len = 9
+idle_track = "https://www.youtube.com/watch?v=78cyA-aGaKc"
+volume_default = 7
+volume_idle = 4
+list_char_len = 60
+skip_time_ms = 10000
+skip_timebig_ms = 60000
+
+[lavalink]
+ip = "127.0.0.1"
+port = 2333
+pwd = "P@ssw0RD40*"
+region = "au"
+name = "default-node"
+
+[emojis]
+emotesad = "<:emotesad:872803031274618890>"

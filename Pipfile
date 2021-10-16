@@ -4,10 +4,11 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-toml = "*"
-lavalink = "*"
 discord = "*"
 discord-py-slash-command = "*"
+toml = "*"
+lavalink = "*"
+autopep8 = "*"
 
 [dev-packages]
 
