@@ -23,7 +23,7 @@ async def on_ready():
     print(f'{bot.user} has logged in.')
 
 def main():
-    bot.load_extension('bot.cogs.music')
+    bot.load_extension('boomer.cogs.music')
     cfg = config.load_config()
     bot.run(cfg['bot']['token'])
 

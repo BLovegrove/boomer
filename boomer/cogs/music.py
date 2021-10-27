@@ -7,6 +7,10 @@ from typing import Dict, List
 from datetime import datetime
 import textwrap
 from discord import emoji, permissions, player
+from discord.ext.commands.converter import IDConverter
+import spotipy
+from spotipy.oauth2 import SpotifyClientCredentials
+import pandas as pd
 import discord_slash
 from discord_slash.client import SlashCommand
 from discord_slash.context import ComponentContext
@@ -49,6 +53,12 @@ class Music(commands.Cog):
         cfg_lava = cfg['lavalink']
         bot.lavalink.add_node(cfg_lava['ip'], cfg_lava['port'], cfg_lava['pwd'], cfg_lava['region'], cfg_lava['name'])
         bot.add_listener(bot.lavalink.voice_update_handler,'on_socket_response')
+
+        client_credentials_manager = SpotifyClientCredentials(
+            client_id=cfg['spotify']['id'], 
+            client_secret=cfg['spotify']['secret']
+        )
+        self.spotify = spotipy.Spotify(client_credentials_manager = client_credentials_manager)
 
         lavalink.add_event_hook(self.hooks)
 
@@ -113,8 +123,8 @@ class Music(commands.Cog):
             track = results['tracks'][0]
             player.add(requester=cfg['bot']['id'], track=track)
             if not player.is_playing:
-                await self.update_status(player)
                 await player.play()
+                await self.update_status(player)
 
     # ---------------------------- ANCHOR LIST BUTTONS --------------------------- #
     # Callbacks for list button slash commands
@@ -217,7 +227,7 @@ class Music(commands.Cog):
         player = self.fetch_player(ctx)
 
         # These are commands that require the bot to join a voicechannel.
-        should_connect = ctx.command in ('play','ok','lofi','test','best')
+        should_connect = ctx.command in ('play','zplay','ok','lofi','test','best')
 
         if not ctx.author.voice or not ctx.author.voice.channel:
             await ctx.send('Join a voicechannel first.')
@@ -228,6 +238,7 @@ class Music(commands.Cog):
                 await ctx.send('Not connected.')
                 return
 
+            player.store('pages', 0)
             player.store('channel', ctx.channel.id)
             player.store('voice', ctx.author.voice.channel)
             await ctx.guild.change_voice_state(channel=ctx.author.voice.channel)
@@ -254,8 +265,37 @@ class Music(commands.Cog):
     # Updates the number of pages defined in the config file as queue_page_len 
 
     def update_pages(self, player: lavalink.DefaultPlayer):
-        player.store('pages', math.ceil(len(player.queue) / cfg['music']['queue_page_len']))
+        player.store('pages', math.ceil(
+            len(player.queue) / cfg['music']['queue_page_len']))
 
+    # --------------------------- ANCHOR SPOTIFY PLIST --------------------------- #
+    # Gets spotify playlist info and returns a pandas dataframe of all the songs in
+    # the playlist
+
+    def sp_get_playlist(self, playlist_id: str) -> dict:
+        playlist_features = ['artist', 'track_name', 'album']
+        playlist_df = pd.DataFrame(columns=playlist_features)
+
+        # playlist = self.spotify.user_playlist_tracks(creator, playlist_id)['items']
+        playlist = self.spotify.playlist_tracks(playlist_id)['items']
+        playlist_title = self.spotify.playlist(
+            playlist_id, 
+            fields="name"
+        )['name']
+
+        for track in playlist:
+            playlist_features = {}
+
+            playlist_features["artist"] = track["track"]["album"]["artists"][0]["name"]
+            playlist_features["album"] = track["track"]["album"]["name"]
+            playlist_features["track_name"] = track["track"]["name"]
+
+            track_df = pd.DataFrame(playlist_features, index=[0])
+            playlist_df = pd.concat([playlist_df, track_df], ignore_index=True)
+
+        playlist = {'title': playlist_title, 'data': playlist_df}
+
+        return playlist
 
     # -------------------------------- ANCHOR PLAY ------------------------------- #
     # Core method for this class. Takes query and uses lavalink to grab / enqueue results.
@@ -265,11 +305,70 @@ class Music(commands.Cog):
     async def play(self, ctx: SlashContext, query: str):
         # Adds a song to the queue, plays the queue if it hasn't been started, or adds to the queue if a song is already playing.
         player = await self.ensure_voice(ctx)
+        if not player:
+            return
+
+        results = None
+
         if not standard_rx.match(query):
             query = f"ytsearch:{query}"
+            results = await player.node.get_tracks(query)
 
-        results = await player.node.get_tracks(query)
+        else:
+            if "open.spotify.com" in query:
+                if "playlist" in query:
+                    playlist_id = query.split("/")[-1].split("?")[0]
+                    playlist = self.sp_get_playlist(playlist_id)
+                    tracks = []
 
+                    embed = discord.Embed(color=discord.Color.blurple())
+                    embed.set_author(
+                        name=f"Loading spotify playlist: {playlist['title']}",
+                        url="https://tinyurl.com/boomermusic",
+                        icon_url="https://i.imgur.com/dpVBIer.png"
+                    )
+                    embed.description = util.progress_bar(
+                        0, len(playlist['data']))
+                    embed.set_footer(
+                        text="Please note: This can take a long time for playlists larger than 20 songs"
+                    )
+
+                    loading_msg = await ctx.send(embed=embed)
+                    await loading_msg.edit(embeds=[embed])
+
+                    for index, row in playlist['data'].iterrows():
+                        track = await player.node.get_tracks(f"ytsearch:{row['track_name']} by {row['artist']}")
+                        try:
+                            track = track['tracks'][0]
+                        except:
+                            print("Track not found!")
+
+                        tracks.append(track)
+                        if len(tracks) % 1 == 0:
+                            embed.description = util.progress_bar(
+                                len(tracks), len(playlist['data']))
+                            await loading_msg.edit(embeds=[embed])
+
+                    embed.description = util.progress_bar(
+                        len(tracks), len(playlist['data']))
+                    await loading_msg.edit(content="Playlist loaded! :tada:")
+
+                    results = {
+                        'playlistInfo': {
+                            'selectedTrack': 0,
+                            'name': playlist['title']
+                        },
+                        'loadType': 'PLAYLIST_LOADED',
+                        'tracks': tracks
+                    }
+
+                elif "track" in query:
+                    playlist_id = query.split("/")[-1].split("?")[0]
+                    # playlist = self.sp_get
+                    # query =
+            else:
+                results = await player.node.get_tracks(query)
+        
         if not results or not results['tracks']:
             return await ctx.send(':x: Nothing found!')
 
@@ -460,9 +559,11 @@ class Music(commands.Cog):
         return embed
 
     # -------------------------------- ANCHOR SKIP ------------------------------- #
-    # Skips either the next song in queue or if specified skips all songs up to a specific index
+    # Skips either the next song in queue or if specified skips to a specific index and
+    # resumes the normal queue afterwards. trim_queue overrides that and clears queue up
+    # to the requested index.
 
-    async def skip(self, ctx, player: DefaultPlayer, index: int=None):
+    async def skip(self, ctx, player: DefaultPlayer, index: int=None, trim_queue=True):
         embed_action = "Track skipped"
 
         if len(player.queue) > 0 or player.fetch('repeat_one'):
@@ -494,7 +595,7 @@ class Music(commands.Cog):
 
             else:
                 if index:
-
+                    index = index - 1 # Revert index+=1 used for user readability
                     if index <= 0:
                         await ctx.send(":warning: That index is too low! Queue starts at #1.", hidden=True)
                         return
@@ -504,8 +605,14 @@ class Music(commands.Cog):
                         return
 
                     else:
-                        del player.queue[:index]
-                        next_track = player.queue[0]
+                        if trim_queue:
+                            del player.queue[:index]
+                            next_track = player.queue[0]
+                        
+                        else:
+                            next_track = player.queue.pop(index)
+                            player.queue.insert(0, next_track)
+
 
                 else:
                     next_track = player.queue[0]
@@ -823,10 +930,34 @@ class Music(commands.Cog):
             return
         
         if index:
-            await self.skip(ctx, player, index - 1)
+            await self.skip(ctx, player, index=index)
 
         else:
             await self.skip(ctx, player)
+
+    # -------------------------------- ANCHOR JUMP ------------------------------- #
+    # Jumps ahead to a specific index in the queue and when finished playing resumes
+    # the normal queue
+
+    @cog_ext.cog_slash(
+        name="jump",
+        description="Jumps to a specific song in the queue and resumes normal play afterward.",
+        guild_ids=[cfg['guild_id']],
+        options=[
+            manage_commands.create_option(
+                name="index",
+                description="The specific song to jump to. Use /list to find this.",
+                option_type=int,
+                required=True
+            )
+        ]
+    )
+    async def jump(self, ctx: SlashCommand, index: int):
+        player = await self.ensure_voice(ctx)
+        if not player:
+            return
+
+        await self.skip(ctx, player, index, trim_queue=False)
 
     # ------------------------------- ANCHOR CLEAR ------------------------------- #
     # Clears the queue without making boomer leave the call. 

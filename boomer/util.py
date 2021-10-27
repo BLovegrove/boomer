@@ -64,3 +64,14 @@ def seek_bar(player: lavalink.DefaultPlayer):
     seek_bar = "".join(seek_bar)
 
     return seek_start + seek_bar + seek_end
+
+
+def progress_bar(current: int, total: int, length: int = 20, fill: str = '█') -> str:
+
+    percent = f"{math.floor(100 * (current / float(total)))}"
+
+    filledLength = int(length * current // total)
+
+    bar = fill * filledLength + '░' * (length - filledLength)
+
+    return f"{str(current).zfill(len(str(total)))}/{total} |{bar}| {percent.zfill(3)}%"

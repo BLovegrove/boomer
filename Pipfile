@@ -9,6 +9,8 @@ discord-py-slash-command = "*"
 toml = "*"
 lavalink = "*"
 autopep8 = "*"
+spotipy = "*"
+pandas = "*"
 
 [dev-packages]
 
