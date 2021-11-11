@@ -43,10 +43,6 @@ class Music(commands.Cog):
     def __init__(self, bot):
         self.bot: discord.Client = bot
         self.activity_idle = discord.Streaming(name="nothing.", url="https://tinyurl.com/lamzterms")
-
-        self.emojis = {}
-        for emoji in cfg['emojis']:
-            self.emojis[emoji] = cfg['emojis'][emoji]
             
         bot.lavalink = lavalink.Client(cfg['bot']['id'])
         # Host, Port, Password, Region, Name
@@ -303,11 +299,11 @@ class Music(commands.Cog):
     # volume if needed.
 
     async def play(self, ctx: SlashContext, query: str):
-        # Adds a song to the queue, plays the queue if it hasn't been started, or adds to the queue if a song is already playing.
         player = await self.ensure_voice(ctx)
         if not player:
             return
 
+        await ctx.defer()
         results = None
 
         if not standard_rx.match(query):
@@ -390,7 +386,6 @@ class Music(commands.Cog):
             embed.set_thumbnail(
                 url=f"https://i.ytimg.com/vi/{tracks[0]['info']['identifier']}/mqdefault.jpg"
             )
-
             # Change message if this is the first item queued vs not
             if not player.is_playing and len(player.queue) == 0 or player.fetch('idle'):
                 embed.title = f"Now playing: {tracks[0]['info']['title']}"
@@ -415,7 +410,7 @@ class Music(commands.Cog):
             # Populate embed
             embed.set_author(
                 name=f"Song queued by {ctx.author.display_name}: ",
-                url=info['uri'],
+                url=info["uri"],
                 icon_url=ctx.author.avatar_url
             )
             embed.description = f"Song by: {info['author']}"
@@ -435,7 +430,7 @@ class Music(commands.Cog):
             # Add song to playlist
             player.add(requester=ctx.author.id, track=track)
 
-        await ctx.send(embed=embed)
+        await ctx.send('',embed=embed)
 
         # Start playing if no song is in queue
         if player.fetch('idle'):
@@ -672,7 +667,7 @@ class Music(commands.Cog):
         base="ok",
         name="boomer",
         description="Summons Boomer into a voice channel without playing anything",
-        guild_ids=[cfg['guild_id']]
+        guild_ids=cfg['guild_ids']
     )
     async def okboomer(self, ctx: SlashContext):
         player = await self.ensure_voice(ctx)
@@ -694,7 +689,7 @@ class Music(commands.Cog):
         base="lofi",
         name="radio",
         description="Plays the Lofi Hip Hop radio livestream.",
-        guild_ids=[cfg['guild_id']]
+        guild_ids=cfg['guild_ids']
     )
     async def lofi_radio(self, ctx: SlashContext):
         player = await self.ensure_voice(ctx)
@@ -712,7 +707,7 @@ class Music(commands.Cog):
         base="test",
         name="list",
         description="Queue up test playlist from youtube containing a few pages of items.",
-        guild_ids=[cfg['guild_id']]
+        guild_ids=cfg['guild_ids']
     )
     async def test_list(self, ctx: SlashContext):
         player = await self.ensure_voice(ctx)
@@ -729,7 +724,7 @@ class Music(commands.Cog):
     #     base="best",
     #     name="pirate",
     #     description="DUH-DUH-DUH DAH, DUH-DUH-DUH DAH, DUH-DUH-DUH DAH DUH-DUH-DUH-DUH",
-    #     guild_ids=[cfg['guild_id']]
+    #     guild_ids=cfg['guild_ids']
     # )
     # async def best_pirate(self, ctx: SlashContext):
     #     player = await self.ensure_voice(ctx)
@@ -761,7 +756,7 @@ class Music(commands.Cog):
     @cog_ext.cog_slash(
         name="play",
         description="Plays a song from given query / url.",
-        guild_ids=[cfg['guild_id']],
+        guild_ids=cfg['guild_ids'],
         options=[
             create_option(
                 name="song",
@@ -774,13 +769,45 @@ class Music(commands.Cog):
     async def play_command(self, ctx: SlashContext, song: str):
         await self.play(ctx, song)
 
+    # ------------------------------- ANCHOR PAUSE ------------------------------- #
+    # pauses the current track. resumed with /resume
+
+    @cog_ext.cog_slash(
+        name="pause",
+        description="Pauses the currently playing song. Resume with /resume.",
+        guild_ids=cfg['guild_ids']
+    )
+    async def pause(self, ctx: SlashContext):
+        player = await self.ensure_voice(ctx)
+        if not player:
+            return
+        
+        await player.set_pause(True)
+        await ctx.send(":pause_button: Paused track.")
+
+    # ------------------------------- ANCHOR RESUME ------------------------------ #
+    # resumes the current track. paused with /pause
+
+    @cog_ext.cog_slash(
+        name="resume",
+        description="Resumes the currently playing song. Pause with /pause.",
+        guild_ids=cfg['guild_ids']
+    )
+    async def resume(self, ctx: SlashContext):
+        player = await self.ensure_voice(ctx)
+        if not player:
+            return
+        
+        await player.set_pause(False)
+        await ctx.send(":arrow_forward: Resumed track.")
+
     # ------------------------------- ANCHOR LEAVE ------------------------------- #
     # Leave voice chat if in one. Also resets the queue and clears any modifiers.
 
     @cog_ext.cog_slash(
         name="leave",
         description="Disconnects Boomer from voice and clears the queue",
-        guild_ids=[cfg['guild_id']]
+        guild_ids=cfg['guild_ids']
     )
     async def leave(self, ctx: SlashContext):
         player = await self.ensure_voice(ctx)
@@ -804,7 +831,7 @@ class Music(commands.Cog):
     @cog_ext.cog_slash(
         name="volume",
         description="See Boomer's volume level. Add level to change it.",
-        guild_ids=[cfg['guild_id']],
+        guild_ids=cfg['guild_ids'],
         options=[
             create_option(
                 name="level",
@@ -846,7 +873,7 @@ class Music(commands.Cog):
     @cog_ext.cog_slash(
         name="list",
         description="Displays an interactive list of songs in the queue",
-        guild_ids=[cfg['guild_id']],
+        guild_ids=cfg['guild_ids'],
         options=[
             create_option(
                 name="page",
@@ -897,14 +924,20 @@ class Music(commands.Cog):
     @cog_ext.cog_slash(
         name="now",
         description="Display info on the current song",
-        guild_ids=[cfg['guild_id']]
+        guild_ids=cfg['guild_ids']
     )
     async def now(self, ctx: SlashCommand):
         player = await self.ensure_voice(ctx)
         if not player:
             return
 
-        embed = await self.embed_track(ctx, player.current, "Info requested", len(player.queue), footer=util.seek_bar(player))
+        embed = await self.embed_track(
+            ctx, 
+            player.current, 
+            "Info requested", 
+            len(player.queue), 
+            footer=util.seek_bar(player) + " (paused)" if player.paused else ""
+        )
         await ctx.send(embed=embed)
 
     # -------------------------------- ANCHOR SKIP ------------------------------- #
@@ -914,7 +947,7 @@ class Music(commands.Cog):
     @cog_ext.cog_slash(
         name="skip",
         description="Skips current track.",
-        guild_ids=[cfg['guild_id']],
+        guild_ids=cfg['guild_ids'],
         options=[
             manage_commands.create_option(
                 name="index",
@@ -942,7 +975,7 @@ class Music(commands.Cog):
     @cog_ext.cog_slash(
         name="jump",
         description="Jumps to a specific song in the queue and resumes normal play afterward.",
-        guild_ids=[cfg['guild_id']],
+        guild_ids=cfg['guild_ids'],
         options=[
             manage_commands.create_option(
                 name="index",
@@ -965,7 +998,7 @@ class Music(commands.Cog):
     @cog_ext.cog_slash(
         name="clear",
         description="Clears current queue.",
-        guild_ids=[cfg['guild_id']],
+        guild_ids=cfg['guild_ids'],
         options=[
             manage_commands.create_option(
                 name="index",
@@ -996,15 +1029,15 @@ class Music(commands.Cog):
                 await self.clear(ctx, index - 1)
 
 
-    # -------------------------------- ANCHOR LOOP ------------------------------- #
-    # Loop either the current track or the entire playlist with a subcommand 'queue'
+    # ------------------------------- ANCHOR REPEAT ------------------------------ #
+    # Repeat either the current track or the entire playlist with a subcommand 'queue'
 
     # Single track
     @cog_ext.cog_subcommand(
-        base="loop",
+        base="repeat",
         name="track",
         description="Repeats current song.",
-        guild_ids=[cfg['guild_id']]
+        guild_ids=cfg['guild_ids']
     )
     async def loop(self, ctx: SlashCommand):
         player = await self.ensure_voice(ctx)
@@ -1013,18 +1046,18 @@ class Music(commands.Cog):
 
         if player.fetch('repeat_one'):
             player.store('repeat_one', None)
-            await ctx.send(":arrow_forward: Stopped looping track.")
+            await ctx.send(":arrow_forward: Stopped repeating track.")
         else:
             track = self.get_playing(player)
             player.store('repeat_one', track)
-            await ctx.send(":repeat_one: Current track now looping.")
+            await ctx.send(":repeat_one: Current track now repeating.")
 
     # Whole queue
     @cog_ext.cog_subcommand(
-        base="loop",
+        base="repeat",
         name="queue",
         description="Repeats entire queue.",
-        guild_ids=[cfg['guild_id']]
+        guild_ids=cfg['guild_ids']
     )
     async def loop_queue(self, ctx: SlashCommand):
         player = await self.ensure_voice(ctx)
@@ -1033,9 +1066,9 @@ class Music(commands.Cog):
 
         player.set_repeat(not player.repeat)
         if player.repeat:
-            await ctx.send(":repeat: Current queue now looping.")
+            await ctx.send(":repeat: Current queue now repeating.")
         else:
-            await ctx.send(":arrow_forward: Stopped looping queue.")
+            await ctx.send(":arrow_forward: Stopped repeating queue.")
 
     # ------------------------------ ANCHOR SHUFFLE ------------------------------ #
     # Shuffles current queue on and off
@@ -1043,7 +1076,7 @@ class Music(commands.Cog):
     @cog_ext.cog_slash(
         name="shuffle",
         description="Shuffles the current queue. Works well with /loop queue.",
-        guild_ids=[cfg['guild_id']]
+        guild_ids=cfg['guild_ids']
     )
     async def shuffle(self, ctx: SlashCommand):
         player = await self.ensure_voice(ctx)
@@ -1069,10 +1102,10 @@ class Music(commands.Cog):
     @cog_ext.cog_slash(
         name="die",
         description="Disconnects and shuts down Boomer safely",
-        guild_ids=[cfg['guild_id']],
+        guild_ids=cfg['guild_ids'],
         default_permission=False,
         permissions={
-            cfg['guild_id']: [
+            cfg['guild_ids'][0]: [
                 create_permission(cfg['owner_id'], SlashCommandPermissionType.USER, True)
             ]
         }
@@ -1086,7 +1119,7 @@ class Music(commands.Cog):
             await ctx.guild.change_voice_state(channel=None)
 
         await self.update_status(player)
-        await ctx.send(f"My battery is low and it's getting dark {self.emojis['emotesad']}")
+        await ctx.send(f"My battery is low and it's getting dark :(")
         await ctx.bot.close()
 
     # --------------------------------- !SECTION --------------------------------- #

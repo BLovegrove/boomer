@@ -6,13 +6,13 @@ name = "pypi"
 [packages]
 discord = "*"
 discord-py-slash-command = "*"
-toml = "*"
-lavalink = "*"
-autopep8 = "*"
 spotipy = "*"
+lavalink = "*"
+toml = "*"
 pandas = "*"
 
 [dev-packages]
+autopep8 = "*"
 
 [requires]
 python_version = "3.8"
