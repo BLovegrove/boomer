@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import re
 import __main__
 import time
@@ -6,7 +7,7 @@ import math
 from typing import Dict, List
 from datetime import datetime
 import textwrap
-from discord import emoji, permissions, player
+from discord import emoji, message, permissions, player
 from discord.ext.commands.converter import IDConverter
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
@@ -198,8 +199,15 @@ class Music(commands.Cog):
 
     async def update_status(self, player: DefaultPlayer):
 
+        if player.fetch("repeat_one"):
+            suffix = " (on repeat)"
+        elif player.shuffle:
+            suffix = " (shuffle)"
+        else:
+            suffix = ""
+
         if player.current:
-            activity = discord.Game(player.current.title)
+            activity = discord.Game(player.current.title + suffix)
             status = discord.Status.online
 
         else:
@@ -308,6 +316,8 @@ class Music(commands.Cog):
         player = await self.ensure_voice(ctx)
         if not player:
             return
+        else:
+            logging.info(f"[{ctx.author.name}" + (f"#{ctx.author.discriminator}" if ctx.author.discriminator else "#0000") + f"] Attempting to play song... Query: {query}")
 
         await ctx.defer()
         results = None
@@ -335,6 +345,7 @@ class Music(commands.Cog):
                         text="Please note: This can take a long time for playlists larger than 20 songs"
                     )
 
+                    logging.info("Trying to get spotify playlist. Better get some popcorn while you wait.")
                     loading_msg = await ctx.send(embed=embed)
                     await loading_msg.edit(embeds=[embed])
 
@@ -343,17 +354,22 @@ class Music(commands.Cog):
                         try:
                             track = track['tracks'][0]
                         except:
-                            print("Track not found!")
+                            logging.warn("Play failed! Track not found.")
 
                         tracks.append(track)
                         if len(tracks) % 1 == 0:
                             embed.description = util.progress_bar(
-                                len(tracks), len(playlist['data']))
+                                len(tracks), 
+                                len(playlist['data'])
+                            )
                             await loading_msg.edit(embeds=[embed])
 
                     embed.description = util.progress_bar(
-                        len(tracks), len(playlist['data']))
+                        len(tracks), 
+                        len(playlist['data'])
+                    )
                     await loading_msg.edit(content="Playlist loaded! :tada:")
+                    logging.info("Finished gathering spotify tracks. Finally.")
 
                     results = {
                         'playlistInfo': {
@@ -364,14 +380,15 @@ class Music(commands.Cog):
                         'tracks': tracks
                     }
 
-                elif "track" in query:
-                    playlist_id = query.split("/")[-1].split("?")[0]
+                # elif "track" in query:
+                #     playlist_id = query.split("/")[-1].split("?")[0]
                     # playlist = self.sp_get
                     # query =
             else:
                 results = await player.node.get_tracks(query)
         
         if not results or not results['tracks']:
+            logging.warn("Query failed. No song(s) found.")
             return await ctx.send(':x: Nothing found!')
 
         embed = discord.Embed(color=discord.Color.blurple())
@@ -408,6 +425,8 @@ class Music(commands.Cog):
             for track in tracks:
                 player.add(requester=ctx.author.id, track=track)
 
+            logging.info(f"Found playlist. Playing from list: {results['playlistInfo']}.")
+
         else:
             # Grab track info
             track = results['tracks'][0]
@@ -435,6 +454,7 @@ class Music(commands.Cog):
 
             # Add song to playlist
             player.add(requester=ctx.author.id, track=track)
+            logging.info(f"Found song. Adding track to queue: {info}.")
 
         await ctx.send('',embed=embed)
 
@@ -443,12 +463,14 @@ class Music(commands.Cog):
             player.store('idle', False)
             await player.play()
             await player.set_volume(player.fetch('volume_guild'))
+
         elif not player.is_playing:
             await player.set_volume(cfg['music']['volume_default'])
             await player.play()
 
         await self.update_status(player)
         self.update_pages(player)
+
 
     # ----------------------------- ANCHOR EMBED LIST ---------------------------- #
     # Used by the list command to put a queue summary together
@@ -566,6 +588,7 @@ class Music(commands.Cog):
 
     async def skip(self, ctx, player: DefaultPlayer, index: int=None, trim_queue=True):
         embed_action = "Track skipped"
+        logging.info(f"[{ctx.author.name}" + (f"#{ctx.author.discriminator}" if ctx.author.discriminator else "#0000") + f"] Skipping track...")
 
         if len(player.queue) > 0 or player.fetch('repeat_one'):
             # Get next track in playlist info
@@ -580,8 +603,9 @@ class Music(commands.Cog):
                     queue_len=queue_len
                 )
 
-                await ctx.send(":repeat_one: Looping enabled - repeating song.", embed=embed)
+                await ctx.send(":repeat_one: Repeat enabled - repeating song.", embed=embed)
                 await player.seek(0)
+                logging.info(f"Skipped (Repeating song).")
 
             elif player.shuffle:
                 await player.skip()
@@ -599,24 +623,28 @@ class Music(commands.Cog):
                     index = index - 1 # Revert index+=1 used for user readability
                     if index <= 0:
                         await ctx.send(":warning: That index is too low! Queue starts at #1.", hidden=True)
+                        logging.warn(f"Skip failed. Index too low (Expected: >=1. Recieved: {index})")
                         return
 
                     elif index > len(player.queue):
                         await ctx.send(f":warning: That index is too high! Queue only {len(player.queue)} items long.", hidden=True)
+                        logging.warn(f"Skip failed. Index too high (Expected: <={len(player.queue)}. Recieved: {index}")
                         return
 
                     else:
                         if trim_queue:
                             del player.queue[:index]
                             next_track = player.queue[0]
-                        
+                            logging.info(f"Skipped queue to track {index} of {len(player.queue)}.")
                         else:
                             next_track = player.queue.pop(index)
                             player.queue.insert(0, next_track)
+                            logging.info(f"Jumped to track {index} of {len(player.queue)} in queue.")
 
 
                 else:
                     next_track = player.queue[0]
+                    logging.info(f"Skipped current track.")
 
                 embed = await self.embed_track(
                     ctx,
@@ -647,6 +675,7 @@ class Music(commands.Cog):
             player.queue = []
             player.store("pages", 0)
             await ctx.send(":boom: Queue cleared!")
+            logging.info(f"[{ctx.author.name}" + (f"#{ctx.author.discriminator}" if ctx.author.discriminator else "#0000") + f"] Cleared queue.")
         else:
             cleared = player.queue.pop(index)
             embed = await self.embed_track(
@@ -658,6 +687,8 @@ class Music(commands.Cog):
             )
             self.update_pages(player)
             await ctx.send(embed=embed)
+
+            logging.info(f"[{ctx.author.name}" + (f"#{ctx.author.discriminator}" if ctx.author.discriminator else "#0000") + f"] Cleared item from queue.")
 
 
     # --------------------------------- !SECTION --------------------------------- #
@@ -679,13 +710,19 @@ class Music(commands.Cog):
         player = await self.ensure_voice(ctx)
         if not player:
             return
+        else:
+            logging.info(f"[{ctx.author.name}" + (f"#{ctx.author.discriminator}" if ctx.author.discriminator else "#0000") + f"] Summoning boomer...")
+
+        await ctx.defer()
 
         if player.is_playing:
             await ctx.send(f"I'm already in <#{player.fetch('voice').id}> zoomer.")
+            logging.warn("Summoning failed. You shall not pass (already in call).")
         else:
             await ctx.send(f"Joined <#{player.fetch('voice').id}>")
             await player.set_volume(10)
             await self.hooks(lavalink.QueueEndEvent(player))
+            logging.info(f"Boomer joined #{player.fetch('voice').name}")
 
     # ----------------------------- ANCHOR LOFI RADIO ---------------------------- #
     # Simple shortcut for lofi beats because lavalink doesnt like searching for 
@@ -701,6 +738,8 @@ class Music(commands.Cog):
         player = await self.ensure_voice(ctx)
         if not player:
             return
+        else:
+            logging.info(f"[{ctx.author.name}" + (f"#{ctx.author.discriminator}" if ctx.author.discriminator else "#0000") + f"] Playing lofi radio...")
 
         query = "https://www.youtube.com/watch?v=5qap5aO4i9A"
         await self.play(ctx, query)
@@ -709,19 +748,19 @@ class Music(commands.Cog):
     # Queues up my default test playlist on youtube. Good for testing list function
     # and others.
 
-    @cog_ext.cog_subcommand(
-        base="test",
-        name="list",
-        description="Queue up test playlist from youtube containing a few pages of items.",
-        guild_ids=cfg['guild_ids']
-    )
-    async def test_list(self, ctx: SlashContext):
-        player = await self.ensure_voice(ctx)
-        if not player:
-            return
+    # @cog_ext.cog_subcommand(
+    #     base="test",
+    #     name="list",
+    #     description="Queue up test playlist from youtube containing a few pages of items.",
+    #     guild_ids=cfg['guild_ids']
+    # )
+    # async def test_list(self, ctx: SlashContext):
+    #     player = await self.ensure_voice(ctx)
+    #     if not player:
+    #         return
 
-        query = "https://www.youtube.com/watch?v=1hUvUWY0TgA&list=PLe6BSc2t2vrfW4BY1D0JZD2wMQURH9bqk"
-        await self.play(ctx, query)
+    #     query = "https://www.youtube.com/watch?v=1hUvUWY0TgA&list=PLe6BSc2t2vrfW4BY1D0JZD2wMQURH9bqk"
+    #     await self.play(ctx, query)
 
     # ------------------------------- ANCHOR PIRATE ------------------------------ #
     # Do you even need to ask?
@@ -787,6 +826,8 @@ class Music(commands.Cog):
         player = await self.ensure_voice(ctx)
         if not player:
             return
+        else:
+            logging.info(f"[{ctx.author.name}" + (f"#{ctx.author.discriminator}" if ctx.author.discriminator else "#0000") + f"] Paused track.")
         
         await player.set_pause(True)
         await ctx.send(":pause_button: Paused track.")
@@ -803,6 +844,8 @@ class Music(commands.Cog):
         player = await self.ensure_voice(ctx)
         if not player:
             return
+        else:
+            logging.info(f"[{ctx.author.name}" + (f"#{ctx.author.discriminator}" if ctx.author.discriminator else "#0000") + f"] Resumed track.")
         
         await player.set_pause(False)
         await ctx.send(":arrow_forward: Resumed track.")
@@ -819,6 +862,8 @@ class Music(commands.Cog):
         player = await self.ensure_voice(ctx)
         if not player:
             return
+        else:
+            logging.info(f"[{ctx.author.name}" + (f"#{ctx.author.discriminator}" if ctx.author.discriminator else "#0000") + f"] Leaving channel... Cleared queue. Modifiers disabled. Volume reset to default.")
 
         player.queue.clear()
         await player.stop()
@@ -826,9 +871,9 @@ class Music(commands.Cog):
         player.store('repeat_one', None)
         player.set_repeat(False)
         player.set_shuffle(False)
+        await player.set_volume(cfg['music']['volume_default'])
         await ctx.send(f":wave: Leaving <#{player.fetch('voice').id}> and clearing queue.")
         await self.update_status(player)
-
 
     # ------------------------------- ANCHOR VOLUME ------------------------------ #
     # Print volume, or ncrease / decrease volume. Capped at 0-50 (displayed as 0-100)
@@ -859,6 +904,8 @@ class Music(commands.Cog):
                 await player.set_volume(math.ceil(volume / 2))
             else:
                 await player.set_volume(volume)
+
+            logging.info(f"[{ctx.author.name}" + (f"#{ctx.author.discriminator}" if ctx.author.discriminator else "#0000") + f"] Set volume to {volume}.")
 
         else:
             volume = player.volume
@@ -893,6 +940,8 @@ class Music(commands.Cog):
         player = await self.ensure_voice(ctx)
         if not player:
             return
+        else:
+            logging.info(f"[{ctx.author.name}" + (f"#{ctx.author.discriminator}" if ctx.author.discriminator else "#0000") + f"] Fetching queue list...")
 
         pages = player.fetch('pages')
         if page > pages:
@@ -936,6 +985,8 @@ class Music(commands.Cog):
         player = await self.ensure_voice(ctx)
         if not player:
             return
+        else:
+            logging.info(f"[{ctx.author.name}" + (f"#{ctx.author.discriminator}" if ctx.author.discriminator else "#0000") + f"] Fetching current song details...")
 
         embed = await self.embed_track(
             ctx, 
@@ -1018,6 +1069,8 @@ class Music(commands.Cog):
         player = await self.ensure_voice(ctx)
         if not player:
             return
+        else:
+            logging.info(f"[{ctx.author.name}" + (f"#{ctx.author.discriminator}" if ctx.author.discriminator else "#0000") + f"] Clearing " + f"item with index {index}..." if index else "whole queue...")
         
         if not index:
             await self.clear(ctx)
@@ -1025,10 +1078,12 @@ class Music(commands.Cog):
         else:
             if index <= 0:
                 await ctx.send(":warning: That index is too low! Queue starts at #1.", hidden=True)
+                logging.warn(f"Index too low! Expected: >=1. Recieved: {index}")
                 return
 
             elif index > len(player.queue):
                 await ctx.send(f":warning: That index is too high! Queue only {len(player.queue)} items long.", hidden=True)
+                logging.warn(f"Index too high! Expected: <= {len(player.queue)}. Recieved: {index}")
                 return
 
             else:
@@ -1049,14 +1104,18 @@ class Music(commands.Cog):
         player = await self.ensure_voice(ctx)
         if not player:
             return
+        else:
+            logging.info(f"[{ctx.author.name}" + (f"#{ctx.author.discriminator}" if ctx.author.discriminator else "#0000") + f"] Changing repeat state...")
 
         if player.fetch('repeat_one'):
             player.store('repeat_one', None)
             await ctx.send(":arrow_forward: Stopped repeating track.")
+            logging.info(f"Repeat once disabled.")
         else:
             track = self.get_playing(player)
             player.store('repeat_one', track)
             await ctx.send(":repeat_one: Current track now repeating.")
+            logging.info(f"Repeat once enabled")
 
     # Whole queue
     @cog_ext.cog_subcommand(
@@ -1069,32 +1128,40 @@ class Music(commands.Cog):
         player = await self.ensure_voice(ctx)
         if not player:
             return
+        else:
+            logging.info(f"[{ctx.author.name}" + (f"#{ctx.author.discriminator}" if ctx.author.discriminator else "#0000") + f"] Changing repeat state...")
 
         player.set_repeat(not player.repeat)
         if player.repeat:
             await ctx.send(":repeat: Current queue now repeating.")
+            logging.info(f"Repeat queue enabled")
         else:
             await ctx.send(":arrow_forward: Stopped repeating queue.")
+            logging.info(f"Repeat queue disabled")
 
     # ------------------------------ ANCHOR SHUFFLE ------------------------------ #
     # Shuffles current queue on and off
 
     @cog_ext.cog_slash(
         name="shuffle",
-        description="Shuffles the current queue. Works well with /loop queue.",
+        description="Shuffles the current queue. Works well with /repeat queue.",
         guild_ids=cfg['guild_ids']
     )
     async def shuffle(self, ctx: SlashCommand):
         player = await self.ensure_voice(ctx)
         if not player:
             return
-        
+        else:
+            logging.info(f"[{ctx.author.name}" + (f"#{ctx.author.discriminator}" if ctx.author.discriminator else "#0000") + f"] Changing shuffle state...")
+
         if player.shuffle:
             player.set_shuffle(False)
-            await ctx.send(":arrow_forward: Stopped looping shuffling.")
+            await ctx.send(":arrow_forward: Stopped shuffling.")
+            logging.info(f"Shuffle state disabled")
         else:
             player.set_shuffle(True)
-            await ctx.send(":twisted_rightwards_arrows: Current queue now shuffled.")
+            await ctx.send(":twisted_rightwards_arrows: Current queue now shuffling.")
+            logging.info(f"Shuffle state enabled")
 
     # --------------------------------- !SECTION --------------------------------- #
         
@@ -1126,7 +1193,11 @@ class Music(commands.Cog):
 
         await self.update_status(player)
         await ctx.send(f"My battery is low and it's getting dark :(")
+        logging.info(f"[{ctx.author.name}" + (f"#{ctx.author.discriminator}" if ctx.author.discriminator else "#0000") + f"] Killed boomer.")
         await ctx.bot.close()
+        return
+
+    # ---------------------------- TODO REPORT COMMAND --------------------------- #
 
     # --------------------------------- !SECTION --------------------------------- #
 
