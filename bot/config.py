@@ -1,6 +1,6 @@
 import toml
 
-file_default = "./_config.toml"
+file_default = "./config.toml"
 
 def load_config(path=file_default):
     # Loads the config from `path`

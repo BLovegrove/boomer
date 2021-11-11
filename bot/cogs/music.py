@@ -47,7 +47,13 @@ class Music(commands.Cog):
         bot.lavalink = lavalink.Client(cfg['bot']['id'])
         # Host, Port, Password, Region, Name
         cfg_lava = cfg['lavalink']
-        bot.lavalink.add_node(cfg_lava['ip'], cfg_lava['port'], cfg_lava['pwd'], cfg_lava['region'], cfg_lava['name'])
+        bot.lavalink.add_node(
+            host=cfg_lava['ip'], 
+            port=cfg_lava['port'], 
+            password=cfg_lava['pwd'], 
+            region=cfg_lava['region'], 
+            reconnect_attempts=-1
+        )
         bot.add_listener(bot.lavalink.voice_update_handler,'on_socket_response')
 
         client_credentials_manager = SpotifyClientCredentials(
