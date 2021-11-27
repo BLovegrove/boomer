@@ -129,4 +129,4 @@ dmypy.json
 .pyre/
 
 # custom config stuff
-.config.toml
+config.toml
