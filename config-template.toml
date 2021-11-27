@@ -1,0 +1,26 @@
+guild_ids = []
+owner_id = "OWNER OF BOT DISCORD ID HERE"
+
+[bot]
+token = ""
+id = "BOT USER ID"
+
+[music]
+queue_page_len = 9
+idle_track = "IDLE TRACK YOUTUBE URL"
+volume_default = 10
+volume_idle = 5
+list_char_len = 60
+skip_time_ms = 10000
+skip_timebig_ms = 60000
+
+[lavalink]
+ip = "127.0.0.1"
+port = 2333
+pwd = "LAVALINK CONNECTION PASSWORD"
+region = "au"
+name = "default-node"
+
+[spotify]
+id = "SPOTIFY API DETAILS HERE"
+secret = ""
