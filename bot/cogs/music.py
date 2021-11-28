@@ -75,23 +75,6 @@ class Music(commands.Cog):
 
     async def hooks(self, event):
 
-        # if isinstance(event, lavalink.events.TrackStartEvent):
-        #     print(f"Track that is playing:\n{event.track.title}")
-
-        # if isinstance(event, lavalink.events.TrackEndEvent):
-
-        #     player = event.player
-        #     interrupt = player.fetch('interrupt_time')
-
-        #     if interrupt:
-        #         player.store('interrupt_time', None)
-        #         print('cleared interrupt flag')
-        #         player.add(cfg['bot']['id'], player.fetch('interrupt_track'), 0)
-        #         print('added song to queue')
-        #         await player.play(start_time=20000)
-        #         print('playing song')
-        #         print(f"Track that should be playing:\n{player.fetch('interrupt_track').title}")
-
         if isinstance(event, lavalink.events.TrackEndEvent):
 
             player = event.player
@@ -312,6 +295,8 @@ class Music(commands.Cog):
     # Plays frist result directly if nothign else in in the queue and kills idle state / resets
     # volume if needed.
 
+    # ------------------ TODO ADD SINGLE SPOTIFY TRACK AS OPTION ----------------- #
+
     async def play(self, ctx: SlashContext, query: str):
         player = await self.ensure_voice(ctx)
         if not player:
@@ -379,11 +364,6 @@ class Music(commands.Cog):
                         'loadType': 'PLAYLIST_LOADED',
                         'tracks': tracks
                     }
-
-                # elif "track" in query:
-                #     playlist_id = query.split("/")[-1].split("?")[0]
-                    # playlist = self.sp_get
-                    # query =
             else:
                 results = await player.node.get_tracks(query)
         
@@ -524,7 +504,7 @@ class Music(commands.Cog):
             )
 
         embed.set_footer(
-            text=f"<> for page +/-, dropdown to select track, ❌/⏭️ to clear/skip to track."
+            text=f"<> for page +/-."
         )
 
         return embed
@@ -744,51 +724,6 @@ class Music(commands.Cog):
         query = "https://www.youtube.com/watch?v=5qap5aO4i9A"
         await self.play(ctx, query)
 
-    # ----------------------------- ANCHOR TEST LIST ----------------------------- #
-    # Queues up my default test playlist on youtube. Good for testing list function
-    # and others.
-
-    # @cog_ext.cog_subcommand(
-    #     base="test",
-    #     name="list",
-    #     description="Queue up test playlist from youtube containing a few pages of items.",
-    #     guild_ids=cfg['guild_ids']
-    # )
-    # async def test_list(self, ctx: SlashContext):
-    #     player = await self.ensure_voice(ctx)
-    #     if not player:
-    #         return
-
-    #     query = "https://www.youtube.com/watch?v=1hUvUWY0TgA&list=PLe6BSc2t2vrfW4BY1D0JZD2wMQURH9bqk"
-    #     await self.play(ctx, query)
-
-    # ------------------------------- ANCHOR PIRATE ------------------------------ #
-    # Do you even need to ask?
-
-    # @cog_ext.cog_subcommand(
-    #     base="best",
-    #     name="pirate",
-    #     description="DUH-DUH-DUH DAH, DUH-DUH-DUH DAH, DUH-DUH-DUH DAH DUH-DUH-DUH-DUH",
-    #     guild_ids=cfg['guild_ids']
-    # )
-    # async def best_pirate(self, ctx: SlashContext):
-    #     player = await self.ensure_voice(ctx)
-    #     if not player:
-    #         return
-
-    #     track_time = player.position
-    #     track = player.current
-
-    #     results = await player.node.get_tracks("https://www.youtube.com/watch?v=5GHbtOx8-cw")
-    #     # player.add(ctx.author.id, player.current, 0)
-    #     player.add(ctx.author.id, results['tracks'][0], 0)
-
-    #     await player.play(start_time=1000)
-    #     await ctx.send("So it would seem...")
-
-    #     player.store('interrupt_time', track_time)
-    #     player.store('interrupt_track', track)
-
     # --------------------------------- !SECTION --------------------------------- #
 
     # ---------------------------------------------------------------------------- #
@@ -975,6 +910,8 @@ class Music(commands.Cog):
 
     # -------------------------------- ANCHOR NOW -------------------------------- #
     # Displays details of the current song including playtime in a handy ascii layout
+
+    # --------- TODO UPDATE NOW PLAYING SEEK BAR TO USE SPOTIFY SEEK BAR --------- #
     
     @cog_ext.cog_slash(
         name="now",
@@ -1197,7 +1134,7 @@ class Music(commands.Cog):
         await ctx.bot.close()
         return
 
-    # ---------------------------- TODO REPORT COMMAND --------------------------- #
+    # ------------------------ TODO STATUS REPORT COMMAND ------------------------ #
 
     # --------------------------------- !SECTION --------------------------------- #
 
