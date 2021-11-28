@@ -128,5 +128,8 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# custom config stuff
+# custom rules
 config.toml
+logs
+scripts
+application.yaml

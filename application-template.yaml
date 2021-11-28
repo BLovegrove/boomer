@@ -6,7 +6,7 @@ spring:
     banner-mode: log
 lavalink:
   server:
-    password: "P@ssw0RD40*"
+    password: "LAVALINK PASSWORD FOR BOT TO CONNECT WITH HERE"
     sources:
       youtube: true
       bandcamp: false
