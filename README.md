@@ -153,8 +153,8 @@ This is an example of how to list things you need to use the software and how to
 - [x] ~~'Now Playing' song info~~
 - [x] ~~Differentiate skipping whole queue to a point, or jumping that one song to the front of the queue~~
 - [x] ~~Join queue without playing anything~~
-- [_] User - by - user favorites list
-- [_] Report command to send owner of the bot instance a discord message with a copy of the log and a warning that something went wrong.
+- [ ] User - by - user favorites list
+- [ ] Report command to send owner of the bot instance a discord message with a copy of the log and a warning that something went wrong.
 
 
 See the [open issues](https://github.com/BLovegrove/boomer/issues) for a full list of proposed features (and known issues).
