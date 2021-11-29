@@ -73,9 +73,7 @@
 
 <img src="https://raw.githubusercontent.com/BLovegrove/boomer/main/images/boomer-profile.png" style="border-radius: 10px;"><br />
 
-That fantastic profile picture, along with Zoomers profile picture (Boomers younger brother whom I use for testing for Boomer to retain 100% uptime) is courtesy of my friend Bastian, who can be found via () if you're interested in some real artwork. Seriously, go check him out.
-
-Boomer the bot on the other hand, is entirely developed by me using the libraries and technologies listed in <a href="#built-with">Built With</a>. 
+Boomer is entirely developed by me using the libraries and technologies listed in <a href="#built-with">Built With</a>. 
 
 Because my server only needed the music functionality, that's what he's limited for now - but 
 more features or enhancements would be welcome! See <a href="#contributing">Contributing</a> for more info on that. 
