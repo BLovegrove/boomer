@@ -134,7 +134,7 @@ This is an example of how to list things you need to use the software and how to
     ```
 10. Launch bot and wait for '<bot name#number> connected'.
     ```sh
-    python -m bot
+    pipenv run python -m bot
     ```
 
 
