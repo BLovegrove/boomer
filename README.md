@@ -73,7 +73,7 @@
 
 <img src="https://raw.githubusercontent.com/BLovegrove/boomer/main/images/boomer-profile.png" style="border-radius: 10px;"><br />
 
-Humourous proile picture courtesy of my friend Bastian (IG: @fjaerdefantomen), who (aside from the odd meme like this) creates some fantastic art pieces. Seriously - [check him out](https://www.instagram.com/fjaerdefantomen/).
+Boomer's humourous profile picture courtesy of my friend Bastian (IG: @fjaerdefantomen), who (aside from the odd meme like this) creates some fantastic art pieces. Seriously - [check him out](https://www.instagram.com/fjaerdefantomen/).
 
 Boomer, on the other hand, is entirely developed by me using the libraries and technologies listed in <a href="#built-with">Built With</a>. 
 
