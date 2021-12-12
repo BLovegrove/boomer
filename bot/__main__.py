@@ -22,7 +22,6 @@ slash = SlashCommand(bot, sync_commands=True)
 async def on_ready():
     logging.info(f'{bot.user} has logged in.')
 
-
 def main():
     bot.load_extension('bot.cogs.music')
     cfg = config.load_config()

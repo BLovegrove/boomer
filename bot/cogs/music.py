@@ -69,6 +69,24 @@ class Music(commands.Cog):
     #                         SECTION[id=callbacks] -EVENTS                        #
     # ---------------------------------------------------------------------------- #
 
+    # ---------------------------- ANCHOR LEFT CHANNEL --------------------------- #
+    # Fires every time a user leaves a channel and that channel matches the channel 
+    # stored by the bot player + has no members left in it.
+
+    @commands.Cog.listener()
+    async def on_voice_state_update(self, member, before, after):
+        player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.create(
+            member.guild.id, endpoint=str(member.guild.region)
+        )
+
+        if (player.fetch('voice')):
+            if (before.channel):
+                if (not after.channel or after.channel.id != player.fetch('voice').id):
+                    if (before.channel.id == player.fetch('voice').id):
+                        if (len(player.fetch('voice').voice_states.keys()) <= 1):
+                            await self.disconnect(player, member.guild)
+                            logging.info(f"[Boomer#7010] No more members left in channel! Cleaning up and leaving call.")
+
     # ---------------------------- ANCHOR PLAYER HOOKS --------------------------- #
     # Runs whenever an event is raised by the player. Run things like EndQueue and 
     # EndTrack etc. 
@@ -670,6 +688,21 @@ class Music(commands.Cog):
 
             logging.info(f"[{ctx.author.name}" + (f"#{ctx.author.discriminator}" if ctx.author.discriminator else "#0000") + f"] Cleared item from queue.")
 
+    # ----------------------------- ANCHOR DISCONNECT ---------------------------- #
+    # Safely disconnects the bot from it's voice channel and clears up / resets any 
+    # relevent settings.
+
+    async def disconnect(self, player: lavalink.DefaultPlayer, guild: discord.Guild):
+
+        player.queue.clear()
+        await player.stop()
+        await guild.change_voice_state(channel=None)
+        player.store('repeat_one', None)
+        player.set_repeat(False)
+        player.set_shuffle(False)
+        await player.set_volume(cfg['music']['volume_default'])
+        await self.update_status(player)
+
 
     # --------------------------------- !SECTION --------------------------------- #
 
@@ -800,15 +833,9 @@ class Music(commands.Cog):
         else:
             logging.info(f"[{ctx.author.name}" + (f"#{ctx.author.discriminator}" if ctx.author.discriminator else "#0000") + f"] Leaving channel... Cleared queue. Modifiers disabled. Volume reset to default.")
 
-        player.queue.clear()
-        await player.stop()
-        await ctx.guild.change_voice_state(channel=None)
-        player.store('repeat_one', None)
-        player.set_repeat(False)
-        player.set_shuffle(False)
-        await player.set_volume(cfg['music']['volume_default'])
+        await self.disconnect(player, ctx.guild)
+
         await ctx.send(f":wave: Leaving <#{player.fetch('voice').id}> and clearing queue.")
-        await self.update_status(player)
 
     # ------------------------------- ANCHOR VOLUME ------------------------------ #
     # Print volume, or ncrease / decrease volume. Capped at 0-50 (displayed as 0-100)
