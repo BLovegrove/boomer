@@ -34,6 +34,7 @@ standard_rx = re.compile(r'https?://(?:www\.)?.+')
 spotify_rx = re.compile
 cfg = config.load_config()
 
+# TODO - THE BIGGEST ONE YET: COMPARTMENTALISE EACH METHOD INTO ITS OWN COG
 
 async def timestamp():
     print(f"time: {datetime.now()}")
