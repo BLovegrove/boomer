@@ -902,6 +902,12 @@ class Music(commands.Cog):
         guild_ids=cfg['guild_ids'],
         options=[
             create_option(
+                name="load",
+                description="Attempts to clear current queue and load requested one by name. Check /favs for a list of saved queues.",
+                option_type=str,
+                required=False
+            ),
+            create_option(
                 name="page",
                 description="Create list on a specific page from 1 to <max pages> (check /list if you arent sure).",
                 option_type=int,
@@ -909,19 +915,34 @@ class Music(commands.Cog):
             )
         ]
     )
-    async def list(self, ctx: SlashContext, page: int=1):
+    async def list(self, ctx: SlashContext, load: str="", page: int=1):
         player = await self.ensure_voice(ctx)
         if not player:
             return
         else:
             logging.info(f"[{ctx.author.name}" + (f"#{ctx.author.discriminator}" if ctx.author.discriminator else "#0000") + f"] Fetching queue list...")
 
-        pages = player.fetch('pages')
-        if page > pages:
-            if pages > 0:
-                await ctx.send(f"Page #{page} too high. Queue is only {pages} pages long.")
+        if (load != ""):
+            logging.info("Attempting to load custom saved queue.")
+            load = load.lower() # santiy checking case
+            master_list = config.load_queues()
+            if (load not in master_list.keys()):
+                logging.warn(f"[{ctx.author.name}" + (f"#{ctx.author.discriminator}" if ctx.author.discriminator else "#0000") + f"] Failed to find saved queue by the name {load}!")
+                await ctx.send(f"Couldn't find a save by the name {load}. See /favs for a fill list of saved queues.")
             else:
-                await ctx.send("Queue is empty - no list to show.")
+                await self.clear(ctx)
+                for track in master_list[load]:
+                    await self.play(ctx, track)
+                logging.info(f"New queue loaded!")
+                await ctx.send(f"Queue {load} loaded! :tada:")
+                
+        else:
+            pages = player.fetch('pages')
+            if page > pages:
+                if pages > 0:
+                    await ctx.send(f"Page #{page} too high. Queue is only {pages} pages long.")
+                else:
+                    await ctx.send("Queue is empty - no list to show.")
             return
 
         components = []
