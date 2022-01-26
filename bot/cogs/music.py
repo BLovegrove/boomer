@@ -75,6 +75,7 @@ class Music(commands.Cog):
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
+
         player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.create(
             member.guild.id, endpoint=str(member.guild.region)
         )
@@ -83,7 +84,7 @@ class Music(commands.Cog):
             if (before.channel):
                 if (not after.channel or after.channel.id != player.fetch('voice').id):
                     if (before.channel.id == player.fetch('voice').id):
-                        if (len(player.fetch('voice').voice_states.keys()) <= 1):
+                        if (len(player.fetch('voice').voice_states.keys()) == 1):
                             await self.disconnect(player, member.guild)
                             logging.info(f"[Boomer#7010] No more members left in channel! Cleaning up and leaving call.")
 
@@ -729,6 +730,7 @@ class Music(commands.Cog):
         await ctx.defer()
 
         if player.is_playing:
+            # TODO - update voice fetch whenever you move boomer to another channel
             await ctx.send(f"I'm already in <#{player.fetch('voice').id}> zoomer.")
             logging.warn("Summoning failed. You shall not pass (already in call).")
         else:
