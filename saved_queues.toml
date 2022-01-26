@@ -1,15 +1,12 @@
-[test]
-songs = [
-    'https://www.youtube.com/watch?v=xWtfo9kuRTU',
-    'https://www.youtube.com/watch?v=Da9S9yjZZP4',
-    'https://www.youtube.com/watch?v=xWtfo9kuRTU',
-    'https://www.youtube.com/watch?v=Da9S9yjZZP4',
-    'https://www.youtube.com/watch?v=xWtfo9kuRTU',
-    'https://www.youtube.com/watch?v=Da9S9yjZZP4',
-    'https://www.youtube.com/watch?v=xWtfo9kuRTU',
-    'https://www.youtube.com/watch?v=Da9S9yjZZP4',
-    'https://www.youtube.com/watch?v=xWtfo9kuRTU',
-    'https://www.youtube.com/watch?v=Da9S9yjZZP4',
-    'https://www.youtube.com/watch?v=xWtfo9kuRTU',
-    'https://www.youtube.com/watch?v=Da9S9yjZZP4',
+test = [
+    'https://www.youtube.com/watch?v=zFfL0y3zyfc',
+    'https://www.youtube.com/watch?v=zFfL0y3zyfc',
+    'https://www.youtube.com/watch?v=zFfL0y3zyfc',
+    'https://www.youtube.com/watch?v=zFfL0y3zyfc',
+    'https://www.youtube.com/watch?v=zFfL0y3zyfc',
+    'https://www.youtube.com/watch?v=zFfL0y3zyfc',
+    'https://www.youtube.com/watch?v=zFfL0y3zyfc',
+    'https://www.youtube.com/watch?v=zFfL0y3zyfc',
+    'https://www.youtube.com/watch?v=zFfL0y3zyfc',
+    'https://www.youtube.com/watch?v=zFfL0y3zyfc',
 ]

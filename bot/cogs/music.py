@@ -326,7 +326,11 @@ class Music(commands.Cog):
         else:
             logging.info(f"[{ctx.author.name}" + (f"#{ctx.author.discriminator}" if ctx.author.discriminator else "#0000") + f"] Attempting to play song... Query: {query}")
 
-        await ctx.defer()
+        try:
+            await ctx.defer()
+        except:
+            pass
+
         results = None
 
         if not standard_rx.match(query):
@@ -902,12 +906,6 @@ class Music(commands.Cog):
         guild_ids=cfg['guild_ids'],
         options=[
             create_option(
-                name="load",
-                description="Attempts to clear current queue and load requested one by name. Check /favs for a list of saved queues.",
-                option_type=str,
-                required=False
-            ),
-            create_option(
                 name="page",
                 description="Create list on a specific page from 1 to <max pages> (check /list if you arent sure).",
                 option_type=int,
@@ -915,35 +913,19 @@ class Music(commands.Cog):
             )
         ]
     )
-    async def list(self, ctx: SlashContext, load: str="", page: int=1):
+    async def list(self, ctx: SlashContext, page: int=1):
         player = await self.ensure_voice(ctx)
         if not player:
             return
         else:
             logging.info(f"[{ctx.author.name}" + (f"#{ctx.author.discriminator}" if ctx.author.discriminator else "#0000") + f"] Fetching queue list...")
-
-        if (load != ""):
-            logging.info("Attempting to load custom saved queue.")
-            load = load.lower() # santiy checking case
-            master_list = config.load_queues()
-            if (load not in master_list.keys()):
-                logging.warn(f"[{ctx.author.name}" + (f"#{ctx.author.discriminator}" if ctx.author.discriminator else "#0000") + f"] Failed to find saved queue by the name {load}!")
-                await ctx.send(f"Couldn't find a save by the name {load}. See /favs for a fill list of saved queues.")
-            else:
-                await self.clear(ctx)
-                for track in master_list[load]:
-                    await self.play(ctx, track)
-                logging.info(f"New queue loaded!")
-                await ctx.send(f"Queue {load} loaded! :tada:")
                 
-        else:
-            pages = player.fetch('pages')
-            if page > pages:
-                if pages > 0:
-                    await ctx.send(f"Page #{page} too high. Queue is only {pages} pages long.")
-                else:
-                    await ctx.send("Queue is empty - no list to show.")
-            return
+        pages = player.fetch('pages')
+        if page > pages:
+            if pages > 0:
+                await ctx.send(f"Page #{page} too high. Queue is only {pages} pages long.")
+            else:
+                await ctx.send("Queue is empty - no list to show.")
 
         components = []
 
@@ -967,6 +949,102 @@ class Music(commands.Cog):
         message = await ctx.send(embed=embed, components=components)
         await message.edit(content=message.content)
 
+    # -------------------------------- ANCHOR LOAD ------------------------------- #
+    # Loads a given previously saved queue from disk and overrides the current
+    # queue.
+
+    @cog_ext.cog_slash(
+        name="load",
+        description="Clears current queue and loads requested one by name. (check /favs if you arent sure)",
+        guild_ids=cfg['guild_ids'],
+        options = [
+            create_option(
+                name="name",
+                description="The title of the previously saved queue you want to load",
+                option_type=str,
+                required=True
+            )
+        ]
+    )
+    async def load(self, ctx: SlashCommand, name: str=""):
+        player = await self.ensure_voice(ctx)
+        if not player:
+            return
+        else:
+            logging.info(f"[{ctx.author.name}" + (f"#{ctx.author.discriminator}" if ctx.author.discriminator else "#0000") + f"] Fetching saved queue '{name}' from disk...")
+
+        if (name != ""):
+            player.queue.clear()
+
+            logging.info("Attempting to load custom saved queue.")
+            name = name.lower() # santiy checking case
+            master_list = config.load_queues()
+            if (name not in master_list.keys()):
+                logging.warn(f"Failed to find saved queue by the name '{name}'!")
+                await ctx.send(f"Couldn't find a saved queue by the name '{name}'. See /favs for a list of saved queues.")
+            else:
+                loaded_queue = master_list[name]
+
+                embed = discord.Embed(color=discord.Color.blurple())
+                embed.set_author(
+                    name=f"Loading saved queue: {name}",
+                    url="https://tinyurl.com/boomermusic",
+                    icon_url="https://i.imgur.com/dpVBIer.png"
+                )
+                embed.description = util.progress_bar(
+                    0, 
+                    len(loaded_queue)
+                )
+                embed.set_footer(
+                    text="Please note: This can take a long time for large queues - sorry!"
+                )
+
+                logging.info("Trying to get saved queue. Better get some popcorn while you wait.")
+                loading_msg = await ctx.send(embed=embed)
+                await loading_msg.edit(embeds=[embed])
+
+                loaded = 0
+
+                for track_url in loaded_queue:
+
+                    try:
+                        if (loaded == 0):
+                            if (player.fetch('idle')):
+                                await self.play(ctx, track_url)
+                            else:
+                                await self.play(ctx, track_url)
+                                await player.skip()
+
+                        else:
+                            results = await player.node.get_tracks(f"ytsearch:{track_url}")
+                            track = results['tracks'][0]
+                            player.add(requester=ctx.author.id, track=track)
+
+                        self.update_pages(player)
+                    except:
+                        logging.warn(f"Song '{track_url}' could not be found! Skipping...")
+                        
+                    loaded += 1
+
+                    if (loaded % 1 == 0):
+                        embed.description = util.progress_bar(
+                            loaded, 
+                            len(loaded_queue)
+                        )
+                        await loading_msg.edit(embeds=[embed])
+
+                embed.description = util.progress_bar(
+                    loaded, 
+                    len(loaded_queue)
+                )
+
+                logging.info(f"New queue loaded! ID: '{name}'")
+                await ctx.send(f"Queue '{name}' loaded! :tada:")
+                return
+        else:
+            logging.warn(f"Something went wrong! A queue was requested but no name given.")
+            await ctx.send(f"Not sure how you managed to get around the required 'name' field but please contact <@278441913361629195> ASAP.")
+
     # -------------------------------- ANCHOR NOW -------------------------------- #
     # Displays details of the current song including playtime in a handy ascii layout
 
@@ -989,7 +1067,7 @@ class Music(commands.Cog):
             player.current, 
             "Info requested", 
             len(player.queue), 
-            footer=util.progress_bar(player.position / 1000, player.current.duration / 1000) + (" (paused)" if player.paused else "")
+            footer=util.seek_bar(player) + (" (paused)" if player.paused else "")
         )
         await ctx.send(embed=embed)
 

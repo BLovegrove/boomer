@@ -45,25 +45,16 @@ def milis_to_duration(milis: int) -> str:
     time = ":".join(parts)
     return time
 
-def seek_bar(player: lavalink.DefaultPlayer):
-    time_total_milis = player.current.duration
+def seek_bar(player: lavalink.DefaultPlayer, length: int = 20, fill: str = '█'):
 
-    time_current_milis = player.position
-    time_current_str = milis_to_duration(time_current_milis)
+    total = player.current.duration
+    current = player.position
 
-    seek_start = f"{time_current_str} ["
-    seek_bar = "======================================"
-    seek_end = f"] -{milis_to_duration(time_total_milis - time_current_milis)}"
+    filledLength = int(length * current // total)
 
-    seek_pos = math.floor((time_current_milis / time_total_milis) * 40)
-    if seek_pos > 40:
-        seek_pos = 0
+    bar = fill * filledLength + '░' * (length - filledLength)
 
-    seek_bar = list(seek_bar)
-    seek_bar[seek_pos] = "🎵"
-    seek_bar = "".join(seek_bar)
-
-    return seek_start + seek_bar + seek_end
+    return f"🎵 {milis_to_duration(current)} |{bar}| {milis_to_duration(total)} 🎵"
 
 
 def progress_bar(current: int, total: int, length: int = 20, fill: str = '█') -> str:
