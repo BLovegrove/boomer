@@ -69,9 +69,10 @@ class Music(commands.Cog):
     #                         SECTION[id=callbacks] -EVENTS                        #
     # ---------------------------------------------------------------------------- #
 
-    # ---------------------------- ANCHOR LEFT CHANNEL --------------------------- #
+    # -------------------------- ANCHOR CH LEFT/SWAPPED -------------------------- #
     # Fires every time a user leaves a channel and that channel matches the channel 
     # stored by the bot player + has no members left in it.
+    # Also tracks channel changes to update player 'voice' attribute etc.
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
@@ -87,6 +88,8 @@ class Music(commands.Cog):
                         if (len(player.fetch('voice').voice_states.keys()) == 1):
                             await self.disconnect(player, member.guild)
                             logging.info(f"[Boomer#7010] No more members left in channel! Cleaning up and leaving call.")
+                else:
+                    player.store('voice', member.voice.channel)
 
     # ---------------------------- ANCHOR PLAYER HOOKS --------------------------- #
     # Runs whenever an event is raised by the player. Run things like EndQueue and 
@@ -331,6 +334,7 @@ class Music(commands.Cog):
             results = await player.node.get_tracks(query)
 
         else:
+            # Custom Spotify link handler
             if "open.spotify.com" in query:
                 if "playlist" in query:
                     playlist_id = query.split("/")[-1].split("?")[0]
@@ -344,9 +348,11 @@ class Music(commands.Cog):
                         icon_url="https://i.imgur.com/dpVBIer.png"
                     )
                     embed.description = util.progress_bar(
-                        0, len(playlist['data']))
+                        0, 
+                        len(playlist['data'])
+                    )
                     embed.set_footer(
-                        text="Please note: This can take a long time for playlists larger than 20 songs"
+                        text="Please note: This can take a long time for playlists larger than 20 songs - sorry!"
                     )
 
                     logging.info("Trying to get spotify playlist. Better get some popcorn while you wait.")
@@ -384,6 +390,7 @@ class Music(commands.Cog):
                         'tracks': tracks
                     }
             else:
+                # Normal link handler (YouTube, Soundcloud, etc.)
                 results = await player.node.get_tracks(query)
         
         if not results or not results['tracks']:
@@ -887,6 +894,8 @@ class Music(commands.Cog):
     # Displays whole queue in an embed. Also leverages slash components to enable interaction. 
     # Skip pages / clear items / skip to particular tracks without using more commands. 
 
+    # TODO - Add 'load', 'save', and 'saved' options for saving a list and pulling it up later
+
     @cog_ext.cog_slash(
         name="list",
         description="Displays an interactive list of songs in the queue",
@@ -959,7 +968,7 @@ class Music(commands.Cog):
             player.current, 
             "Info requested", 
             len(player.queue), 
-            footer=util.seek_bar(player) + " (paused)" if player.paused else ""
+            footer=util.progress_bar(player.position / 1000, player.current.duration / 1000) + (" (paused)" if player.paused else "")
         )
         await ctx.send(embed=embed)
 
