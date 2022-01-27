@@ -153,7 +153,7 @@ This is an example of how to list things you need to use the software and how to
 - [x] ~~'Now Playing' song info~~
 - [x] ~~Differentiate skipping whole queue to a point, or jumping that one song to the front of the queue~~
 - [x] ~~Join queue without playing anything~~
-- [ ] User - by - user favorites list
+- [ ] bot-wide favorites lists w/ save and load feature.
 - [ ] Report command to send owner of the bot instance a discord message with a copy of the log and a warning that something went wrong.
 
 
