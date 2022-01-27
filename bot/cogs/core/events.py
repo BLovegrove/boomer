@@ -10,6 +10,7 @@ import lavalink
 
 from ... import config
 from .voice import VoiceStateManager as VSM
+from .queue import QueueManager as QM
 
 # ---------------------------------- Config ---------------------------------- #
 cfg = config.load_config()
@@ -19,6 +20,7 @@ class Events(commands.Cog):
     def __init__(self, bot):
         self.bot: discord.Client = bot
         self.VSM: VSM = bot.get_cog('VoiceStateManager')
+        self.QM: QM = bot.get_cog('QueueManager')
         
         lavalink.add_event_hook(self.hooks)
 
@@ -53,6 +55,9 @@ class Events(commands.Cog):
     # EndTrack etc. 
 
     async def hooks(self, event):
+        
+        if isinstance(event, lavalink.events.TrackStartEvent):
+            await self.VSM.update_status(event.player)
 
         if isinstance(event, lavalink.events.TrackEndEvent):
 
@@ -89,7 +94,6 @@ class Events(commands.Cog):
             player.add(requester=cfg['bot']['id'], track=track)
             if not player.is_playing:
                 await player.play()
-                await self.VSM.update_status(player)
 
     # ---------------------------- ANCHOR LIST BUTTONS --------------------------- #
     # Callbacks for list button slash commands
@@ -110,7 +114,9 @@ class Events(commands.Cog):
     @cog_ext.cog_component()
     async def list_page_prev(self, btx: ComponentContext):
 
-        player = self.fetch_player(btx)
+        player = self.VSM.fetch_player(btx)
+        if not player:
+            return
 
         try:
             page = self.get_list_page(btx)[0]
@@ -119,18 +125,18 @@ class Events(commands.Cog):
             return
 
         if page <= 1:
-            embed = self.embed_list(player, page)
+            embed = self.QM.embed_list(player, page)
             await btx.edit_origin(embeds=[embed])
             return
 
-        embed = self.embed_list(player, page - 1)
+        embed = self.QM.embed_list(player, page - 1)
         await btx.edit_origin(embeds=[embed])
 
     # Go forward in /list to the next page
     @cog_ext.cog_component()
     async def list_page_next(self, btx: ComponentContext):
 
-        player = self.fetch_player(btx)
+        player = self.VSM.fetch_player(btx)
         if not player:
             return
 
@@ -143,11 +149,11 @@ class Events(commands.Cog):
             return
 
         if page >= pages:
-            embed = self.embed_list(player, page)
+            embed = self.QM.embed_list(player, page)
             await btx.edit_origin(embeds=[embed])
             return
 
-        embed = self.embed_list(player, page + 1)
+        embed = self.QM.embed_list(player, page + 1)
         await btx.edit_origin(embeds=[embed])
 
     # --------------------------------- !SECTION --------------------------------- #

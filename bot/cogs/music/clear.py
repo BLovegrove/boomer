@@ -8,6 +8,7 @@ from discord_slash.utils.manage_commands import create_option
 
 from ... import config
 from ..core.voice import VoiceStateManager as VSM
+from ..core.queue import QueueManager as QM
 
 # ---------------------------------- Config ---------------------------------- #
 cfg = config.load_config()
@@ -17,6 +18,7 @@ class Clear(commands.Cog):
     def __init__(self, bot):
         self.bot: discord.Client = bot
         self.VSM: VSM = bot.get_cog('VoiceStateManager')
+        self.QM: QM = bot.get_cog('QueueManager')
 
     # ---------------------------------------------------------------------------- #
     #                              Methods / Commands                              #
@@ -43,10 +45,10 @@ class Clear(commands.Cog):
         if not player:
             return
         else:
-            logging.info(f"[{ctx.author.name}" + (f"#{ctx.author.discriminator}" if ctx.author.discriminator else "#0000") + f"] Clearing " + f"item with index {index}..." if index else "whole queue...")
+            logging.info(f"[{ctx.author.name}" + (f"#{ctx.author.discriminator}" if ctx.author.discriminator else "#0000") + f"] Clearing " + (f"item with index {index}..." if index else "whole queue..."))
         
         if not index:
-            await self.clear(ctx)
+            await self.QM.clear(ctx)
 
         else:
             if index <= 0:
@@ -60,7 +62,7 @@ class Clear(commands.Cog):
                 return
 
             else:
-                await self.clear(ctx, index - 1)
+                await self.QM.clear(ctx, index - 1)
 
 def setup(bot):
     bot.add_cog(Clear(bot))

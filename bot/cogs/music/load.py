@@ -87,7 +87,7 @@ class Load(commands.Cog):
 
                     try:
                         if (loaded == 0):
-                            if (player.fetch('idle')):
+                            if (player.fetch('idle') or not player.current):
                                 await self.Music.play(ctx, track_url)
                             else:
                                 await self.Music.play(ctx, track_url)

@@ -56,6 +56,7 @@ class List(commands.Cog):
                 await ctx.send(f"Page #{page} too high. Queue is only {pages} pages long.")
             else:
                 await ctx.send("Queue is empty - no list to show.")
+            return
 
         components = []
 

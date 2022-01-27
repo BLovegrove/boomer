@@ -9,6 +9,7 @@ from discord_slash.utils.manage_commands import create_option
 from ... import config
 from ... import util
 from ..core.voice import VoiceStateManager as VSM
+from ..core.queue import QueueManager as QM
 
 # ---------------------------------- Config ---------------------------------- #
 cfg = config.load_config()
@@ -18,6 +19,7 @@ class Now(commands.Cog):
     def __init__(self, bot):
         self.bot: discord.Client = bot
         self.VSM: VSM = bot.get_cog('VoiceStateManager')
+        self.QM: QM = bot.get_cog('QueueManager')
 
     # ---------------------------------------------------------------------------- #
     #                              Methods / Commands                              #
@@ -38,7 +40,7 @@ class Now(commands.Cog):
         else:
             logging.info(f"[{ctx.author.name}" + (f"#{ctx.author.discriminator}" if ctx.author.discriminator else "#0000") + f"] Fetching current song details...")
 
-        embed = await self.embed_track(
+        embed = await self.QM.embed_track(
             ctx, 
             player.current, 
             "Info requested", 

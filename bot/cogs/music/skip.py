@@ -8,6 +8,7 @@ from discord_slash.utils.manage_commands import create_option
 
 from ... import config
 from ..core.voice import VoiceStateManager as VSM
+from ..core.music import Music
 
 # ---------------------------------- Config ---------------------------------- #
 cfg = config.load_config()
@@ -17,6 +18,7 @@ class Skip(commands.Cog):
     def __init__(self, bot):
         self.bot: discord.Client = bot
         self.VSM: VSM = bot.get_cog('VoiceStateManager')
+        self.Music: Music = bot.get_cog('Music')
 
     # ---------------------------------------------------------------------------- #
     #                              Methods / Commands                              #
@@ -45,10 +47,10 @@ class Skip(commands.Cog):
             return
         
         if index:
-            await self.skip(ctx, player, index=index)
+            await self.Music.skip(ctx, player, index=index)
 
         else:
-            await self.skip(ctx, player)
+            await self.Music.skip(ctx, player)
 
 def setup(bot):
     bot.add_cog(Skip(bot))
