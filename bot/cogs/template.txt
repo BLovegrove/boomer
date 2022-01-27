@@ -1,0 +1,26 @@
+# ---------------------------------- Imports --------------------------------- #
+import logging
+
+import discord
+from discord.ext import commands
+
+from ... import config
+# etc...
+
+# ---------------------------------- Config ---------------------------------- #
+cfg = config.load_config()
+
+# --------------------------------- Cog class -------------------------------- #
+class Template(commands.Cog):
+    def __init__(self, bot): # ALWAYS (self, bot) where bot is the bot client created in main.py
+        self.bot: discord.Client = bot
+        self.VSM: VSM = bot.get_cog('VoiceStateManager')
+        # etc...
+
+    # ---------------------------------------------------------------------------- #
+    #                              Methods / Commands                              #
+    # ---------------------------------------------------------------------------- #
+
+# Always end with setup method! This runs when you call load_extensions under main.py
+def setup(bot): # bot is the bot client created in main.py
+    bot.add_cog(Template(bot))
