@@ -135,7 +135,6 @@ class Music(commands.Cog):
             await player.set_volume(cfg['music']['volume_default'])
             await player.play()
 
-        await self.VSM.update_status(player)
         self.QM.update_pages(player)
         
     # -------------------------------- ANCHOR SKIP ------------------------------- #
@@ -153,7 +152,7 @@ class Music(commands.Cog):
             if player.fetch('repeat_one'):
                 next_track = player.fetch('repeat_one')
                 queue_len = len(player.queue)
-                embed = await self.embed_track(
+                embed = await self.QM.embed_track(
                     ctx,
                     track=next_track,
                     action=embed_action,
@@ -167,7 +166,7 @@ class Music(commands.Cog):
             elif player.shuffle:
                 await player.skip()
                 next_track = player.current
-                embed = await self.embed_track(
+                embed = await self.QM.embed_track(
                     ctx,
                     track=next_track,
                     action=embed_action,
@@ -177,33 +176,33 @@ class Music(commands.Cog):
 
             else:
                 if index:
-                    index = index - 1 # Revert index+=1 used for user readability
+                    index = index - 1 # Revert to index+1 for user readability
                     if index <= 0:
                         await ctx.send(":warning: That index is too low! Queue starts at #1.", hidden=True)
-                        logging.warn(f"Skip failed. Index too low (Expected: >=1. Recieved: {index})")
+                        logging.warn(f"Skip failed. Index too low (Expected: >=1. Recieved: {index + 1})")
                         return
 
                     elif index > len(player.queue):
                         await ctx.send(f":warning: That index is too high! Queue only {len(player.queue)} items long.", hidden=True)
-                        logging.warn(f"Skip failed. Index too high (Expected: <={len(player.queue)}. Recieved: {index}")
+                        logging.warn(f"Skip failed. Index too high (Expected: <={len(player.queue)}. Recieved: {index + 1}")
                         return
 
                     else:
                         if trim_queue:
+                            logging.info(f"Skipped queue to track {index + 1} of {len(player.queue)}.")
                             del player.queue[:index]
                             next_track = player.queue[0]
-                            logging.info(f"Skipped queue to track {index} of {len(player.queue)}.")
                         else:
+                            logging.info(f"Jumped to track {index + 1} of {len(player.queue)} in queue.")
                             next_track = player.queue.pop(index)
                             player.queue.insert(0, next_track)
-                            logging.info(f"Jumped to track {index} of {len(player.queue)} in queue.")
 
 
                 else:
                     next_track = player.queue[0]
                     logging.info(f"Skipped current track.")
 
-                embed = await self.embed_track(
+                embed = await self.QM.embed_track(
                     ctx,
                     track=next_track,
                     action=embed_action,
@@ -214,8 +213,7 @@ class Music(commands.Cog):
         else:
             await ctx.send(":notepad_spiral: End of queue - time for your daily dose of idle tunes.")
             await player.skip()
-
-        await self.update_status(player)
+            
         self.QM.update_pages(player)
 
 def setup(bot):

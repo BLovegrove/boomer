@@ -11,6 +11,7 @@ import lavalink
 from lavalink import DefaultPlayer, AudioTrack
 
 from ... import config
+from .voice import VoiceStateManager as VSM
 
 # ---------------------------------- Config ---------------------------------- #
 cfg = config.load_config()
@@ -20,6 +21,7 @@ standard_rx = re.compile(r'https?://(?:www\.)?.+')
 class QueueManager(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.VSM: VSM = bot.get_cog('VoiceStateManager')
     
     # ---------------------------- ANCHOR UPDATE PAGES --------------------------- #
     # Updates the number of pages defined in the config file as queue_page_len 
@@ -65,7 +67,7 @@ class QueueManager(commands.Cog):
         embed.set_thumbnail(
             url=f"https://i.ytimg.com/vi/{track.identifier}/mqdefault.jpg"
         )
-        for i in range(queue_start, queue_end + 1):
+        for i in range(queue_start, (queue_end if len(player.queue) == 1 else queue_end + 1)):
             track: AudioTrack = player.queue[i]
             play_time = lavalink.format_time(track.duration)
 
@@ -143,7 +145,7 @@ class QueueManager(commands.Cog):
 
     async def clear(self, ctx: SlashContext, index: int=0):
 
-        player = await self.VSM.ensure_voice(self, ctx)
+        player = await self.VSM.ensure_voice(ctx)
         if not player:
             return
 
