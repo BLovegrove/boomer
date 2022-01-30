@@ -77,7 +77,7 @@ Boomer's humourous profile picture courtesy of my friend Bastian (IG: @fjaerdefa
 
 Boomer, on the other hand, is entirely developed by me using the libraries and technologies listed in <a href="#built-with">Built With</a>. 
 
-Because my server only needed the music functionality, that's what he's limited for now - but 
+Because my server only needed the music functionality, that's what he's limited to for now - but 
 more features or enhancements would be welcome! See <a href="#contributing">Contributing</a> for more info on that. 
 
 Boomer also has a miniscule memory/computing footprint. I've been running him at home with a Raspberry Pi on 2GB of RAM and still managing to squeeze almost 20 instances playing at once out of him in testing (with wiggle-room to spare).
