@@ -108,7 +108,6 @@ To get a local copy up and running follow these simple example steps.
 
 ### Prerequisites
 
-This is an example of how to list things you need to use the software and how to install them.
 * Compatable [LavaLink](https://github.com/freyacodes/Lavalink) and accompanying java version)
 * [Python 3.8](https://www.python.org/downloads/release/python-380/) (Used because it was my only choice on the hardware I'm using to host Boomer. You could probably update everything here to run on 3.10 without too much trouble) 
 * Python3 [PIP](https://pypi.org/project/pip/) and [Pipenv](https://pipenv.pypa.io/en/latest/) for the dependencies found in the [Pipfile](https://github.com/BLovegrove/boomer/blob/7c00960a6e7b4342bea0e563b387c384002f8881/Pipfile)
