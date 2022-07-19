@@ -11,7 +11,7 @@
   "name": "boomer",
   "description": "<div id=\"top\"></div>",
   "version": "1.0.0",
-  "main": "bot/index.js",
+  "main": "dist/index.js",
   "scripts": {
     "build": "npx tsc",
     "start": "node dist/index.js",
