@@ -1,0 +1,33 @@
+{
+  "dependencies": {
+    "@discordjs/builders": "^1.0.0",
+    "@discordjs/rest": "^1.0.0",
+    "bufferutil": "^4.0.6",
+    "discord-api-types": "^0.36.2",
+    "discord.js": "^13.9.0",
+    "erlpack": "github:discord/erlpack",
+    "utf-8-validate": "^5.0.9",
+    "zlib-sync": "^0.1.7"
+  },
+  "name": "boomer",
+  "description": "<div id=\"top\"></div>",
+  "version": "1.0.0",
+  "main": "bot/index.js",
+  "scripts": {
+    "bot": "node bot/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BLovegrove/boomer.git"
+  },
+  "author": "Brandon Lovegrove & James Vierboom",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/BLovegrove/boomer/issues"
+  },
+  "homepage": "https://github.com/BLovegrove/boomer#readme",
+  "keywords": [],
+  "devDependencies": {
+    "eslint": "^8.20.0"
+  }
+}
