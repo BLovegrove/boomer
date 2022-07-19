@@ -1,0 +1,1 @@
+export {register, loadCommands} from "./commands"

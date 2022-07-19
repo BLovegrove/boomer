@@ -1,0 +1,11 @@
+import { SlashCommandBuilder } from "discord.js";
+import { Command } from "../../types";
+
+export const command: Command = {
+    data: new SlashCommandBuilder()
+        .setName("die")
+        .setDescription("Kills boomer. Restart him in the NYI web portal."),
+    async execute(interaction, client) {
+        return interaction.reply("My battery is low and it's getting dark :(")
+    }
+}

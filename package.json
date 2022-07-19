@@ -1,10 +1,9 @@
 {
   "dependencies": {
-    "@discordjs/builders": "^1.0.0",
     "@discordjs/rest": "^1.0.0",
     "bufferutil": "^4.0.6",
     "discord-api-types": "^0.36.2",
-    "discord.js": "^13.9.0",
+    "discord.js": "^14.0.2",
     "erlpack": "github:discord/erlpack",
     "utf-8-validate": "^5.0.9",
     "zlib-sync": "^0.1.7"
@@ -14,7 +13,10 @@
   "version": "1.0.0",
   "main": "bot/index.js",
   "scripts": {
-    "bot": "node bot/index.js"
+    "build": "npx tsc",
+    "start": "node dist/index.js",
+    "deploy": "npx tsc && node dist/index.js",
+    "dev": "concurrently \"npx tsc -w\" \"nodemon dist/index.js\""
   },
   "repository": {
     "type": "git",
@@ -28,6 +30,9 @@
   "homepage": "https://github.com/BLovegrove/boomer#readme",
   "keywords": [],
   "devDependencies": {
-    "eslint": "^8.20.0"
+    "concurrently": "^7.3.0",
+    "eslint": "^8.20.0",
+    "nodemon": "^2.0.19",
+    "typescript": "^4.7.4"
   }
 }
