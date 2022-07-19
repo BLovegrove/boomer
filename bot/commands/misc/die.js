@@ -12,5 +12,6 @@ module.exports = {
     /**@param {CommandInteraction} interaction*/
     async execute(interaction) {
         await interaction.reply({ content: "My battery is low and it's getting dark :(" })
+        // waaaaaaaa
     }
 };
