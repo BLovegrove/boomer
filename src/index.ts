@@ -1,50 +1,68 @@
-import { Client, GatewayIntentBits, InteractionType } from "discord.js"
+import { Intents } from "discord.js"
+import { Manager } from "erela.js";
 import config from "./config.json"
-import { loadCommands, register } from "./helpers";
-import path from "path"
+import { Boomer } from "./structures/boomer"
 
-// create client with all normal + dm permissions
-const client = new Client({
+// create client with all normal + dm permissions + an erela manager
+const client = new Boomer({
     intents: [
-        GatewayIntentBits.Guilds, 
-        GatewayIntentBits.GuildMessages, 
-        GatewayIntentBits.DirectMessages
-    ]
+        Intents.FLAGS.GUILDS
+    ]}, 
+    new Manager({
+    // The nodes to connect to, optional if using default lavalink options
+    nodes: [{
+        host: config.lavalink.host,
+        password: config.lavalink.password,
+        port: config.lavalink.port,
+        identifier: config.lavalink.id
+    }],
+    // Method to send voice data to Discord
+    send: (id, payload) => {
+        const guild = client.guilds.cache.get(id);
+
+        // NOTE: FOR ERIS YOU NEED JSON.stringify() THE PAYLOAD
+        if (guild) guild.shard.send(payload);
+    }
+}))
+
+client.manager.on("nodeConnect", node => {
+    console.log(`Node '${node.options.identifier}' is online.`)
 })
 
-// grab the command files and generate a collection from them
-const commands = loadCommands(path.join(__dirname, "commands"))
-// register the commands with the discord API to display them on the server
-register(commands)
-
 // add one-time listener for login alert
-client.once("ready", () => {
-    console.log(`${client.user?.tag} is online.`)
+client.once("ready", () => { 
+    
+    if (client.user && client.manager)
+    {
+        console.log("Initialising lava manager...")
+        client.manager.init(client.user.id);
+        console.log(`${client.user.tag} is online.`)
+    }
+    else
+    {
+        console.log("Failed to init lava manager / discord client.");
+    }
 })
 
 // monitor for slash commands and handle them seperately
 client.on("interactionCreate", async interaction => {
     
-    switch (interaction.type) {
-        case InteractionType.ApplicationCommand:
+    if (interaction.isCommand()) {
+        const command = client.commands.get(interaction.commandName);
 
-            const command = commands.get(interaction.commandName);
+        if (!command) return;
 
-            if (!command) return;
-
-            try {
-                await command.execute(interaction, client);
-            } catch (error) {
-                console.error(error);
-                await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
-            }
-
-            break;
-    
-        default:
-            break;
+        try {
+            await command.execute(interaction, client);
+        } catch (error) {
+            console.error(error);
+            await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+        }
     }
 })
 
+// THIS IS REQUIRED. Send raw events to Erela.js
+client.on("raw", d => client.manager.updateVoiceState(d));
+
 // log bot in to discord
-client.login(config.token)
+client.connect()

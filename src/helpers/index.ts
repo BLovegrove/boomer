@@ -1,1 +1,1 @@
-export {register, loadCommands} from "./commands"
+export { CommandHelper } from "./commands"

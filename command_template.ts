@@ -6,7 +6,11 @@
 // export const command: Command = {
 //     data: new SlashCommandBuilder()
 //         .setName("default")
-//         .setDescription("default"),
+//         .setDescription("default")
+//         .addStringOption(
+//             option => option.setName("default")
+//             .setDescription("default")
+//         ),
 //     async execute(interaction, client) {
 //         // any code you need to execute you can run here.
 //         return interaction.reply("Hi :)")
