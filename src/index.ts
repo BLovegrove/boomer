@@ -1,6 +1,7 @@
 import { Client, GatewayIntentBits, InteractionType } from "discord.js"
 import config from "./config.json"
 import { loadCommands, register } from "./helpers";
+import path from "path"
 
 // create client with all normal + dm permissions
 const client = new Client({
@@ -12,7 +13,7 @@ const client = new Client({
 })
 
 // grab the command files and generate a collection from them
-const commands = loadCommands()
+const commands = loadCommands(path.join(__dirname, "commands"))
 // register the commands with the discord API to display them on the server
 register(commands)
 
