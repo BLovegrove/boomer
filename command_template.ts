@@ -9,6 +9,6 @@
 //         .setDescription("default"),
 //     async execute(interaction, client) {
 //         // any code you need to execute you can run here.
-//         return null
+//         return interaction.reply("Hi :)")
 //     }
 // }
