@@ -1,31 +1,42 @@
 import { Intents } from "discord.js"
 import { Manager } from "erela.js";
+import customFilter from "erela.js-filters";
 import config from "./config.json"
-import { Boomer } from "./structures/boomer"
+import { Boomer } from "./util/structures/boomer"
+
+const nodes = [{
+    host: config.lavalink.host,
+    password: config.lavalink.password,
+    port: config.lavalink.port
+}];
 
 // create client with all normal + dm permissions + an erela manager
 const client = new Boomer({
     intents: [
-        Intents.FLAGS.GUILDS
+        Intents.FLAGS.GUILDS,
+        Intents.FLAGS.GUILD_MESSAGES,
+        Intents.FLAGS.GUILD_VOICE_STATES
     ]}, 
     new Manager({
     // The nodes to connect to, optional if using default lavalink options
-    nodes: [{
-        host: config.lavalink.host,
-        password: config.lavalink.password,
-        port: config.lavalink.port,
-        identifier: config.lavalink.id
-    }],
+    nodes,
     // Method to send voice data to Discord
     send: (id, payload) => {
         const guild = client.guilds.cache.get(id);
-
-        // NOTE: FOR ERIS YOU NEED JSON.stringify() THE PAYLOAD
         if (guild) guild.shard.send(payload);
-    }
+    },
+    plugins: [
+        // Load filter presets from erela.js-filters
+        new customFilter()
+    ]
 }))
 
-client.manager.on("nodeConnect", node => {
+// Emitted whenever a node encountered an error
+client.manager.on("nodeError", (node, error) => {
+    console.log(`Node "${node.options.identifier}" encountered an error: ${error.message}.`)
+})
+
+client.manager.once("nodeConnect", node => {
     console.log(`Node '${node.options.identifier}' is online.`)
 })
 

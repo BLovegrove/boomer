@@ -1,0 +1,1 @@
+export const rxUrl = new RegExp('https?://(?:www\.)?.+')

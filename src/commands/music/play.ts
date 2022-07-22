@@ -1,6 +1,6 @@
 import { GuildMember } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders"
-import { Command, Boomer } from "../../structures"
+import { Command } from "../../structures"
 
 // export var must always be 'command' - see 'add command module files to collection' in index.ts
 // : Command type adds strong typing for interaction and client args! Thank god for typescript
@@ -17,15 +17,48 @@ export const command: Command = {
         ),
     async execute(interaction, client) {
 
-        if (!(interaction.member instanceof GuildMember)) {
-            return interaction.reply("Try sending this from within a server.")
-        }
-        if (!interaction.member.voice.channel) {
-            return interaction.reply("you need to join a voice channel.");
+        // sender validation: in guild and in voice
+        if (!(interaction.member instanceof GuildMember))
+        {
+            return interaction.reply({ content: "Try sending this from within a server.", ephemeral: true});
         }
 
-        console.log(interaction.options.);
-        
+        if (!interaction.member.voice.channel)
+        {
+            return interaction.reply({ content: "you need to join a voice channel." , ephemeral: true});
+        }
+
+        // async interaction with lavalink ahead. Defferring for safety.
+        // follow-up with non-ephemeral comment on success. Edit original for failure
+        interaction.deferReply({ephemeral: true});
+
+        // command argument sterilisation
+        const query = interaction.options.getString('url') || "";
+        const result = await client.manager.search(query);
+
+        switch(result.loadType) {
+            case "NO_MATCHES":
+                await interaction.editReply({content: "404 Song not found! Try something else."});
+                return;
+            case "SEARCH_RESULT":
+                const tracks = result.tracks;
+                break;
+            default:
+                await interaction.editReply({content: "Something unexpected happen. Contact your server owner immediately and let them know the exact command you tried to run."});
+                console.log(`Load type for play request defaulted. query '${query}' result as follows:`);
+                console.log(result);
+                return;
+        }
+
+        if (result.playlist)
+        {
+
+        }
+        else
+        {
+
+        }
+
         // const {commandName, options} = interaction
 
         // const searchUrl: any = options.get('url', true).value
@@ -60,6 +93,5 @@ export const command: Command = {
 
         //     return message.reply(`enqueuing ${res.tracks[0].title}.`);
         // }
-        return interaction.reply("Hi :)")
     }
 }
