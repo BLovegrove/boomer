@@ -9,6 +9,9 @@
     "erela.js": "^2.3.3",
     "erela.js-filters": "^1.2.7",
     "erlpack": "github:discord/erlpack",
+    "format-duration": "^2.0.0",
+    "string-progressbar": "^1.0.4",
+    "truncate": "^3.0.0",
     "utf-8-validate": "^5.0.9",
     "zlib-sync": "^0.1.7"
   },
