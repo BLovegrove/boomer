@@ -12,7 +12,9 @@ export class VoiceHelper {
     client: Boomer
 
     /**
-     * @param client modified discord.js client called 'Boomer'. 
+     * Note: Any command using ensureVoice is deferred to account for lavalink response times.
+     * use editReply for any ineraction reply after ensureVoice runs.
+     * @param client modified discord.js client called 'Boomer'.
      */
     constructor(client: Boomer) {
         this.client = client
@@ -26,19 +28,18 @@ export class VoiceHelper {
      * @param interaction Discord.js CommandInteraction
      * @returns erela.js player
      */
-    async ensureVoice(interaction: CommandInteraction)
-    {
+    async ensureVoice(interaction: CommandInteraction) {
 
         // sender validation: in guild
         if (!(interaction.member instanceof GuildMember) || !interaction.guild || !interaction.channel) {
             interaction.reply({ content: "Try sending this from within a server.", ephemeral: true });
-            return null
+            return
         }
-        
+
         // sender validation: in voice
         if (!interaction.member.voice.channel) {
             interaction.reply({ content: "you need to join a voice channel.", ephemeral: true });
-            return null
+            return
         }
 
         // this fetches the player if one exists. otherwise gerenates a new one
@@ -48,9 +49,6 @@ export class VoiceHelper {
             textChannel: interaction.channel.id,
         });
 
-        // makes bot say 'thinking...' for up to 15 minutes vs. stock 3 seconds
-        await interaction.deferReply({ephemeral: true})
-
         if (player.state == "DISCONNECTED") {
             // set up some default states and connect the player to requesters VC
             player.set("pages", 0)
@@ -58,8 +56,8 @@ export class VoiceHelper {
             
         } else if (player.voiceChannel !== interaction.member.voice.channel.id) {
             // ensure player is connected to the same VC as the member interacting with it
-            await interaction.editReply(`You need to be in <#${player.voiceChannel}> to do that.`)
-            return null
+            interaction.reply({ content: `You need to be in <#${player.voiceChannel}> to do that.`, ephemeral: true})
+            return
         }
 
         // success! this should be the output at all times :)))
@@ -78,7 +76,7 @@ export class VoiceHelper {
         player.setVolume(config.music.volumeDefault)
         player.disconnect()
         await this.updateStatus(player)
-        return null
+        return
     }
 
     /**
@@ -100,7 +98,7 @@ export class VoiceHelper {
         // 'things possibly being null' :(
         if (!this.client.user) {
             console.log("Catastrophic error. no user attached to bot. Leaving status unchanged");
-            return null
+            return
         }
 
         if (player.queue.current) {
@@ -127,6 +125,6 @@ export class VoiceHelper {
 
         console.log(`Updated activity info to: ${this.client.user.presence.activities}`);
         console.log(`Updated status info to: ${this.client.user.presence.status}`)
-        return null
+        return
     }
 }

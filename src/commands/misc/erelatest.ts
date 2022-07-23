@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
-import { VoiceHelper } from "../../util/helpers/voice";
+import { VoiceHelper } from "../../util/helpers/voicehelper";
 import { Boomer, Command } from "../../util/structures";
 
 // export var must always be 'command' - see 'add command module files to collection' in index.ts
@@ -17,22 +17,20 @@ export const command: Command = {
 
         if (!player) {
             interaction.reply("Something went wrong! Couldnt create/fetch the player.")
-            return null
+            return
 
         } else {
-            interaction.deferReply()
 
             console.log("Text search result:");
-            console.log(player.search("Rick Astley"));
+            console.log(await player.search("Rick Astley"));
 
             console.log("YT Track result:")
-            console.log(player.search("https://www.youtube.com/watch?v=dQw4w9WgXcQ"));
+            console.log(await player.search("https://www.youtube.com/watch?v=dQw4w9WgXcQ"));
 
             console.log("YT Playlist result:");
-            console.log(player.search("https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=PLCiNIjl_KpQhFwQA3G19w1nmhEOlZQsGF"))
+            console.log(await player.search("https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=PLCiNIjl_KpQhFwQA3G19w1nmhEOlZQsGF"))
             
-            interaction.editReply("Success! Go check your console output.")
-            return null
+            return
         }
         
     }

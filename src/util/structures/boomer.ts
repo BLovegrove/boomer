@@ -18,7 +18,7 @@ export class Boomer extends Client {
         this.manager = manager
         
         // grab the command files and generate a collection from them
-        this.commands = CommandHelper.load(path.join(__dirname, "../commands"))
+        this.commands = CommandHelper.load(path.join(__dirname, "../../commands"))
         // register the commands with the discord API to display them on the server
         CommandHelper.register(this.commands)
     }
