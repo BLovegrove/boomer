@@ -7,7 +7,7 @@ import config from "../../config.json"
 /**
  * Helps manage the voice state with common guards and convenient connection/disconnection methods 
  */
-export class VoiceStateHelper {
+export class VoiceHelper {
 
     client: Boomer
 

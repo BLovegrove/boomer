@@ -1,17 +1,16 @@
-import { VoiceStateManager } from "discord.js";
 import { Player } from "erela.js";
 import { Boomer } from "../structures";
-import { VoiceStateHelper } from "./voice";
+import { VoiceHelper } from "./voice";
  
 
 class QueueHelper {
 
     client: Boomer
-    vsh: VoiceStateHelper
+    vsh: VoiceHelper
 
     constructor(client: Boomer) {
         this.client = client
-        this.vsh = new VoiceStateHelper(client)
+        this.vsh = new VoiceHelper(client)
     }
 
     update_pages(player: Player) {

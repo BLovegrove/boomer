@@ -16,7 +16,7 @@ const client = new Boomer({
         Intents.FLAGS.GUILDS,
         Intents.FLAGS.GUILD_MESSAGES,
         Intents.FLAGS.GUILD_VOICE_STATES
-    ]}, 
+    ]},  
     new Manager({
     // The nodes to connect to, optional if using default lavalink options
     nodes,
