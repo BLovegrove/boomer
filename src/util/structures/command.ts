@@ -3,5 +3,5 @@ import { Boomer } from "./boomer"
 
 export type Command = {
     data: any,
-    execute(interaction: CommandInteraction, client: Boomer): Promise<void>
+    execute(interaction: CommandInteraction, client: Boomer): Promise<null> | Promise<void>
 }
