@@ -4,10 +4,16 @@ import { Player } from "erela.js"
 
 import config from "../../config.json"
 
-export class VoiceHelper {
+/**
+ * Helps manage the voice state with common guards and convenient connection/disconnection methods 
+ */
+export class VoiceStateHelper {
 
     client: Boomer
 
+    /**
+     * @param client modified discord.js client called 'Boomer'. 
+     */
     constructor(client: Boomer) {
         this.client = client
     }
@@ -24,7 +30,7 @@ export class VoiceHelper {
     {
 
         // sender validation: in guild
-        if (!(interaction.member instanceof GuildMember)) {
+        if (!(interaction.member instanceof GuildMember) || !interaction.guild || !interaction.channel) {
             interaction.reply({ content: "Try sending this from within a server.", ephemeral: true });
             return null
         }
@@ -37,30 +43,27 @@ export class VoiceHelper {
 
         // this fetches the player if one exists. otherwise gerenates a new one
         const player = this.client.manager.create({
-            guild: interaction.guild!.id,
-            voiceChannel: interaction.member.voice.channel!.id,
-            textChannel: interaction.channel!.id,
+            guild: interaction.guild.id,
+            voiceChannel: interaction.member.voice.channel.id,
+            textChannel: interaction.channel.id,
         });
 
-        // defer reply. makes bot say 'thinking...' for up to 15 minutes 
-        // vs. stock 3 seconds
-        interaction.deferReply({ephemeral: true})
+        // makes bot say 'thinking...' for up to 15 minutes vs. stock 3 seconds
+        await interaction.deferReply({ephemeral: true})
 
         if (player.state == "DISCONNECTED") {
             // set up some default states and connect the player to requesters VC
             player.set("pages", 0)
             player.connect()
-            return null
-        } else {
+            
+        } else if (player.voiceChannel !== interaction.member.voice.channel.id) {
             // ensure player is connected to the same VC as the member interacting with it
-            if (player.voiceChannel !== interaction.member.voice.channel!.id) {
-                await interaction.editReply(`You need to be in <#${player.voiceChannel}> to do that.`)
-                return null
-            }
-
-            // success! this should be the output at all times :)))
-            return player
+            await interaction.editReply(`You need to be in <#${player.voiceChannel}> to do that.`)
+            return null
         }
+
+        // success! this should be the output at all times :)))
+        return player
     }
 
     /**
@@ -91,8 +94,6 @@ export class VoiceHelper {
         // attached modidifiers present to the activity message
         if (player.trackRepeat) {
             suffix = " (on repeat)"
-        } else {
-            suffix = ""
         }
 
         // this shouldnt ever happen but it makes typescript shut up about
