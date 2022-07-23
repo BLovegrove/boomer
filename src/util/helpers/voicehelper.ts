@@ -38,7 +38,7 @@ export class VoiceHelper {
 
         // sender validation: in voice
         if (!interaction.member.voice.channel) {
-            interaction.reply({ content: "you need to join a voice channel.", ephemeral: true });
+            interaction.reply({ content: "You need to join a voice channel.", ephemeral: true });
             return
         }
 
