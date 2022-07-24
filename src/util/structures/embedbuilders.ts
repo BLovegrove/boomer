@@ -49,6 +49,27 @@ export class TrackEmbedBuilder {
     }
 }
 
+/**
+     * creates an embed builder pre-loaded with data to display the recently removed track.
+     * complete with custom message indicating who removed the track.
+     * @param interaction Discord.js command interaction for clearig the track
+     * @param track track removed from the queue
+     * @param player erela.ks player
+     */
+export class ClearedEmbedBuilder extends TrackEmbedBuilder {
+    
+    constructor(interaction: CommandInteraction, track: Track, player: Player) {
+        super(interaction, track, player)
+        this.data = super.data
+
+        const sender = interaction.member as GuildMember
+
+        this.data.author = {
+            name: `${sender.displayName} cleared a song from queue:`
+        }
+    }
+}
+
 export class SkipEmbedBuilder extends TrackEmbedBuilder {
     
     /**
