@@ -8,7 +8,7 @@ export const command: Command = {
         .setName("play")
         .setDescription("Plays music! Summons boomer if he isn't running, adds a song to the queue if he is.")
         .addStringOption(option => option
-            .setName('search-string')
+            .setName('song')
             .setDescription('The name/artist/url of the sog you want to find')
             .setRequired(true)
         )
@@ -16,7 +16,7 @@ export const command: Command = {
     async execute(interaction: CommandInteraction, client: Boomer) {
         const MH = new MusicHelper(client)
 
-        const searchString = interaction.options.getString('search-string', true)
+        const searchString = interaction.options.getString('song', true)
         MH.play(interaction, searchString)
     }
 }
