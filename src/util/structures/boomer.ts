@@ -11,18 +11,23 @@ export class Boomer extends Client {
 
     commands: Collection<String, Command>
     manager: Manager
-    playerExists: boolean
+    private _playerExists: boolean
 
     constructor(options: ClientOptions, manager: Manager) {
         super(options);
         
         this.manager = manager
-        this.playerExists = manager.players.values.length != 0 ? true : false
+        this._playerExists = false
         
         // grab the command files and generate a collection from them
         this.commands = CommandHelper.load(path.join(__dirname, "../../commands"))
         // register the commands with the discord API to display them on the server
         CommandHelper.register(this.commands)
+    }
+
+    get playerExists() {
+        this._playerExists = this.manager.players.keyArray().length != 0 ? true : false
+        return this._playerExists
     }
 
     connect() {
