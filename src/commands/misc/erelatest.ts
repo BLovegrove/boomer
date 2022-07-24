@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
-import { VoiceHelper } from "../../util/helpers/voicehelper";
+import { VoiceHelper } from "../../util/helpers/voice";
 import { Boomer, Command } from "../../util/structures";
 
 // export var must always be 'command' - see 'add command module files to collection' in index.ts

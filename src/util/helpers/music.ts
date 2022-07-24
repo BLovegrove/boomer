@@ -3,10 +3,10 @@ import { Boomer } from "../structures"
 import config from "../../config.json"
 import { Player, SearchResult, Track } from "erela.js";
 import { CommandInteraction } from "discord.js";
-import { VoiceHelper } from "./voicehelper";
+import { VoiceHelper } from "./voice";
 import { RxUrl } from "./regex";
-import { QueueHelper } from "./queuehelper";
-import { PlaylistEmbedBuilder, TrackEmbedBuilder } from "../structures/embedbuilders";
+import { QueueHelper } from "./queue";
+import { PlaylistEmbedBuilder, TrackEmbedBuilder } from "../structures";
 
 // # ----------------------------------Config ---------------------------------- #
 
