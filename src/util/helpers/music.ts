@@ -1,40 +1,57 @@
 // # ----------------------------------Imports --------------------------------- #
 import { Boomer } from "../structures"
 import config from "../../config.json"
-import { Player, SearchResult, Track } from "erela.js";
-import { CommandInteraction,GuildMember, Interaction, VoiceStateManager } from "discord.js";
+import { Player, PlaylistInfo, SearchResult, Track } from "erela.js";
+import { CommandInteraction } from "discord.js";
 import { VoiceHelper } from "./voicehelper";
 import { rxUrl } from "./regex";
+import { QueueHelper } from "./queuehelper";
+import { PlaylistEmbedBuilder, TrackEmbedBuilder } from "../structures/embedbuilders";
 
 // # ----------------------------------Config ---------------------------------- #
 
-interface AddTrackOptions {
+interface IAddTrackOptions {
     player: Player
-    interaction?: CommandInteraction
+    interaction: CommandInteraction
     track?: Track
     tracks?: Track[]
-    
+    result?: SearchResult
 }
 
 export class Music {
 
     private client: Boomer;
     private VH: VoiceHelper
+    QH: QueueHelper
 
     constructor(client: Boomer) {
         this.client = client;
         this.VH = new VoiceHelper(client)
-
+        this.QH = new QueueHelper(client)
     }
 
-    private async addTrack ({player,interaction,track,tracks}: AddTrackOptions ) {
+    private async addTrack ({player,interaction,track,tracks,result}: IAddTrackOptions ) {
         if (track) {
+            interaction.editReply({
+                embeds: [
+                    new TrackEmbedBuilder(interaction, track, player).toJSON()
+                ]
+            })
+
             player.queue.add(track)
             console.log("Track added to queue");
-        } else if (tracks) {
+
+        } else if (tracks && result) {
+            interaction.editReply({
+                embeds: [
+                    new PlaylistEmbedBuilder(interaction, result, player).toJSON()
+                ]
+            })
+
             tracks.forEach(track => {
                 player.queue.add(track)
             })
+            console.log("Playlist added to queue");
         } 
 
         if (player.get<boolean>("idle") || !player.playing ) {
@@ -42,10 +59,11 @@ export class Music {
             player.setVolume(config.music.volumeDefault)
             await player.play()
         } 
-        //TODO: add queue manager.update pages. thax 
+        
+        this.QH.updatePages(player)
     }
 
-    async play( interaction: CommandInteraction, query: string) {
+    async play(interaction: CommandInteraction, query: string) {
         const player = await this.VH.ensureVoice(interaction)
         if (!player){
             interaction.reply({content: "No player found...Contact server owner",ephemeral: true})
@@ -72,16 +90,16 @@ export class Music {
                 interaction.editReply("404 Song not found! Try something else.");
                 break;
             case "SEARCH_RESULT":
-                var track = result.tracks.at(0);
-                this.addTrack({player:player,track:track})
+                var track = result.tracks.at(0) as Track;
+                this.addTrack({player, interaction, track:track})
                 break;
             case "TRACK_LOADED":
-                var track = result.tracks.at(0);
-                this.addTrack({player:player,track:track})
+                var track = result.tracks.at(0) as Track
+                this.addTrack({player, interaction, track: track})
                 break;
             case "PLAYLIST_LOADED":
                 var tracks = result.tracks;
-                this.addTrack({player:player,tracks:tracks})
+                this.addTrack({player, interaction, tracks: tracks, result: result})
                 break;
             default:
                 await interaction.editReply("Something unexpected happen. Contact your server owner immediately and let them know the exact command you tried to run.");
