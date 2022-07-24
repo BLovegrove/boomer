@@ -1,9 +1,9 @@
 import { Player, Track } from "erela.js";
 import { Boomer } from "../structures";
-import { VoiceHelper } from "./voicehelper";
+import { VoiceHelper } from "./voice";
 import config from "../../config.json"
 import { CommandInteraction } from "discord.js";
-import { ClearedEmbedBuilder } from "../structures/embedbuilders";
+import { ClearedEmbedBuilder } from "../structures";
 
 export class QueueHelper {
 
