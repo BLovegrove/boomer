@@ -1,10 +1,10 @@
 // # ----------------------------------Imports --------------------------------- #
 import { Boomer } from "../structures"
 import config from "../../config.json"
-import { Player, PlaylistInfo, SearchResult, Track } from "erela.js";
+import { Player, SearchResult, Track } from "erela.js";
 import { CommandInteraction } from "discord.js";
 import { VoiceHelper } from "./voicehelper";
-import { rxUrl } from "./regex";
+import { RxUrl } from "./regex";
 import { QueueHelper } from "./queuehelper";
 import { PlaylistEmbedBuilder, TrackEmbedBuilder } from "../structures/embedbuilders";
 
@@ -18,7 +18,7 @@ interface IAddTrackOptions {
     result?: SearchResult
 }
 
-export class Music {
+export class MusicHelper {
 
     private client: Boomer;
     private VH: VoiceHelper
@@ -75,7 +75,7 @@ export class Music {
         
         interaction.deferReply()
 
-        if (!rxUrl.test(query)) {
+        if (!RxUrl.test(query)) {
             query = `ytsearch:${query}`
         }
 
