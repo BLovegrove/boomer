@@ -1,5 +1,5 @@
 import { EmbedBuilder } from "@discordjs/builders";
-import { Player, PlaylistInfo, SearchResult, Track } from "erela.js";
+import { Player, PlaylistInfo, SearchResult, Track, TrackUtils, UnresolvedTrack } from "erela.js";
 import config from "../../config.json"
 import truncate from "truncate";
 import { CommandInteraction, GuildMember } from "discord.js";

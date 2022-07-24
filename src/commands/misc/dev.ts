@@ -9,29 +9,21 @@ export const command: Command = {
         .setName("dev")
         .setDescription("Series of dev commands for boomer.")
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
-        .addSubcommand(subcommand => 
-            subcommand
-                .setName("die")
-                .setDescription("Kills boomer and closes the bot client")
-        )
-        .addSubcommand(subcommand => 
-            subcommand
-                .setName("ping")
-                .setDescription("Replies with Pong!")
-        )
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName("logSearchExample")
-                .setDescription("Logs 3 examples to client console showing search_result, track_loaded, & playlist_loaded objects")
-        )
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName("logQueue")
-                .setDescription("Logs the entire queue object to the client console")
+        .addStringOption(option =>
+            option
+                .setName("subcommand")
+                .setDescription("Runs a series of dev actions without cluttering the commands list")
+                .setRequired(true)
+                .addChoices(
+                    {name: 'Kill bot', value: 'die'},
+                    {name: 'Ping test', value: 'ping'},
+                    {name: 'Log Search Example', value: 'searchex'},
+                    {name: 'Log queue entries', value: 'logqueue'}
+                )
         )
     ,
     async execute(interaction: CommandInteraction, client: Boomer) {
-        const subCommand = interaction.options.getSubcommand(true)
+        const subCommand = interaction.options.getString("subcommand", true)
 
         const VH = new VoiceHelper(client)
         const player = await VH.ensureVoice(interaction)
@@ -52,7 +44,7 @@ export const command: Command = {
 
                 return
 
-            case "logSearchExample":
+            case "searchex":
                 console.log("Text search result:");
                 console.log(await player.search("Rick Astley"));
 
@@ -62,21 +54,21 @@ export const command: Command = {
                 console.log("YT Playlist result:");
                 console.log(await player.search("https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=PLCiNIjl_KpQhFwQA3G19w1nmhEOlZQsGF"))
 
-                interaction.editReply("Success.")
-                interaction.followUp({content: "Logged test results. Go check client log.", ephemeral: true})
+                await interaction.editReply("Success.")
+                await interaction.followUp({content: "Logged test results. Go check client log.", ephemeral: true})
 
                 return
             
-            case "logQueue":
+            case "logqueue":
                 console.log(player.queue)
 
-                interaction.editReply("Success.")
-                interaction.followUp({content: "Logged queue. Go check client log", ephemeral: true})
+                await interaction.editReply("Success.")
+                await interaction.followUp({content: "Logged queue. Go check client log", ephemeral: true})
 
                 return
             
             default:
-                interaction.editReply("Dev command failed. Couldn't find a subcommand.")
+                await interaction.editReply("Dev command failed. Couldn't find a subcommand.")
 
                 return
         }

@@ -40,7 +40,9 @@ export class CommandHelper {
             })
 
             
-            await rest.put(Routes.applicationCommands(config.bot.clientID), { body: commandsData });
+            await rest.put(Routes.applicationGuildCommands(config.bot.clientID, config.bot.guildID), { body: commandsData });
+            // await rest.put(Routes.applicationCommands(config.bot.clientID), { body: {} });
+
 
             console.log('Successfully reloaded application (/) commands.');
         } catch (error) {
