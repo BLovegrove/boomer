@@ -20,6 +20,10 @@ export class VoiceHelper {
         this.client = client
     }
 
+    static fetchPlayer(client: Boomer) {
+        return client.manager.get(config.bot.guildID)
+    }
+
     /**
      * multi purpose catch-all meant to go before a command. 
      * checks that the interaction is within a guild and inside
@@ -52,6 +56,7 @@ export class VoiceHelper {
         if (player.state == "DISCONNECTED") {
             // set up some default states and connect the player to requesters VC
             player.set("pages", 0)
+            player.set("idle", false)
             player.connect()
             
         } else if (player.voiceChannel !== interaction.member.voice.channel.id) {
@@ -75,7 +80,8 @@ export class VoiceHelper {
         player.setQueueRepeat(false)
         player.setVolume(config.music.volumeDefault)
         player.disconnect()
-        await this.updateStatus(player)
+        player.destroy()
+        await VoiceHelper.updateStatus(this.client, player)
         return
     }
 
@@ -85,7 +91,7 @@ export class VoiceHelper {
      * nothing and idle status.
      * @param player erela.js player
      */
-    async updateStatus(player: Player) {
+    static async updateStatus(client: Boomer, player: Player) {
 
         var suffix = ""
 
@@ -94,37 +100,31 @@ export class VoiceHelper {
             suffix = " (on repeat)"
         }
 
-        // this shouldnt ever happen but it makes typescript shut up about
-        // 'things possibly being null' :(
-        if (!this.client.user) {
-            console.log("Catastrophic error. no user attached to bot. Leaving status unchanged");
-            return
-        }
-
-        if (player.queue.current) {
+        if (player.playing) {
             // update status based on current song
 
-            this.client.user.setActivity(
-                player.queue.current.title + suffix,
+            client.user!.setActivity(
+                player.queue.current!.title + suffix,
                 {
                     type: 'LISTENING'
                 }
             )
-            this.client.user.setStatus("online")
+            client.user!.setStatus("online")
+            
         } else {
             // update status to idle and show listening to 'nothing'
 
-            this.client.user.setActivity(
+            client.user!.setActivity(
                 "nothing.",
                 {
                     type: "LISTENING"
                 }
             )
-            this.client.user.setStatus("idle")
+            client.user!.setStatus("idle")
         }
 
-        console.log(`Updated activity info to: ${this.client.user.presence.activities}`);
-        console.log(`Updated status info to: ${this.client.user.presence.status}`)
+        console.log(`Updated activity info to: ${client.user!.presence.activities}`);
+        console.log(`Updated status info to: ${client.user!.presence.status}`)
         return
     }
 }
