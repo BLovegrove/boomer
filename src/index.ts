@@ -2,6 +2,7 @@ import { Intents } from "discord.js"
 import { Manager } from "erela.js";
 import customFilter from "erela.js-filters";
 import config from "./config.json"
+import { VoiceHelper } from "./util/helpers";
 import { Boomer } from "./util/structures/boomer"
 
 const nodes = [{
@@ -69,6 +70,13 @@ client.on("interactionCreate", async interaction => {
             console.error(error);
             await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
         }
+    }
+})
+
+client.manager.on("trackEnd", node => {
+    const player = VoiceHelper.fetchPlayer(client)
+    if (player) {
+        VoiceHelper.updateStatus(client, player)
     }
 })
 
