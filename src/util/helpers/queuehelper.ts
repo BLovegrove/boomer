@@ -1,10 +1,11 @@
-import { Player, TrackUtils } from "erela.js";
+import { Player, Track } from "erela.js";
 import { Boomer } from "../structures";
 import { VoiceHelper } from "./voicehelper";
 import config from "../../config.json"
-import { EmbedBuilder } from "@discordjs/builders";
+import { CommandInteraction } from "discord.js";
+import { ClearedEmbedBuilder } from "../structures/embedbuilders";
 
-class QueueHelper {
+export class QueueHelper {
 
     private client: Boomer
     private VH: VoiceHelper
@@ -18,5 +19,22 @@ class QueueHelper {
         player.set('pages', Math.ceil(player.queue.length / config.music.listPageLength))
     }
 
-    
+    async clear(interaction: CommandInteraction, index?: number) {
+        const player = await this.VH.ensureVoice(interaction)
+        if (!player) {
+            return
+        }
+
+        if (!index) {
+            player.queue.clear()
+            player.set('pages', 0)
+            interaction.reply(":boom: Queue cleared!")
+
+        } else {
+            const cleared = player.queue.remove(index).at(0) as Track
+            interaction.reply({embeds: [
+                new ClearedEmbedBuilder(interaction, cleared, player).toJSON()
+            ]})
+        }
+    }
 }
