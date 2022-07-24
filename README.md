@@ -18,7 +18,7 @@
     <img src="https://cdn.discordapp.com/app-icons/887606123782344704/d193530a914689ea03312cf0faca5521.png?size=100" style="border-radius:50%;" alt="Logo" width="100" height="100">
   </a>
 
-<h3 align="center">Boomer - A Python-based Discord Music Bot</h3>
+<h3 align="center">Boomer - A JavaScript-based Discord Music Bot</h3>
 
   <p align="center">
     Boomer plays music.
