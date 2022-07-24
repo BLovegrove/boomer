@@ -1,1 +1,5 @@
-export { CommandHelper } from "./commands"
+export { CommandHelper } from "./command"
+export { QueueHelper } from "./queue"
+export { RxUrl as RxUrl } from "./regex"
+export { VoiceHelper } from "./voice"
+export { MusicHelper } from "./music"
