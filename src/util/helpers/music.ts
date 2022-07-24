@@ -4,7 +4,6 @@ import config from "../../config.json"
 import { Player, SearchResult, Track } from "erela.js";
 import { CommandInteraction } from "discord.js";
 import { VoiceHelper } from "./voice";
-import { RxUrl } from "./regex";
 import { QueueHelper } from "./queue";
 import { PlaylistEmbedBuilder, TrackEmbedBuilder } from "../structures";
 
@@ -31,22 +30,17 @@ export class MusicHelper {
     }
 
     private async addTrack ({player,interaction,track,tracks,result}: IAddTrackOptions ) {
+
+        var embed = {}
+
         if (track) {
-            interaction.editReply({
-                embeds: [
-                    new TrackEmbedBuilder(interaction, track, player).toJSON()
-                ]
-            })
+            embed = new TrackEmbedBuilder(interaction, track, player).toJSON()
 
             player.queue.add(track)
             console.log("Track added to queue");
 
         } else if (tracks && result) {
-            interaction.editReply({
-                embeds: [
-                    new PlaylistEmbedBuilder(interaction, result, player).toJSON()
-                ]
-            })
+            embed = new PlaylistEmbedBuilder(interaction, result, player).toJSON()
 
             tracks.forEach(track => {
                 player.queue.add(track)
@@ -54,12 +48,13 @@ export class MusicHelper {
             console.log("Playlist added to queue");
         } 
 
-        if (player.get<boolean>("idle") || !player.playing ) {
-            player.set("idle",false)
+        if (player.get<boolean>("idle") || !player.playing) {
+            player.set("idle", false)
             player.setVolume(config.music.volumeDefault)
             await player.play()
         } 
         
+        interaction.editReply({embeds: [embed]})
         this.QH.updatePages(player)
     }
 
@@ -67,17 +62,13 @@ export class MusicHelper {
         const player = await this.VH.ensureVoice(interaction)
         if (!player){
             interaction.reply({content: "No player found...Contact server owner",ephemeral: true})
-            return null
+            return
+
         } else {
             console.log(`Attempting to play song... Query: ${query}`)
-            
         } 
         
-        interaction.deferReply()
-
-        if (!RxUrl.test(query)) {
-            query = `ytsearch:${query}`
-        }
+        await interaction.deferReply()
 
         const result = await player.search(query)
         //TODO: Add new track embed
@@ -105,7 +96,9 @@ export class MusicHelper {
                 await interaction.editReply("Something unexpected happen. Contact your server owner immediately and let them know the exact command you tried to run.");
                 console.log(`Load type for play request defaulted. query '${query}' result as follows:`);
                 console.log(result);
-                return;
+                break;
         }
+
+        return
     }
 }
