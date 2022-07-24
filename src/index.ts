@@ -1,6 +1,7 @@
 import { Intents } from "discord.js"
 import { Manager } from "erela.js";
 import customFilter from "erela.js-filters";
+import Spotify from "erela.js-spotify";
 import config from "./config.json"
 import { VoiceHelper } from "./util/helpers";
 import { Boomer } from "./util/structures/boomer"
@@ -28,7 +29,11 @@ const client = new Boomer({
     },
     plugins: [
         // Load filter presets from erela.js-filters
-        new customFilter()
+        new customFilter(),
+        new Spotify({
+            clientID: config.spotify.clientID,
+            clientSecret: config.spotify.secret
+        })
     ]
 }))
 

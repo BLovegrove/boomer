@@ -8,6 +8,7 @@
     "discord.js": "^13.9.0",
     "erela.js": "^2.3.3",
     "erela.js-filters": "^1.2.7",
+    "erela.js-spotify": "^1.2.0",
     "erlpack": "github:discord/erlpack",
     "format-duration": "^2.0.0",
     "string-progressbar": "^1.0.4",
