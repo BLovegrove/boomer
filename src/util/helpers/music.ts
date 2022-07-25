@@ -1,7 +1,7 @@
 // # ----------------------------------Imports --------------------------------- #
-import { Boomer } from "../structures"
+import { Boomer, SkipEmbedBuilder } from "../structures"
 import config from "../../config.json"
-import { Player, SearchResult, Track } from "erela.js";
+import { Player, Queue, SearchResult, Track, UnresolvedTrack } from "erela.js";
 import { CommandInteraction } from "discord.js";
 import { VoiceHelper } from "./voice";
 import { QueueHelper } from "./queue";
@@ -100,5 +100,17 @@ export class MusicHelper {
         }
 
         return
+    }
+    async skip(interaction: CommandInteraction, player: Player, index: number, trim_queue=true ) {
+        if (player.queue.length = 0 && !player.trackRepeat){
+            await interaction.reply(":notepad_spiral: End of queue - time for your daily dose of idle tunes.")
+            player.stop()
+        }
+        if (player.trackRepeat){
+            const nextTrack= player.queue.current as Track 
+            const embed = new SkipEmbedBuilder(interaction,nextTrack,player)
+
+        }
+
     }
 }
