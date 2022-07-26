@@ -38,11 +38,9 @@ export class CommandHelper {
             commands.forEach(command => {
                 commandsData.push(command.data.toJSON())
             })
-
             
             await rest.put(Routes.applicationGuildCommands(config.bot.clientID, config.bot.guildID), { body: commandsData });
             // await rest.put(Routes.applicationCommands(config.bot.clientID), { body: {} });
-
 
             console.log('Successfully reloaded application (/) commands.');
         } catch (error) {
