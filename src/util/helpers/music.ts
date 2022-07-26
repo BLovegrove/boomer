@@ -61,7 +61,6 @@ export class MusicHelper {
     async play(interaction: CommandInteraction, query: string) {
         const player = await this.VH.ensureVoice(interaction)
         if (!player){
-            interaction.reply({content: "No player found...Contact server owner",ephemeral: true})
             return
 
         } else {
@@ -105,7 +104,11 @@ export class MusicHelper {
 
         return
     }
-    async skip(interaction: CommandInteraction, player: Player, index: number=0, trim_queue=true ) {
+    async skip(interaction: CommandInteraction, index: number=0, trim_queue=true ) {
+        const player = await this.VH.ensureVoice(interaction)
+        if (!player){
+            return
+        }
         if (player.queue.length = 0 && !player.trackRepeat) {
             await interaction.reply(":notepad_spiral: End of queue - time for your daily dose of idle tunes.")
             player.stop()
