@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from "@discordjs/builders";
+import { channelMention, SlashCommandBuilder } from "@discordjs/builders";
 import { PermissionFlagsBits } from "discord-api-types/v10";
 import { CommandInteraction } from "discord.js";
 import { VoiceHelper } from "../../util/helpers";
@@ -18,7 +18,8 @@ export const command: Command = {
                     {name: 'Kill bot', value: 'die'},
                     {name: 'Ping test', value: 'ping'},
                     {name: 'Log Search Example', value: 'searchex'},
-                    {name: 'Log queue entries', value: 'logqueue'}
+                    {name: 'Log queue entries', value: 'logqueue'},
+                    {name: 'Log player state', value: 'logplayer'}
                 )
         )
     ,
@@ -35,9 +36,9 @@ export const command: Command = {
 
         switch (subCommand) {
             case "die":
-                await interaction.editReply("My battery is low and it's getting dark :(")
-
-                return
+                await VH.disconnect(player)
+                client.destroy()
+                throw new Error("My battery is low and it's getting dark :(")
 
             case "ping":
                 await interaction.editReply(`Pong! (${client.ws.ping}ms)`)
@@ -66,6 +67,12 @@ export const command: Command = {
                 await interaction.followUp({content: "Logged queue. Go check client log", ephemeral: true})
 
                 return
+            
+            case "logplayer":
+                console.log(player)
+
+                await interaction.editReply("Success.")
+                await interaction.followUp({content: "Logged player object. Go check thlient log", ephemeral: true})
             
             default:
                 await interaction.editReply("Dev command failed. Couldn't find a subcommand.")
