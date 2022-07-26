@@ -20,8 +20,14 @@ export class VoiceHelper {
         this.client = client
     }
 
+    /**
+     * make sure you never run this in a scenario where a player doesnt exist.
+     * inbuilt guard for that coming soon.
+     * @param client Custom discord.js client Boomer
+     * @returns erela.js player
+     */
     static fetchPlayer(client: Boomer) {
-        return client.manager.get(config.bot.guildID)
+        return client.manager.get(config.bot.guildID) as Player
     }
 
     /**

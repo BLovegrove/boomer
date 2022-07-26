@@ -1,6 +1,7 @@
 import { channelMention, SlashCommandBuilder } from "@discordjs/builders";
 import { PermissionFlagsBits } from "discord-api-types/v10";
 import { CommandInteraction } from "discord.js";
+import { Player } from "erela.js";
 import { VoiceHelper } from "../../util/helpers";
 import { Boomer, Command } from "../../util/structures";
 
@@ -27,16 +28,14 @@ export const command: Command = {
         const subCommand = interaction.options.getString("subcommand", true)
 
         const VH = new VoiceHelper(client)
-        const player = await VH.ensureVoice(interaction)
-        if (!player) {
-            return
-        }
 
         await interaction.deferReply()
 
         switch (subCommand) {
             case "die":
-                await VH.disconnect(player)
+                if (client.playerExists) {
+                    await VH.disconnect(VoiceHelper.fetchPlayer(client))
+                }
                 client.destroy()
                 throw new Error("My battery is low and it's getting dark :(")
 
@@ -46,6 +45,11 @@ export const command: Command = {
                 return
 
             case "searchex":
+                var player = await VH.ensureVoice(interaction)
+                if (!player) {
+                    return
+                }
+
                 console.log("Text search result:");
                 console.log(await player.search("Rick Astley"));
 
@@ -61,6 +65,11 @@ export const command: Command = {
                 return
             
             case "logqueue":
+                var player = await VH.ensureVoice(interaction)
+                if (!player) {
+                    return
+                }
+
                 console.log(player.queue)
 
                 await interaction.editReply("Success.")
@@ -69,10 +78,17 @@ export const command: Command = {
                 return
             
             case "logplayer":
+                var player = await VH.ensureVoice(interaction)
+                if (!player) {
+                    return
+                }
+                
                 console.log(player)
 
                 await interaction.editReply("Success.")
-                await interaction.followUp({content: "Logged player object. Go check thlient log", ephemeral: true})
+                await interaction.followUp({content: "Logged player object. Go check the client log", ephemeral: true})
+                
+                return
             
             default:
                 await interaction.editReply("Dev command failed. Couldn't find a subcommand.")
