@@ -15,7 +15,7 @@ export const command: Command = {
             return
         }
 
-        player.stop(1)
+        player.stop()
 
         return interaction.reply("Skipping to next song!")
     }
