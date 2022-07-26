@@ -9,6 +9,7 @@ import { APIEmbed } from "discord-api-types/v9";
 
 export class TrackEmbedBuilder {
     data: APIEmbed
+    sender: GuildMember
 
     /**
      * creates an embed builder pre-loaded with data to display the current song info.
@@ -19,15 +20,15 @@ export class TrackEmbedBuilder {
      */
     constructor(interaction: CommandInteraction, track: Track, player: Player) {
 
-        const sender = interaction.member as GuildMember
+        this.sender = interaction.member as GuildMember
 
         this.data = {
             color: config.server.embedColor,
             description: `Song by: ${track.author}`,
             author: {
-                name: `Song queued by ${sender.displayName}: `,
+                name: `Song queued by ${this.sender.displayName}: `,
                 url: track.uri,
-                icon_url: sender.avatarURL() as string
+                icon_url: this.sender.avatarURL() as string
             },
             thumbnail: {
                 url: `https://i.ytimg.com/vi/${track.identifier}/mqdefault.jpg`
@@ -60,13 +61,8 @@ export class ClearedEmbedBuilder extends TrackEmbedBuilder {
     
     constructor(interaction: CommandInteraction, track: Track, player: Player) {
         super(interaction, track, player)
-        this.data = super.data
 
-        const sender = interaction.member as GuildMember
-
-        this.data.author = {
-            name: `${sender.displayName} cleared a song from queue:`
-        }
+        this.data.author!.name = `${this.sender.displayName} cleared a song from queue:`
     }
 }
 
@@ -78,15 +74,14 @@ export class SkipEmbedBuilder extends TrackEmbedBuilder {
      * @param interaction Discord.js command interaction for loading the next track
      * @param track first track in queue taken before skip executes
      * @param player erela.ks player
+     * @param index place in queue thats being skipped to
      */
-    constructor(interaction: CommandInteraction, track: Track, player: Player) {
+    constructor(interaction: CommandInteraction, track: Track, player: Player, index: number) {
         super(interaction, track, player)
-        this.data = super.data
 
-        const sender = interaction.member as GuildMember
-
-        this.data.author!.name = `Track skipped by ${sender.displayName}`
+        this.data.author!.name = `Track skipped by ${this.sender.displayName}`
         this.data.title = `Now playing: ${track.title}`
+        this.data.footer!.text = `${player.queue.length - index} tracks left in queue.`
     }
 }
 
@@ -103,9 +98,6 @@ export class ProgressEmbedBuilder extends TrackEmbedBuilder {
         const currentTrack = player.queue.current as Track
         super(interaction, currentTrack, player)
 
-        this.data = super.data
-        const sender = interaction.member as GuildMember
-
         const durationTotal = player.queue.current!.duration as number
         const durationCurrent = player.position
         const progress = ProgressBar.filledBar(
@@ -114,13 +106,14 @@ export class ProgressEmbedBuilder extends TrackEmbedBuilder {
             20
         ).toString()
 
-        this.data.author!.name = `Info requested by: ${sender.displayName}`
+        this.data.author!.name = `Info requested by: ${this.sender.displayName}`
         this.data.footer!.text = `🎵 ${timeFormat(durationCurrent, { leading: true })} ${progress} ${timeFormat(durationTotal, { leading: true })} 🎵`
     }
 }
 
 export class PlaylistEmbedBuilder {
     data: APIEmbed
+    sender: GuildMember
 
     /**
      * creates an embed builder pre-loaded with data to display the playlist you just enqueued.
@@ -131,7 +124,7 @@ export class PlaylistEmbedBuilder {
      */
     constructor(interaction: CommandInteraction, result: SearchResult, player: Player) {
 
-        const sender = interaction.member as GuildMember
+        this.sender = interaction.member as GuildMember
         const tracks = result.tracks
         const playlist = result.playlist as PlaylistInfo
 
@@ -139,9 +132,9 @@ export class PlaylistEmbedBuilder {
             color: config.server.embedColor,
             description: `:notepad_spiral: Playlist: ${playlist.name}`,
             author: {
-                name: `Playlist queued by ${sender.displayName}`,
+                name: `Playlist queued by ${this.sender.displayName}`,
                 url: "https://tinyurl.com/boomermusic",
-                icon_url: sender.avatarURL() as string
+                icon_url: this.sender.avatarURL() as string
             },
             thumbnail: {
                 url: `https://i.ytimg.com/vi/${tracks.at(0)!.identifier}/mqdefault.jpg`

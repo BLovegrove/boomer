@@ -61,7 +61,6 @@ export class MusicHelper {
     async play(interaction: CommandInteraction, query: string) {
         const player = await this.VH.ensureVoice(interaction)
         if (!player){
-            interaction.reply({content: "No player found...Contact server owner",ephemeral: true})
             return
 
         } else {
@@ -105,57 +104,66 @@ export class MusicHelper {
 
         return
     }
-    async skip(interaction: CommandInteraction, player: Player, index: number=0, trim_queue=true ) {
-        if (player.queue.length = 0 && !player.trackRepeat) {
+    async skip(interaction: CommandInteraction, index: number, trim_queue = true ) {
+        if (!this.client.playerExists){
+            await interaction.reply(":warning: There is no player running. Play a song first.")
+            return
+        }
+
+        const player = await this.VH.ensureVoice(interaction)
+        if (!player){
+            return
+        }
+
+        if (player.queue.length == 0 && !player.trackRepeat) {
             await interaction.reply(":notepad_spiral: End of queue - time for your daily dose of idle tunes.")
             player.stop()
+            return
         }
+
         if (player.trackRepeat) {
             const nextTrack = player.queue.current as Track 
-            const embed = new SkipEmbedBuilder (interaction,nextTrack,player).toJSON()
+            const embed = new SkipEmbedBuilder(interaction, nextTrack, player, 0).toJSON()
             await interaction.reply({content: ":repeat_one: Repeat enabled - repeating song.",embeds:[embed] }) 
             player.seek(0)
             console.log("Skipped (Repeating song).");
-            
-        } else {
-            if (index) {
-                const friendlyIndex = index  
-                index -= 1
-                
-                if (index <= 0) {
-                    await interaction.reply({content: ":warning: That index is too low! Queue starts at #1.",ephemeral: true})
-                    console.log(`Skip failed. Index too low(Expected: >=1. Recieved: ${friendlyIndex})`)
-                    return
-
-                } else if (index > player.queue.length) {
-                    await interaction.reply({content: `:warning: That index is too high! Queue only ${player.queue.length} items long.`,ephemeral: true})
-                    console.log(`Skip failed. Index too low(Expected: <=${player.queue.length}. Recieved: ${friendlyIndex})`)
-                    return
-                
-                } else {
-                    if (trim_queue) {
-                        console.log(`Skipped queue to track ${index + 1} of ${player.queue.length}`)
-                        player.queue.remove(0,index)
-                        const nextTrack= player.queue[0]        
-                    
-                    } else {
-                        console.log(`Jumped to track ${index + 1} of ${player.queue.length} in queue.`)
-                        const nextTrack= player.queue.remove(index)
-                        player.queue.add(nextTrack,0)    
-                        
-                    }
-                }
-            } else {
-                const nextTrack=player.queue[0] as Track
-                console.log("Skipped current track")
-                const embed = new SkipEmbedBuilder (interaction,nextTrack,player).toJSON()
-                await interaction.reply({embeds: [embed]})  
-                player.stop()
-            }    
-
+            return
         }
         
-        this.QH.updatePages(player) 
+        if (index < 0) {
+            await interaction.reply({content: ":warning: That index is too low! Queue starts at #1.",ephemeral: true})
+            console.log(`Skip failed. Index too low(Expected: >=1. Recieved: ${index})`)
+            return
+
+        } else if (index > player.queue.length) {
+            await interaction.reply({content: `:warning: That index is too high! Queue only ${player.queue.length} items long.`,ephemeral: true})
+            console.log(`Skip failed. Index too low(Expected: <=${player.queue.length}. Recieved: ${index})`)
+            return
+        
+        } else {
+
+            var nextTrack
+
+            if (trim_queue) {
+                console.log(`Skipped queue to track ${index} of ${player.queue.length}`)
+                nextTrack = player.queue.at(index - 1) as Track
+            
+            } else {
+                console.log(`Jumped to track ${index} of ${player.queue.length} in queue.`)
+                nextTrack = player.queue.remove(index).at(0) as Track
+                player.queue.add(nextTrack, 0)
+            }
+
+            const embed = new SkipEmbedBuilder(interaction, nextTrack, player, index).toJSON()
+            await interaction.reply({embeds: [embed]})  
+            player.stop(index)
+            console.log("Skipped current track")  
+            
+            this.QH.updatePages(player) 
+
+            return
+        }
+        
 
     }
 }
