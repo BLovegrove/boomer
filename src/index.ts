@@ -1,5 +1,5 @@
 import { Intents } from "discord.js"
-import { Manager } from "erela.js";
+import { Manager, Player } from "erela.js";
 import customFilter from "erela.js-filters";
 import Spotify from "erela.js-spotify";
 import config from "./config.json"
@@ -73,7 +73,24 @@ client.on("interactionCreate", async interaction => {
             await command.execute(interaction, client);
         } catch (error) {
             console.error(error);
-            await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+            const interactionState = [
+                (interaction.deferred ? "DEFERRED" : ""), 
+                (interaction.replied ? "REPLIED" : "")
+            ].filter(Boolean).join("_")
+            
+            switch(interactionState) {
+                case "DEFERRED":
+                    await interaction.editReply({ content: `${error}` });
+                    break;
+                case "DEFERRED_REPLIED":
+                    await interaction.followUp({ content: `${error}`, ephemeral: true });
+                    break;
+                case "REPLIED":
+                    await interaction.reply({ content: `${error}`, ephemeral: true });
+                    break;
+            }
+            
+            throw new Error("Command errored. Shuting down. This could be intentional, but check bot output just in case.")
         }
     }
 })
