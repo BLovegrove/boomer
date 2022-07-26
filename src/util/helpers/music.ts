@@ -66,12 +66,11 @@ export class MusicHelper {
 
         } else {
             console.log(`Attempting to play song... Query: ${query}`)
-        } 
+        }
         
         await interaction.deferReply()
 
         const result = await player.search(query)
-        //TODO: Add new track embed
 
         switch(result.loadType) {
             case "LOAD_FAILED":
