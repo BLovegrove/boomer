@@ -152,7 +152,7 @@ export class MusicHelper {
             
             } else {
                 console.log(`Jumped to track ${index} of ${player.queue.length} in queue.`)
-                nextTrack = player.queue.remove(index).at(0) as Track
+                nextTrack = player.queue.remove(index - 1).at(0) as Track
                 player.queue.add(nextTrack, 0) 
             }
 
