@@ -17,6 +17,6 @@ export const command: Command = {
         const MH = new MusicHelper(client)
 
         const searchString = interaction.options.getString('search', true)
-        MH.play(interaction, searchString)
+        await MH.play(interaction, searchString)
     }
 }
