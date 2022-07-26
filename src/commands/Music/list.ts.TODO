@@ -1,2 +1,0 @@
-add a gate to this command that checks for isResolving state. Either prevent list showing until all are resolved or better yet resolve them one page at a time
-with a loading bar between each 

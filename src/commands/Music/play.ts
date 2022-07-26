@@ -9,7 +9,7 @@ export const command: Command = {
         .setDescription("Plays music! Summons boomer if he isn't running, adds a song to the queue if he is.")
         .addStringOption(option => option
             .setName('search')
-            .setDescription('The name/artist/url of the sog you want to find')
+            .setDescription('The name/artist/url of the song you want to find')
             .setRequired(true)
         )
         ,

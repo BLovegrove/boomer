@@ -55,7 +55,6 @@ export class MusicHelper {
         } 
         
         interaction.editReply({embeds: [embed]})
-        this.QH.updatePages(player)
     }
 
     async play(interaction: CommandInteraction, query: string) {
@@ -73,7 +72,7 @@ export class MusicHelper {
 
         switch(result.loadType) {
             case "LOAD_FAILED":
-                interaction.editReply( "Failed to load track, please use a URL or different search term");
+                interaction.editReply("Failed to load track, please use a URL or different search term");
                 break;
 
             case "NO_MATCHES":
@@ -101,6 +100,8 @@ export class MusicHelper {
                 console.log(result);
                 break;
         }
+
+        this.QH.updatePages(player)
 
         return
     }
@@ -163,7 +164,5 @@ export class MusicHelper {
 
             return
         }
-        
-
     }
 }

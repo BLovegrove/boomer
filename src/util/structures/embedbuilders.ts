@@ -18,7 +18,7 @@ export class TrackEmbedBuilder {
      * @param track track data for the requested song
      * @param player erela.js player
      */
-    constructor(interaction: CommandInteraction, track: Track, player: Player) {
+    constructor(interaction: CommandInteraction, track: Track | UnresolvedTrack, player: Player) {
 
         this.sender = interaction.member as GuildMember
 
@@ -29,9 +29,17 @@ export class TrackEmbedBuilder {
                 name: `Song queued by ${this.sender.displayName}: `,
                 url: track.uri,
                 icon_url: this.sender.avatarURL() as string
-            },
-            thumbnail: {
+            }
+        }
+
+        if (TrackUtils.isTrack(track)) {
+            this.data.thumbnail = {
                 url: `https://i.ytimg.com/vi/${track.identifier}/mqdefault.jpg`
+            }
+
+        } else {
+            this.data.thumbnail = {
+                url: "https://i.imgur.com/hpjK2ym.png"
             }
         }
 
@@ -59,7 +67,7 @@ export class TrackEmbedBuilder {
      */
 export class ClearedEmbedBuilder extends TrackEmbedBuilder {
     
-    constructor(interaction: CommandInteraction, track: Track, player: Player) {
+    constructor(interaction: CommandInteraction, track: Track | UnresolvedTrack, player: Player) {
         super(interaction, track, player)
 
         this.data.author!.name = `${this.sender.displayName} cleared a song from queue:`
@@ -76,7 +84,7 @@ export class SkipEmbedBuilder extends TrackEmbedBuilder {
      * @param player erela.ks player
      * @param index place in queue thats being skipped to
      */
-    constructor(interaction: CommandInteraction, track: Track, player: Player, index: number) {
+    constructor(interaction: CommandInteraction, track: Track | UnresolvedTrack, player: Player, index: number) {
         super(interaction, track, player)
 
         this.data.author!.name = `Track skipped by ${this.sender.displayName}`
@@ -95,7 +103,8 @@ export class ProgressEmbedBuilder extends TrackEmbedBuilder {
      */
     constructor(interaction: CommandInteraction, player: Player) {
 
-        const currentTrack = player.queue.current as Track
+        var currentTrack = player.queue.current as Track
+
         super(interaction, currentTrack, player)
 
         const durationTotal = player.queue.current!.duration as number
@@ -171,14 +180,17 @@ export class ListEmbedBuilder {
      */
     constructor(player: Player, page: number) {
 
-        const queueStart = (page - 1) * config.music.listPageLength
-        const queueEnd = (
+        const listStart = (page - 1) * config.music.listPageLength
+        const listEnd = (
             page < player.get<number>('pages')
-            ? queueStart + (config.music.listPageLength - 1) 
+            ? listStart + (config.music.listPageLength - 1) 
             : player.queue.length - 1
         )
 
-        const track = player.queue.current as Track
+        console.log(`Queuestart ${listStart} queueend ${listEnd}`)
+        console.log(`Pages ${player.get<number>('pages')}`)
+
+        const track = player.queue.current as Track | UnresolvedTrack
 
         var modifiers = (
             player.trackRepeat ? ":repeat_one:" : "" + 
@@ -189,15 +201,12 @@ export class ListEmbedBuilder {
         this.data = {
             color: config.server.embedColor,
             title: `Now playing: ***${track.title}***`,
-            description: `Page ${page} of ${player.get<number>("pages")}. Modifiers: ${modifiers}`,
+            description: `Song #${page} of ${player.get<number>("pages")}. Modifiers: ${modifiers}`,
             url: track.uri,
             author: {
-                name: `Page ${page} of #${queueStart + 1} to #${queueEnd + 1} of ${player.queue.length} tracks in queue`,
+                name: `Current queue: Showing #${listStart + 1} to #${listEnd + 1} of ${player.queue.length} items in queue.`,
                 url: "https://tinyurl.com/boomermusic",
                 icon_url: "https://i.imgur.com/dpVBIer.png"
-            },
-            thumbnail: {
-                url: `https://i.ytimg.com/vi/${track.identifier}/mqdefault.jpg`
             },
             footer: {
                 text: "<> for page +/-"
@@ -205,10 +214,21 @@ export class ListEmbedBuilder {
             fields: []
         }
 
-        for (var i = 0; queueStart < i < (player.queue.length == 1) ? queueEnd : queueEnd + 1; i++) {
-            let track = player.queue.at(i) as Track
+        if (TrackUtils.isTrack(track)) {
+            this.data.thumbnail = {
+                url: `https://i.ytimg.com/vi/${track.identifier}/mqdefault.jpg`
+            }
 
-            let playTime = timeFormat(track.duration, {leading: true}) as String
+        } else {
+            this.data.thumbnail = {
+                url: "https://i.imgur.com/hpjK2ym.png"
+            }
+        }
+
+        for (var i = listStart; i < (player.queue.length == 1 ? listEnd : listEnd + 1); i++) {
+            let track = player.queue.at(i) as Track | UnresolvedTrack
+
+            let playTime = timeFormat(track.duration!, {leading: true}) as String
 
             this.data.fields!.push({
                 name: truncate(`${i + 1}. *${track.title}*`, config.music.listCharLength),
@@ -221,5 +241,4 @@ export class ListEmbedBuilder {
     toJSON() {
         return new EmbedBuilder(this.data).toJSON()
     }
-
 }
