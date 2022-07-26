@@ -10,14 +10,16 @@ export const command: Command = {
         .setName("skip")
         .setDescription("Skips next song in queue by default.")
         .addNumberOption(option =>
-            option.setName("index")
-            .setDescription('The number in the queue you want to skip to')
-            .setRequired(true) )
+            option
+                .setName("index")
+                .setDescription('The number in the queue you want to skip to')
+        )
         ,
     async execute(interaction: CommandInteraction, client: Boomer) {
         const MH = new MusicHelper(client)
 
-        const index = interaction.options.getNumber('index', true)
-        await MH.skip(interaction,index)
+        var index = interaction.options.getNumber('index')
+
+        MH.skip(interaction, (index === null ? 1 : index), true)
     }
 }
