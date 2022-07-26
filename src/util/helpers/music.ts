@@ -146,19 +146,19 @@ export class MusicHelper {
 
             if (trim_queue) {
                 console.log(`Skipped queue to track ${index} of ${player.queue.length}`)
-                nextTrack = player.queue.at(index - 1) as Track
+                player.queue.remove(0, index-1)
+                nextTrack = player.queue.at(0) as Track 
             
             } else {
                 console.log(`Jumped to track ${index} of ${player.queue.length} in queue.`)
                 nextTrack = player.queue.remove(index).at(0) as Track
-                player.queue.add(nextTrack, 0)
+                player.queue.add(nextTrack, 0) 
             }
 
             const embed = new SkipEmbedBuilder(interaction, nextTrack, player, index).toJSON()
-            await interaction.reply({embeds: [embed]})  
-            player.stop(index)
+            await interaction.reply({embeds: [embed]}) 
             console.log("Skipped current track")  
-            
+            player.stop()
             this.QH.updatePages(player) 
 
             return
