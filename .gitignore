@@ -105,3 +105,4 @@ dist
 
 # custom ignore
 config.json
+config.json.bak
