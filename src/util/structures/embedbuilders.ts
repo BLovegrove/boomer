@@ -18,9 +18,17 @@ export class TrackEmbedBuilder {
      * @param track track data for the requested song
      * @param player erela.js player
      */
-    constructor(interaction: CommandInteraction, track: Track | UnresolvedTrack, player: Player) {
+    constructor(interaction: CommandInteraction, track: Track | UnresolvedTrack | undefined, player: Player) {
 
         this.sender = interaction.member as GuildMember
+
+        if (!track) {
+            this.data = {
+                color: config.server.embedColor,
+                description: "Something went wrong. No track was provided to the EmbedBuilder."
+            }
+            return
+        }
 
         this.data = {
             color: config.server.embedColor,
@@ -67,8 +75,12 @@ export class TrackEmbedBuilder {
      */
 export class ClearedEmbedBuilder extends TrackEmbedBuilder {
     
-    constructor(interaction: CommandInteraction, track: Track | UnresolvedTrack, player: Player) {
+    constructor(interaction: CommandInteraction, track: Track | UnresolvedTrack | undefined, player: Player) {
         super(interaction, track, player)
+
+        if (!track) {
+            return
+        }
 
         this.data.author!.name = `${this.sender.displayName} cleared a song from queue:`
     }
@@ -84,8 +96,12 @@ export class SkipEmbedBuilder extends TrackEmbedBuilder {
      * @param player erela.ks player
      * @param index place in queue thats being skipped to
      */
-    constructor(interaction: CommandInteraction, track: Track | UnresolvedTrack, player: Player, index: number) {
+    constructor(interaction: CommandInteraction, track: Track | UnresolvedTrack | undefined, player: Player, index: number) {
         super(interaction, track, player)
+
+        if (!track) {
+            return
+        }
 
         this.data.author!.name = `Track skipped by ${this.sender.displayName}`
         this.data.title = `Now playing: ${track.title}`
@@ -103,9 +119,13 @@ export class ProgressEmbedBuilder extends TrackEmbedBuilder {
      */
     constructor(interaction: CommandInteraction, player: Player) {
 
-        var currentTrack = player.queue.current as Track
+        var currentTrack = (player.queue.current ? player.queue.current : undefined)
 
         super(interaction, currentTrack, player)
+
+        if (!currentTrack) {
+            return
+        }
 
         const durationTotal = player.queue.current!.duration as number
         const durationCurrent = player.position
