@@ -29,9 +29,9 @@ export class CommandHelper {
         return commands;
     }
 
-    static async register(commands: Collection<String, Command>, client: Boomer) {
+    static async register(commands: Collection<String, Command>) {
 
-        var rest = new REST({ version: '9' })
+        const rest = new REST({ version: '9' })
 
         if (config.dev.active) {
             rest.setToken(config.dev.token);
@@ -63,6 +63,16 @@ export class CommandHelper {
             console.log('Successfully reloaded guild application (/) commands.');
         } catch (error) {
             console.error(error);
+        }
+    }
+
+    static async deRegister() {
+        if (config.dev.active) {
+            const rest = new REST({ version: '9' }).setToken(config.dev.token);
+
+            // clear all commands
+            await rest.put(Routes.applicationGuildCommands(config.dev.clientID, config.bot.guildID), { body: {} });
+            await rest.put(Routes.applicationCommands(config.dev.clientID), { body: {} });
         }
     }
 }

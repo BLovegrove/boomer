@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
-import { VoiceHelper } from "../../util/helpers";
+import { CommandHelper, VoiceHelper } from "../../util/helpers";
 import { Boomer, Command } from "../../util/structures";
 import { PermissionFlagsBits } from "discord-api-types/v10";
 
@@ -36,6 +36,7 @@ export const command: Command = {
                     await VH.disconnect(VoiceHelper.fetchPlayer(client))
                 }
                 client.destroy()
+                CommandHelper.deRegister()
                 throw new Error("My battery is low and it's getting dark :(")
 
             case "ping":
