@@ -167,14 +167,19 @@ export class MusicHelper {
 
             console.log("Skipped current track")
 
+            const nextTrack = player.queue.at(0)
+            if (!nextTrack) {
+                await interaction.reply(config.error.trackNotFound)
+                return
+            }
+            
             player.stop()
-
-            const nextTrack = player.queue.current as Track
 
             const embed = new SkipEmbedBuilder(interaction, nextTrack, player, index).toJSON()
             await interaction.reply({embeds: [embed]}) 
             
             this.QH.updatePages(player) 
+            await VoiceHelper.updateStatus(this.client, player)
 
             return
         }

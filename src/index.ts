@@ -95,10 +95,10 @@ client.on("interactionCreate", async interaction => {
     }
 })
 
-client.manager.on("trackEnd", node => {
+client.manager.on("trackEnd", async node => {
     const player = VoiceHelper.fetchPlayer(client)
     if (player) {
-        VoiceHelper.updateStatus(client, player)
+        await VoiceHelper.updateStatus(client, player)
     }
 })
 
