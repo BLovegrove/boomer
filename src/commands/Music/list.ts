@@ -26,7 +26,7 @@ export const command: Command = {
         }
 
         var embed = new ListEmbedBuilder(player, listPage).toJSON()
-        interaction.reply({embeds:[embed]})
+        await interaction.reply({embeds:[embed]})
 
         return
     }

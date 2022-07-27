@@ -239,7 +239,7 @@ export class ListEmbedBuilder {
             }
         }
 
-        for (var i = listStart; i < (player.queue.length == 1 ? listEnd : listEnd + 1); i++) {
+        for (var i = listStart; i < listEnd + 1; i++) {
             let track = player.queue.at(i) as Track | UnresolvedTrack
 
             let playTime = timeFormat(track.duration!, {leading: true}) as String
