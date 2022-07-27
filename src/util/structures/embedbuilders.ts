@@ -89,7 +89,7 @@ export class SkipEmbedBuilder extends TrackEmbedBuilder {
 
         this.data.author!.name = `Track skipped by ${this.sender.displayName}`
         this.data.title = `Now playing: ${track.title}`
-        this.data.footer!.text = `${player.queue.length - index} tracks left in queue.`
+        this.data.footer!.text = `${player.queue.length - 1} tracks left in queue.`
     }
 }
 
@@ -201,7 +201,7 @@ export class ListEmbedBuilder {
         this.data = {
             color: config.server.embedColor,
             title: `Now playing: ***${track.title}***`,
-            description: `Song #${page} of ${player.get<number>("pages")}. Modifiers: ${modifiers}`,
+            description: `Page ${page} of ${player.get<number>("pages")}. Modifiers: ${modifiers}`,
             url: track.uri,
             author: {
                 name: `Current queue: Showing #${listStart + 1} to #${listEnd + 1} of ${player.queue.length} items in queue.`,
