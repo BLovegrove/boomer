@@ -16,7 +16,7 @@ export const command: Command = {
                 .setRequired(true)
                 .addChoices(
                     {name: "safe", value:"safe"},
-                    {name: "resolved", value: "resoilved"}
+                    { name: "resolved", value: "resolved"}
                 )
         )
         .addNumberOption(option => 
@@ -49,16 +49,20 @@ export const command: Command = {
             case "resolved":
 
                 const listStart = (listPage - 1) * config.music.listPageLength
-                const listEnd = listPage * config.music.listPageLength
+                const listEnd = (listPage * config.music.listPageLength) - 1
+
+                console.log(`list start: ${listStart} end: ${listEnd}`)
 
                 for (var i = listStart; i < listEnd; i++) {
                     var track = player.queue.at(i) as Track | UnresolvedTrack
-                    if (!track) {
-                        break
-                    }
 
-                    if (TrackUtils.isUnresolvedTrack(track)) {
+                    if (track && TrackUtils.isUnresolvedTrack(track)) {
+                        console.log("resolving track")
                         await (track as UnresolvedTrack).resolve()
+                    } else if (!track) {
+                        console.log("track failed ot load")
+                    } else {
+                        console.log("track is already resolved")
                     }
                 }
 
