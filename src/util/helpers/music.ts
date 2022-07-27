@@ -165,15 +165,19 @@ export class MusicHelper {
                 player.queue.add(jumpTrack, 0) 
             }
 
-            console.log("Skipped current track")
+            // resolve the track if it hasnt been done already
+            var nextTrack = player.queue.at(0)
+            if (TrackUtils.isUnresolvedTrack(nextTrack)) {
+                nextTrack = await TrackUtils.getClosestTrack(nextTrack as UnresolvedTrack)
+            }
 
-            const nextTrack = player.queue.at(0)
             if (!nextTrack) {
                 await interaction.reply(config.error.trackNotFound)
                 return
             }
-            
+
             player.stop()
+            console.log("Skipped current track")
 
             const embed = new SkipEmbedBuilder(interaction, nextTrack, player, index).toJSON()
             await interaction.reply({embeds: [embed]}) 
