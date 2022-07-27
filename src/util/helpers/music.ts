@@ -147,8 +147,11 @@ export class MusicHelper {
 
             if (trim_queue) {
                 console.log(`Skipped queue to track ${index} of ${player.queue.length}`)
-                player.queue.remove(0, index-1)
-                nextTrack = player.queue.at(0) as Track 
+                nextTrack = player.queue.at(index - 1) as Track 
+
+                if (index - 1 != 0) {
+                    player.queue.remove(0, index - 1)
+                }
             
             } else {
                 console.log(`Jumped to track ${index} of ${player.queue.length} in queue.`)
