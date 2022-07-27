@@ -22,7 +22,7 @@ export class Boomer extends Client {
         // grab the command files and generate a collection from them
         this.commands = CommandHelper.load(path.join(__dirname, "../../commands"))
         // register the commands with the discord API to display them on the server
-        CommandHelper.register(this.commands)
+        CommandHelper.register(this.commands, this)
     }
 
     get playerExists() {
@@ -31,6 +31,10 @@ export class Boomer extends Client {
     }
 
     connect() {
-        return super.login(config.bot.token);
+        if (config.dev.active) {
+            return this.login(config.dev.token);
+        } else {
+            return this.login(config.bot.token);
+        }
     };
 };

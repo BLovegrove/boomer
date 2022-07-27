@@ -162,6 +162,8 @@ export class PlaylistEmbedBuilder {
             }
         }
 
+        const queueLength = player.queue.length
+
         if (!player.playing || player.get('idle')) {
             this.data.title = `Now playing: ${tracks.at(0)!.title}`
             this.data.footer = {
@@ -170,7 +172,7 @@ export class PlaylistEmbedBuilder {
         } else {
             this.data.title = `Added ${tracks.at(0)!.title} and ${tracks.length - 1} more to queue`
             this.data.footer = {
-                text: `Songs are #${player.queue.length} to #${player.queue.length + tracks.length} in queue.`
+                text: `Songs are #${(queueLength > 0 ? queueLength + 1 : 1)} to #${player.queue.length + tracks.length} in queue.`
             }
         }
 
@@ -201,11 +203,14 @@ export class ListEmbedBuilder {
 
         const track = player.queue.current as Track
 
-        var modifiers = (
-            player.trackRepeat ? ":repeat_one:" : "" + 
-            player.queueRepeat ? ":repeat:" : ""
+        var modifiers = "" +
+            (player.trackRepeat ? ":repeat_one:" : "") + 
+            (player.queueRepeat ? ":repeat:" : "")
             // TODO: Shuffle :((
-        )
+
+        if (modifiers == "") {
+            modifiers = "None."
+        }
 
         this.data = {
             color: config.server.embedColor,

@@ -63,7 +63,7 @@ client.once("ready", () => {
 
 // monitor for slash commands and handle them seperately
 client.on("interactionCreate", async interaction => {
-    
+
     if (interaction.isCommand()) {
         const command = client.commands.get(interaction.commandName);
 

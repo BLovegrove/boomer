@@ -1,9 +1,11 @@
 import { REST } from "@discordjs/rest";
 import { Collection } from "discord.js";
-import { Command } from "../structures";
+import { Boomer, Command } from "../structures";
 import fs from "fs";
 import config from "../../config.json"
-import { Routes } from "discord-api-types/v9";
+import { PermissionFlagsBits, Routes } from "discord-api-types/v10";
+import { APIApplicationCommand } from "discord-api-types/v9";
+import { SlashCommandBuilder } from "@discordjs/builders";
 
 
 export class CommandHelper {
@@ -27,22 +29,38 @@ export class CommandHelper {
         return commands;
     }
 
-    static async register(commands: Collection<String, Command>) {
+    static async register(commands: Collection<String, Command>, client: Boomer) {
 
-        const rest = new REST({ version: '9' }).setToken(config.bot.token);
+        var rest = new REST({ version: '9' })
+
+        if (config.dev.active) {
+            rest.setToken(config.dev.token);
+        } else {
+            rest.setToken(config.bot.token);
+        }
 
         try {
-            console.log('Started refreshing application (/) commands.');
+            console.log('Started refreshing guild application (/) commands.');
 
             const commandsData: any[] = []
             commands.forEach(command => {
+                if (config.dev.active) {
+                    (command.data as SlashCommandBuilder).setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+                }
                 commandsData.push(command.data.toJSON())
             })
             
-            await rest.put(Routes.applicationGuildCommands(config.bot.clientID, config.bot.guildID), { body: commandsData });
-            // await rest.put(Routes.applicationCommands(config.bot.clientID), { body: {} });
+            // set guild commands / clear global commands
+            if (config.dev.active) {
+                await rest.put(Routes.applicationGuildCommands(config.dev.clientID, config.bot.guildID), { body: commandsData });
+                await rest.put(Routes.applicationCommands(config.dev.clientID), { body: {} });
 
-            console.log('Successfully reloaded application (/) commands.');
+            } else {
+                await rest.put(Routes.applicationGuildCommands(config.bot.clientID, config.bot.guildID), { body: commandsData });
+                await rest.put(Routes.applicationCommands(config.bot.clientID), { body: {} });
+            }
+
+            console.log('Successfully reloaded guild application (/) commands.');
         } catch (error) {
             console.error(error);
         }

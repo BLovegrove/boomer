@@ -1,14 +1,14 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { PermissionFlagsBits } from "discord-api-types/v10";
 import { CommandInteraction } from "discord.js";
 import { VoiceHelper } from "../../util/helpers";
 import { Boomer, Command } from "../../util/structures";
+import { PermissionFlagsBits } from "discord-api-types/v10";
 
 export const command: Command = {
     data: new SlashCommandBuilder()
         .setName("dev")
         .setDescription("Series of dev commands for boomer.")
-        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
         .addStringOption(option =>
             option
                 .setName("subcommand")
