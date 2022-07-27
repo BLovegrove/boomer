@@ -88,7 +88,7 @@ export class MusicHelper {
 
             case "PLAYLIST_LOADED":
                 var tracks = result.tracks;
-                this.addTrack(interaction, player, tracks, result)
+                this.addTrack(interaction, player, undefined, tracks, result)
                 break;
                 
             default:
