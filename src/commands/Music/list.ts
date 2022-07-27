@@ -3,7 +3,7 @@ import { CommandInteraction } from "discord.js";
 import { VoiceHelper } from "../../util/helpers";
 import { Boomer, Command, ListEmbedBuilder } from "../../util/structures";
 import config from "../../config.json"
-import { Track, TrackUtils, UnresolvedTrack } from "erela.js";
+import { TrackUtils, UnresolvedTrack } from "erela.js";
 
 export const command: Command = {
     data: new SlashCommandBuilder()
