@@ -1,7 +1,7 @@
 // # ----------------------------------Imports --------------------------------- #
 import { Boomer, SkipEmbedBuilder } from "../structures"
 import config from "../../config.json"
-import { Player, SearchResult, Track, UnresolvedTrack } from "erela.js";
+import { Player, SearchResult, Track, TrackUtils, UnresolvedTrack } from "erela.js";
 import { CommandInteraction } from "discord.js";
 import { VoiceHelper } from "./voice";
 import { QueueHelper } from "./queue";
@@ -146,16 +146,8 @@ export class MusicHelper {
         
         } else {
 
-            var nextTrack: Track | UnresolvedTrack | undefined
-
             if (trim_queue) {
                 console.log(`Skipped queue to track ${index} of ${player.queue.length}`)
-                nextTrack = player.queue.at(index - 1)
-                
-                if (!nextTrack) {
-                    await interaction.reply(config.error.trackNotFound);
-                    return
-                }
 
                 if (index - 1 != 0) {
                     player.queue.remove(0, index - 1)
@@ -163,20 +155,25 @@ export class MusicHelper {
             
             } else {
                 console.log(`Jumped to track ${index} of ${player.queue.length} in queue.`)
-                nextTrack = player.queue.remove(index - 1).at(0)
+                const jumpTrack = player.queue.remove(index - 1).at(0)
 
-                if (!nextTrack) {
+                if (!jumpTrack) {
                     await interaction.reply(config.error.trackNotFound)
                     return
                 }
 
-                player.queue.add(nextTrack, 0) 
+                player.queue.add(jumpTrack, 0) 
             }
+
+            console.log("Skipped current track")
+
+            player.stop()
+
+            const nextTrack = player.queue.current as Track
 
             const embed = new SkipEmbedBuilder(interaction, nextTrack, player, index).toJSON()
             await interaction.reply({embeds: [embed]}) 
-            console.log("Skipped current track")  
-            player.stop()
+            
             this.QH.updatePages(player) 
 
             return
