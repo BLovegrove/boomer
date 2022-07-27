@@ -106,4 +106,4 @@ dist
 # custom ignore
 config.json
 config.json.bak
-start-boomer.sh
+startclient.sh
