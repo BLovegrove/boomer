@@ -54,7 +54,7 @@ export const command: Command = {
                 console.log(`list start: ${listStart} end: ${listEnd}`)
 
                 for (var i = listStart; i < listEnd; i++) {
-                    var track = player.queue.at(i) as Track | UnresolvedTrack
+                    var track = player.queue.at(i)
 
                     if (track && TrackUtils.isUnresolvedTrack(track)) {
                         console.log("resolving track")

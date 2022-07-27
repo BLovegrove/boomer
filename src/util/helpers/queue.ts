@@ -31,7 +31,7 @@ export class QueueHelper {
             interaction.reply(":boom: Queue cleared!")
 
         } else {
-            const cleared = player.queue.remove(index).at(0) as Track
+            const cleared = player.queue.remove(index).at(0)
             interaction.reply({embeds: [
                 new ClearedEmbedBuilder(interaction, cleared, player).toJSON()
             ]})

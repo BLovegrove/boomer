@@ -80,12 +80,12 @@ export class MusicHelper {
                 break;
 
             case "SEARCH_RESULT":
-                var track = result.tracks.at(0) as Track;
+                var track = result.tracks.at(0)
                 this.addTrack({player, interaction, track:track})
                 break;
 
             case "TRACK_LOADED":
-                var track = result.tracks.at(0) as Track
+                var track = result.tracks.at(0)
                 this.addTrack({player, interaction, track: track})
                 break;
 
@@ -123,7 +123,7 @@ export class MusicHelper {
         }
 
         if (player.trackRepeat) {
-            const nextTrack = player.queue.current as Track 
+            const nextTrack = (player.queue.current ? player.queue.current : undefined)
             const embed = new SkipEmbedBuilder(interaction, nextTrack, player, 0).toJSON()
             await interaction.reply({content: ":repeat_one: Repeat enabled - repeating song.",embeds:[embed] }) 
             player.seek(0)
@@ -143,11 +143,11 @@ export class MusicHelper {
         
         } else {
 
-            var nextTrack
+            var nextTrack: Track | UnresolvedTrack | undefined
 
             if (trim_queue) {
                 console.log(`Skipped queue to track ${index} of ${player.queue.length}`)
-                nextTrack = player.queue.at(index - 1) as Track 
+                nextTrack = player.queue.at(index - 1)
 
                 if (index - 1 != 0) {
                     player.queue.remove(0, index - 1)
@@ -155,7 +155,11 @@ export class MusicHelper {
             
             } else {
                 console.log(`Jumped to track ${index} of ${player.queue.length} in queue.`)
-                nextTrack = player.queue.remove(index - 1).at(0) as Track
+                nextTrack = player.queue.remove(index - 1).at(0)
+                if (!nextTrack) {
+                    interaction.reply(":warning: Something went wrong moviung the selected track to the front of queue. Ask your server admin to check the logs.")
+                    return
+                }
                 player.queue.add(nextTrack, 0) 
             }
 
