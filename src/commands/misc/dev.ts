@@ -1,7 +1,6 @@
-import { channelMention, SlashCommandBuilder } from "@discordjs/builders";
+import { SlashCommandBuilder } from "@discordjs/builders";
 import { PermissionFlagsBits } from "discord-api-types/v10";
 import { CommandInteraction } from "discord.js";
-import { Player } from "erela.js";
 import { VoiceHelper } from "../../util/helpers";
 import { Boomer, Command } from "../../util/structures";
 

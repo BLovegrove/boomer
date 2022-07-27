@@ -1,7 +1,5 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
-import { Player } from "erela.js";
-import { VoiceHelper } from "../../util/helpers";
 import { MusicHelper } from "../../util/helpers/music";
 import { Boomer, Command } from "../../util/structures";
 
