@@ -187,9 +187,6 @@ export class ListEmbedBuilder {
             : player.queue.length - 1
         )
 
-        console.log(`Queuestart ${listStart} queueend ${listEnd}`)
-        console.log(`Pages ${player.get<number>('pages')}`)
-
         const track = player.queue.current as Track | UnresolvedTrack
 
         var modifiers = (
