@@ -18,17 +18,9 @@ export class TrackEmbedBuilder {
      * @param track track data for the requested song
      * @param player erela.js player
      */
-    constructor(interaction: CommandInteraction, track: Track | UnresolvedTrack | undefined, player: Player) {
+    constructor(interaction: CommandInteraction, track: Track | UnresolvedTrack, player: Player) {
 
         this.sender = interaction.member as GuildMember
-
-        if (!track) {
-            this.data = {
-                color: config.server.embedColor,
-                description: "Something went wrong. No track was provided to the EmbedBuilder."
-            }
-            return
-        }
 
         this.data = {
             color: config.server.embedColor,
@@ -75,7 +67,7 @@ export class TrackEmbedBuilder {
      */
 export class ClearedEmbedBuilder extends TrackEmbedBuilder {
     
-    constructor(interaction: CommandInteraction, track: Track | UnresolvedTrack | undefined, player: Player) {
+    constructor(interaction: CommandInteraction, track: Track | UnresolvedTrack, player: Player) {
         super(interaction, track, player)
 
         if (!track) {
@@ -96,7 +88,7 @@ export class SkipEmbedBuilder extends TrackEmbedBuilder {
      * @param player erela.ks player
      * @param index place in queue thats being skipped to
      */
-    constructor(interaction: CommandInteraction, track: Track | UnresolvedTrack | undefined, player: Player, index: number) {
+    constructor(interaction: CommandInteraction, track: Track | UnresolvedTrack, player: Player, index: number) {
         super(interaction, track, player)
 
         if (!track) {
@@ -119,7 +111,7 @@ export class ProgressEmbedBuilder extends TrackEmbedBuilder {
      */
     constructor(interaction: CommandInteraction, player: Player) {
 
-        var currentTrack = (player.queue.current ? player.queue.current : undefined)
+        var currentTrack = player.queue.current as Track
 
         super(interaction, currentTrack, player)
 
@@ -207,7 +199,7 @@ export class ListEmbedBuilder {
             : player.queue.length - 1
         )
 
-        const track = player.queue.current as Track | UnresolvedTrack
+        const track = player.queue.current as Track
 
         var modifiers = (
             player.trackRepeat ? ":repeat_one:" : "" + 

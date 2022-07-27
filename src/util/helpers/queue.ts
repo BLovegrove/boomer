@@ -32,6 +32,12 @@ export class QueueHelper {
 
         } else {
             const cleared = player.queue.remove(index).at(0)
+
+            if (!cleared) {
+                interaction.reply(config.error.trackNotFound)
+                return
+            }
+
             interaction.reply({embeds: [
                 new ClearedEmbedBuilder(interaction, cleared, player).toJSON()
             ]})

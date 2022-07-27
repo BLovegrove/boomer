@@ -1,21 +1,13 @@
 // # ----------------------------------Imports --------------------------------- #
 import { Boomer, SkipEmbedBuilder } from "../structures"
 import config from "../../config.json"
-import { Player, Queue, SearchResult, Track, UnresolvedTrack } from "erela.js";
+import { Player, SearchResult, Track, UnresolvedTrack } from "erela.js";
 import { CommandInteraction } from "discord.js";
 import { VoiceHelper } from "./voice";
 import { QueueHelper } from "./queue";
 import { PlaylistEmbedBuilder, TrackEmbedBuilder } from "../structures";
 
 // # ----------------------------------Config ---------------------------------- #
-
-interface IAddTrackOptions {
-    player: Player
-    interaction: CommandInteraction
-    track?: Track
-    tracks?: Track[]
-    result?: SearchResult
-}
 
 export class MusicHelper {
 
@@ -29,7 +21,12 @@ export class MusicHelper {
         this.QH = new QueueHelper(client)
     }
 
-    private async addTrack ({player,interaction,track,tracks,result}: IAddTrackOptions ) {
+    private async addTrack (
+        interaction: CommandInteraction, 
+        player: Player, 
+        track: Track | undefined=undefined, 
+        tracks: Track[] | undefined=undefined, 
+        result: SearchResult | undefined=undefined) {
 
         var embed = {}
 
@@ -81,17 +78,17 @@ export class MusicHelper {
 
             case "SEARCH_RESULT":
                 var track = result.tracks.at(0)
-                this.addTrack({player, interaction, track:track})
+                this.addTrack(interaction, player, track)
                 break;
 
             case "TRACK_LOADED":
                 var track = result.tracks.at(0)
-                this.addTrack({player, interaction, track: track})
+                this.addTrack(interaction, player, track)
                 break;
 
             case "PLAYLIST_LOADED":
                 var tracks = result.tracks;
-                this.addTrack({player, interaction, tracks: tracks, result: result})
+                this.addTrack(interaction, player, tracks, result)
                 break;
                 
             default:
@@ -123,7 +120,13 @@ export class MusicHelper {
         }
 
         if (player.trackRepeat) {
-            const nextTrack = (player.queue.current ? player.queue.current : undefined)
+            const nextTrack = player.queue.current
+
+            if (!nextTrack) {
+                await interaction.reply(config.error.trackNotFound)
+                return
+            }
+
             const embed = new SkipEmbedBuilder(interaction, nextTrack, player, 0).toJSON()
             await interaction.reply({content: ":repeat_one: Repeat enabled - repeating song.",embeds:[embed] }) 
             player.seek(0)
@@ -148,6 +151,11 @@ export class MusicHelper {
             if (trim_queue) {
                 console.log(`Skipped queue to track ${index} of ${player.queue.length}`)
                 nextTrack = player.queue.at(index - 1)
+                
+                if (!nextTrack) {
+                    await interaction.reply(config.error.trackNotFound);
+                    return
+                }
 
                 if (index - 1 != 0) {
                     player.queue.remove(0, index - 1)
@@ -156,10 +164,12 @@ export class MusicHelper {
             } else {
                 console.log(`Jumped to track ${index} of ${player.queue.length} in queue.`)
                 nextTrack = player.queue.remove(index - 1).at(0)
+
                 if (!nextTrack) {
-                    interaction.reply(":warning: Something went wrong moviung the selected track to the front of queue. Ask your server admin to check the logs.")
+                    await interaction.reply(config.error.trackNotFound)
                     return
                 }
+
                 player.queue.add(nextTrack, 0) 
             }
 

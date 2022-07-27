@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
-import { MusicHelper, VoiceHelper } from "../../util/helpers";
+import { VoiceHelper } from "../../util/helpers";
 import { Boomer, Command } from "../../util/structures";
 
 export const command: Command = {
