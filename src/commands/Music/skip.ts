@@ -20,6 +20,6 @@ export const command: Command = {
 
         var index = interaction.options.getNumber('index')
 
-        await MH.skip(interaction, (index === null ? 1 : index))
+        await MH.skip(interaction, (index === null ? 0 : index))
     }
 }

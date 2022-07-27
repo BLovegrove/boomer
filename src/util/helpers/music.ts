@@ -157,7 +157,7 @@ export class MusicHelper {
                 console.log(`Jumped to track ${index} of ${player.queue.length} in queue.`)
                 nextTrack = player.queue.remove(index - 1).at(0)
                 if (!nextTrack) {
-                    interaction.reply(":warning: Something went wrong moviung the selected track to the front of queue. Ask your server admin to check the logs.")
+                    interaction.reply(":warning: Something went wrong moving the selected track to the front of queue. Ask your server admin to check the logs.")
                     return
                 }
                 player.queue.add(nextTrack, 0) 
