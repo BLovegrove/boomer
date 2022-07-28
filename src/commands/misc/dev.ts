@@ -39,7 +39,7 @@ export const command: Command = {
                 await interaction.editReply(`${config.bot.name} now rebooting. Wait until they're online again before ruing more commands.`)
                 client.destroy()
                 CommandHelper.deRegister()
-                throw new Error("My battery is low and it's getting dark :(")
+                throw new Error("Shut down")
 
             case "ping":
                 await interaction.editReply(`Pong! (${client.ws.ping}ms)`)
