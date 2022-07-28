@@ -3,6 +3,7 @@ import { CommandInteraction } from "discord.js";
 import { CommandHelper, VoiceHelper } from "../../util/helpers";
 import { ExtendedClient, Command } from "../../util/structures";
 import { PermissionFlagsBits } from "discord-api-types/v10";
+import config from "../../config.json"
 
 export const command: Command = {
     data: new SlashCommandBuilder()
@@ -28,13 +29,14 @@ export const command: Command = {
 
         const VH = new VoiceHelper(client)
 
-        await interaction.deferReply()
+        await interaction.deferReply({ephemeral: true})
 
         switch (subCommand) {
             case "die":
                 if (client.playerExists) {
                     await VH.disconnect(VoiceHelper.fetchPlayer(client))
                 }
+                await interaction.editReply(`${config.bot.name} now rebooting. Wait until they're online again before ruing more commands.`)
                 client.destroy()
                 CommandHelper.deRegister()
                 throw new Error("My battery is low and it's getting dark :(")
@@ -59,8 +61,7 @@ export const command: Command = {
                 console.log("YT Playlist result:");
                 console.log(await player.search("https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=PLCiNIjl_KpQhFwQA3G19w1nmhEOlZQsGF"))
 
-                await interaction.editReply("Success.")
-                await interaction.followUp({content: "Logged test results. Go check client log.", ephemeral: true})
+                await interaction.editReply({content: "Logged test results. Go check client log."})
 
                 return
             
@@ -72,8 +73,7 @@ export const command: Command = {
 
                 console.log(player.queue)
 
-                await interaction.editReply("Success.")
-                await interaction.followUp({content: "Logged queue. Go check client log", ephemeral: true})
+                await interaction.editReply({content: "Logged queue. Go check client log"})
 
                 return
             
@@ -85,8 +85,7 @@ export const command: Command = {
                 
                 console.log(player)
 
-                await interaction.editReply("Success.")
-                await interaction.followUp({content: "Logged player object. Go check the client log", ephemeral: true})
+                await interaction.editReply({content: "Logged player object. Go check the client log"})
                 
                 return
             
