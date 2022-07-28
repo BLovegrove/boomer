@@ -59,7 +59,13 @@ export class VoiceHelper {
             textChannel: interaction.channel.id,
         });
 
+        const shouldConnect = config.commands.shouldConnect.includes(interaction.commandName)
         if (player.state == "DISCONNECTED") {
+            if (!shouldConnect) {
+                await interaction.reply({ content: "Can't do this without a player running. Try /ok boomer or /play first!" , ephemeral: true})
+                return
+            }
+
             // set up some default states and connect the player to requesters VC
             player.set("pages", 0)
             player.set("idle", false)

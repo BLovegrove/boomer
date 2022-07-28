@@ -67,7 +67,7 @@ export class TrackEmbedBuilder {
      */
 export class ClearedEmbedBuilder extends TrackEmbedBuilder {
     
-    constructor(interaction: CommandInteraction, track: Track | UnresolvedTrack, player: Player) {
+    constructor(interaction: CommandInteraction, track: Track | UnresolvedTrack, player: Player, index: number) {
         super(interaction, track, player)
 
         if (!track) {
@@ -75,6 +75,9 @@ export class ClearedEmbedBuilder extends TrackEmbedBuilder {
         }
 
         this.data.author!.name = `${this.sender.displayName} cleared a song from queue:`
+        this.data.footer = {
+            text: `Song was #${index} in queue`
+        }
     }
 }
 

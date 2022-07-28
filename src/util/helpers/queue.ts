@@ -31,16 +31,15 @@ export class QueueHelper {
             interaction.reply(":boom: Queue cleared!")
 
         } else {
-            const cleared = player.queue.remove(index).at(0)
+            const cleared = player.queue.remove(index - 1).at(0)
 
             if (!cleared) {
                 interaction.reply(config.error.trackNotFound)
                 return
             }
 
-            interaction.reply({embeds: [
-                new ClearedEmbedBuilder(interaction, cleared, player).toJSON()
-            ]})
+            const embed = new ClearedEmbedBuilder(interaction, cleared, player, index).toJSON()
+            await interaction.reply({embeds: [embed]})
         }
     }
 }
