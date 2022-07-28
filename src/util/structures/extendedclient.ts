@@ -28,7 +28,11 @@ export class ExtendedClient extends Client {
         return this._playerExists
     }
 
-    connect() {
-        return this.login(config.bot.token);
+    async connect() {
+        if (config.bot.devMode) {
+            await this.login(config.dev.token)
+        } else {
+            await this.login(config.bot.token);
+        }
     };
 };

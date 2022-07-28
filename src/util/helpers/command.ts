@@ -3,7 +3,7 @@ import { Collection } from "discord.js";
 import { Command } from "../structures";
 import fs from "fs";
 import config from "../../config.json"
-import { PermissionFlagsBits, Routes } from "discord-api-types/v10";
+import { Routes } from "discord-api-types/v10";
 import { SlashCommandBuilder } from "@discordjs/builders";
 
 
@@ -51,12 +51,12 @@ export class CommandHelper {
             
             // set guild commands / clear global commands
             if (config.bot.devMode) {
-                await rest.put(Routes.applicationGuildCommands(config.dev.clientID, config.bot.guildID), { body: commandsData });
                 await rest.put(Routes.applicationCommands(config.dev.clientID), { body: {} });
+                await rest.put(Routes.applicationGuildCommands(config.dev.clientID, config.bot.guildID), { body: commandsData });
 
             } else {
-                await rest.put(Routes.applicationGuildCommands(config.bot.clientID, config.bot.guildID), { body: commandsData });
                 await rest.put(Routes.applicationCommands(config.bot.clientID), { body: {} });
+                await rest.put(Routes.applicationGuildCommands(config.bot.clientID, config.bot.guildID), { body: commandsData });
             }
 
             console.log('Successfully reloaded guild application (/) commands.');

@@ -1,9 +1,9 @@
-import { Intents } from "discord.js"
-import { Manager } from "erela.js";
+import { Channel, ChannelManager, Intents, Interaction, TextChannel } from "discord.js"
+import { Manager, Player, Track } from "erela.js";
 import customFilter from "erela.js-filters";
 import Spotify from "erela.js-spotify";
 import config from "./config.json"
-import { VoiceHelper } from "./util/helpers";
+import { QueueHelper, VoiceHelper } from "./util/helpers";
 import { ExtendedClient } from "./util/structures/extendedclient"
 
 const nodes = [{
@@ -82,10 +82,16 @@ client.on("interactionCreate", async interaction => {
                 case "DEFERRED":
                     await interaction.editReply({ content: `${error}` });
                     break;
+
+                case "REPLIED":
+                    await interaction.editReply({ content: `${error}`});
+                    break;
+
                 case "DEFERRED_REPLIED":
                     await interaction.followUp({ content: `${error}`, ephemeral: true });
                     break;
-                case "REPLIED":
+                
+                default:
                     await interaction.reply({ content: `${error}`, ephemeral: true });
                     break;
             }
@@ -95,10 +101,45 @@ client.on("interactionCreate", async interaction => {
     }
 })
 
-client.manager.on("trackEnd", async node => {
+client.manager.on("trackStart", async node => {
     const player = VoiceHelper.fetchPlayer(client)
     if (player) {
         await VoiceHelper.updateStatus(client, player)
+    }
+})
+
+client.manager.on("queueEnd", async node => {
+    const player = VoiceHelper.fetchPlayer(client)
+    const VH = new VoiceHelper(client)
+    if (!player) {
+        return
+    }
+
+    player.setVolume(config.music.volumeIdle)
+
+    const results = await player.search(config.music.idleTrack)
+
+    if (!results || !results.tracks || results.loadType != "TRACK_LOADED") {
+        player.queue.clear()
+        VH.disconnect(player)
+
+        if (!player.textChannel) {
+            console.log("Couldnt find a text channel when queuing idle track.")
+            return
+        }
+
+        const channel = client.channels.cache.get(player.textChannel) as TextChannel
+        channel.send(":warning: Nothing found when looking for idle music! look for a new video.")
+    }
+
+    player.set('idle', true)
+    player.setTrackRepeat(true)
+
+    const track = results.tracks.at(0) as Track
+    player.queue.add(track, 0)
+
+    if (!player.playing) {
+        await player.play()
     }
 })
 

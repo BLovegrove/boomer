@@ -7,7 +7,7 @@ import config from "../../config.json"
 export const command: Command = {
     data: new SlashCommandBuilder()
         .setName("ok")
-        .setDescription("")
+        .setDescription("Summons boomer to your voice channel without playing anything.")
         .addSubcommand(command => 
             command
                 .setName("boomer")
@@ -26,5 +26,6 @@ export const command: Command = {
 
         await interaction.editReply(`Joined <#${player.voiceChannel}>`)
         player.setVolume(config.music.volumeDefault)
+        client.manager.emit("queueEnd")
     }
 }

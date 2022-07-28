@@ -97,7 +97,9 @@ export class SkipEmbedBuilder extends TrackEmbedBuilder {
 
         this.data.author!.name = `Track skipped by ${this.sender.displayName}`
         this.data.title = `Now playing: ${track.title}`
-        this.data.footer!.text = `${player.queue.length - 1} tracks left in queue.`
+        this.data.footer = {
+            text: `${Math.max(0, player.queue.length - 1)} tracks left in queue.`
+        }
     }
 }
 

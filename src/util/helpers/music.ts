@@ -45,8 +45,13 @@ export class MusicHelper {
             console.log("Playlist added to queue");
         } 
 
-        if (player.get<boolean>("idle") || !player.playing) {
+        if (player.get<boolean>("idle")) {
             player.set("idle", false)
+            player.setTrackRepeat(false)
+            player.setVolume(config.music.volumeDefault)
+            player.stop(1)
+            
+        } else if (!player.playing) {
             player.setVolume(config.music.volumeDefault)
             await player.play()
         } 
@@ -128,7 +133,7 @@ export class MusicHelper {
             }
 
             const embed = new SkipEmbedBuilder(interaction, nextTrack, player, 0).toJSON()
-            await interaction.reply({content: ":repeat_one: Repeat enabled - repeating song.",embeds:[embed] }) 
+            await interaction.reply({content: ":repeat_one: Repeat enabled - looping song.", embeds:[embed] }) 
             player.seek(0)
             console.log("Skipped (Repeating song).");
             return

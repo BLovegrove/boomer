@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
 import { MusicHelper } from "../../util/helpers/music";
-import { Boomer, Command } from "../../util/structures";
+import { ExtendedClient, Command } from "../../util/structures";
 
 export const command: Command = {
     data: new SlashCommandBuilder()
@@ -13,7 +13,7 @@ export const command: Command = {
                 .setDescription('The number in the queue you want to skip to')
         )
         ,
-    async execute(interaction: CommandInteraction, client: Boomer) {
+    async execute(interaction: CommandInteraction, client: ExtendedClient) {
         const MH = new MusicHelper(client)
 
         var index = interaction.options.getNumber('index')

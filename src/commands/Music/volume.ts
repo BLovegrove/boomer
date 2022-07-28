@@ -30,20 +30,20 @@ export const command: Command = {
         if (volumeLevel) {
             if (!sender.permissions.has(config.dev.permissionFlag as PermissionResolvable)) {
                 volumeLevel = clamp(volumeLevel, 0, 100)
-                player.setVolume(volumeLevel)
+                player.setVolume(Math.ceil(volumeLevel / 2))
             } else {
                 volumeLevel = Math.max(0, volumeLevel)
-                player.setVolume(volumeLevel)
+                player.setVolume(Math.ceil(volumeLevel / 2))
             }
 
         } else {
             volumeLevel = player.volume
 
             if (volumeLevel <= 33) {
-                volumeIndicator = ":speaker" 
+                volumeIndicator = ":speaker:" 
 
             } else if (volumeLevel > 33 && volumeLevel <= 66) {                volumeIndicator = "sound"
-                volumeIndicator = "sound"
+                volumeIndicator = ":sound:"
 
             } else {
                 volumeIndicator = ":loud_sound:"
