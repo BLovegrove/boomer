@@ -37,17 +37,18 @@ export const command: Command = {
             }
 
         } else {
-            volumeLevel = player.volume
+            volumeLevel = clamp(player.volume * 2, 0, 100)
+        }
+        
+        if (volumeLevel <= 33) {
+            volumeIndicator = ":speaker:"
 
-            if (volumeLevel <= 33) {
-                volumeIndicator = ":speaker:" 
+        } else if (volumeLevel > 33 && volumeLevel <= 66) {
+            volumeIndicator = "sound"
+            volumeIndicator = ":sound:"
 
-            } else if (volumeLevel > 33 && volumeLevel <= 66) {                volumeIndicator = "sound"
-                volumeIndicator = ":sound:"
-
-            } else {
-                volumeIndicator = ":loud_sound:"
-            }
+        } else {
+            volumeIndicator = ":loud_sound:"
         }
 
         await interaction.reply(`${volumeIndicator} Volume is set to ${volumeLevel}%`)
