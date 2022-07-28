@@ -1,4 +1,4 @@
-import { Channel, ChannelManager, Intents, Interaction, TextChannel } from "discord.js"
+import { Channel, ChannelManager, Intents, Interaction, TextChannel, VoiceChannel } from "discord.js"
 import { Manager, Player, Track } from "erela.js";
 import customFilter from "erela.js-filters";
 import Spotify from "erela.js-spotify";
@@ -98,6 +98,31 @@ client.on("interactionCreate", async interaction => {
             
             throw new Error("Command errored. Shuting down. This could be intentional, but check bot output just in case.")
         }
+    }
+})
+
+client.on("voiceStateUpdate", async (before, after) => {
+    const player = VoiceHelper.fetchPlayer(client)
+    if (!player) {
+        return
+    }
+
+    if (!before.channel ||
+        after.channel || 
+        after.channelId == player.voiceChannel || 
+        before.channelId != player.voiceChannel
+        ) {
+        return
+    }
+
+    const channel = client.channels.cache.get(player.voiceChannel as string) as VoiceChannel
+    if (!channel) {
+        return
+    }
+
+    if (channel.members.size == 1) {
+        const VH = new VoiceHelper(client)
+        VH.disconnect(player)
     }
 })
 
