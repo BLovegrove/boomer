@@ -1,7 +1,7 @@
 import { CommandInteraction } from "discord.js"
-import { Boomer } from "./boomer"
+import { ExtendedClient } from "./extendedclient"
 
 export type Command = {
     data: any,
-    execute(interaction: CommandInteraction, client: Boomer): Promise<undefined> | Promise<void>
+    execute(interaction: CommandInteraction, client: ExtendedClient): Promise<undefined> | Promise<void>
 }

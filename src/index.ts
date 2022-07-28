@@ -1,10 +1,10 @@
 import { Intents } from "discord.js"
-import { Manager, Player } from "erela.js";
+import { Manager } from "erela.js";
 import customFilter from "erela.js-filters";
 import Spotify from "erela.js-spotify";
 import config from "./config.json"
 import { VoiceHelper } from "./util/helpers";
-import { Boomer } from "./util/structures/boomer"
+import { ExtendedClient } from "./util/structures/extendedclient"
 
 const nodes = [{
     host: config.lavalink.host,
@@ -13,7 +13,7 @@ const nodes = [{
 }];
 
 // create client with all normal + dm permissions + an erela manager
-const client = new Boomer({
+const client = new ExtendedClient({
     intents: [
         Intents.FLAGS.GUILDS,
         Intents.FLAGS.GUILD_MESSAGES,

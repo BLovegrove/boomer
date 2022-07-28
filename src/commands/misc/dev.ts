@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
 import { CommandHelper, VoiceHelper } from "../../util/helpers";
-import { Boomer, Command } from "../../util/structures";
+import { ExtendedClient, Command } from "../../util/structures";
 import { PermissionFlagsBits } from "discord-api-types/v10";
 
 export const command: Command = {
@@ -23,7 +23,7 @@ export const command: Command = {
                 )
         )
     ,
-    async execute(interaction: CommandInteraction, client: Boomer) {
+    async execute(interaction: CommandInteraction, client: ExtendedClient) {
         const subCommand = interaction.options.getString("subcommand", true)
 
         const VH = new VoiceHelper(client)

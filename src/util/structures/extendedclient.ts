@@ -5,7 +5,7 @@ import config from "../../config.json"
 import { CommandHelper } from "../helpers/command";
 import path from "path"
 
-export class Boomer extends Client {
+export class ExtendedClient extends Client {
 
     commands: Collection<String, Command>
     manager: Manager
@@ -29,10 +29,6 @@ export class Boomer extends Client {
     }
 
     connect() {
-        if (config.dev.active) {
-            return this.login(config.dev.token);
-        } else {
-            return this.login(config.bot.token);
-        }
+        return this.login(config.bot.token);
     };
 };

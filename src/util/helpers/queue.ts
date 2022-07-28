@@ -1,5 +1,5 @@
-import { Player, Track } from "erela.js";
-import { Boomer } from "../structures";
+import { Player } from "erela.js";
+import { ExtendedClient } from "../structures";
 import { VoiceHelper } from "./voice";
 import config from "../../config.json"
 import { CommandInteraction } from "discord.js";
@@ -7,10 +7,10 @@ import { ClearedEmbedBuilder } from "../structures";
 
 export class QueueHelper {
 
-    private client: Boomer
+    private client: ExtendedClient
     private VH: VoiceHelper
 
-    constructor(client: Boomer) {
+    constructor(client: ExtendedClient) {
         this.client = client
         this.VH = new VoiceHelper(client)
     }

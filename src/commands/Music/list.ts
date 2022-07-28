@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
 import { VoiceHelper } from "../../util/helpers";
-import { Boomer, Command, ListEmbedBuilder } from "../../util/structures";
+import { ExtendedClient, Command, ListEmbedBuilder } from "../../util/structures";
 
 export const command: Command = {
     data: new SlashCommandBuilder()
@@ -13,7 +13,7 @@ export const command: Command = {
                 .setDescription("Page of the queue you want to list off. If you're unsure, just leave this blank.")
         )
         ,
-    async execute(interaction: CommandInteraction, client: Boomer) {
+    async execute(interaction: CommandInteraction, client: ExtendedClient) {
         var listPage = interaction.options.getNumber("page")
         if (!listPage) {
             listPage = 1

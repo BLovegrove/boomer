@@ -1,10 +1,9 @@
 import { REST } from "@discordjs/rest";
 import { Collection } from "discord.js";
-import { Boomer, Command } from "../structures";
+import { Command } from "../structures";
 import fs from "fs";
 import config from "../../config.json"
 import { PermissionFlagsBits, Routes } from "discord-api-types/v10";
-import { APIApplicationCommand } from "discord-api-types/v9";
 import { SlashCommandBuilder } from "@discordjs/builders";
 
 
@@ -33,7 +32,7 @@ export class CommandHelper {
 
         const rest = new REST({ version: '9' })
 
-        if (config.dev.active) {
+        if (config.bot.devMode) {
             rest.setToken(config.dev.token);
         } else {
             rest.setToken(config.bot.token);
@@ -44,14 +43,14 @@ export class CommandHelper {
 
             const commandsData: any[] = []
             commands.forEach(command => {
-                if (config.dev.active) {
-                    (command.data as SlashCommandBuilder).setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+                if (config.bot.devMode) {
+                    (command.data as SlashCommandBuilder).setDefaultMemberPermissions(config.dev.permissionFlag)
                 }
                 commandsData.push(command.data.toJSON())
             })
             
             // set guild commands / clear global commands
-            if (config.dev.active) {
+            if (config.bot.devMode) {
                 await rest.put(Routes.applicationGuildCommands(config.dev.clientID, config.bot.guildID), { body: commandsData });
                 await rest.put(Routes.applicationCommands(config.dev.clientID), { body: {} });
 
@@ -67,7 +66,7 @@ export class CommandHelper {
     }
 
     static async deRegister() {
-        if (config.dev.active) {
+        if (config.bot.devMode) {
             const rest = new REST({ version: '9' }).setToken(config.dev.token);
 
             // clear all commands

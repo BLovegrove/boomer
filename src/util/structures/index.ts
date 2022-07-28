@@ -1,5 +1,5 @@
 export { Command } from './command'
-export { Boomer } from './boomer'
+export { ExtendedClient } from './extendedclient'
 export { 
     ListEmbedBuilder, 
     SkipEmbedBuilder, 

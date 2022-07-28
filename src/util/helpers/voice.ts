@@ -1,4 +1,4 @@
-import { Boomer } from "../structures"
+import { ExtendedClient } from "../structures"
 import { CommandInteraction, GuildMember } from "discord.js"
 import { Player } from "erela.js"
 
@@ -9,14 +9,14 @@ import config from "../../config.json"
  */
 export class VoiceHelper {
 
-    client: Boomer
+    client: ExtendedClient
 
     /**
      * Note: Any command using ensureVoice is deferred to account for lavalink response times.
      * use editReply for any ineraction reply after ensureVoice runs.
      * @param client modified discord.js client called 'Boomer'.
      */
-    constructor(client: Boomer) {
+    constructor(client: ExtendedClient) {
         this.client = client
     }
 
@@ -26,7 +26,7 @@ export class VoiceHelper {
      * @param client Custom discord.js client Boomer
      * @returns erela.js player
      */
-    static fetchPlayer(client: Boomer) {
+    static fetchPlayer(client: ExtendedClient) {
         return client.manager.get(config.bot.guildID) as Player
     }
 
@@ -67,8 +67,9 @@ export class VoiceHelper {
             
         } else if (player.voiceChannel !== interaction.member.voice.channel.id) {
             // ensure player is connected to the same VC as the member interacting with it
-            interaction.reply({ content: `You need to be in <#${player.voiceChannel}> to do that.`, ephemeral: true})
-            return
+            await interaction.reply({ content: `Already in <#${player.voiceChannel}> :rolling_eyes:`, ephemeral: true})
+            await interaction.followUp({content: `${config.bot.name} can't be in two places at once. Join the linked channel to use ${config.bot.pronoun}.`, ephemeral: true})
+
         }
 
         // success! this should be the output at all times :)))
@@ -97,7 +98,7 @@ export class VoiceHelper {
      * nothing and idle status.
      * @param player erela.js player
      */
-    static async updateStatus(client: Boomer, player: Player) {
+    static async updateStatus(client: ExtendedClient, player: Player) {
 
         var suffix = ""
 

@@ -1,14 +1,14 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
 import { VoiceHelper } from "../../util/helpers";
-import { Boomer, Command } from "../../util/structures";
+import { ExtendedClient, Command } from "../../util/structures";
 
 export const command: Command = {
     data: new SlashCommandBuilder()
         .setName("leave")
         .setDescription("Clears the queue and leaves the call.")
         ,
-    async execute(interaction: CommandInteraction, client: Boomer) {
+    async execute(interaction: CommandInteraction, client: ExtendedClient) {
         
         if (!client.playerExists) {
             interaction.reply({ content: "He's not playing anything - why are you even trying this?" , ephemeral: true})
