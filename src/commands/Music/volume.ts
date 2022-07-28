@@ -37,7 +37,7 @@ export const command: Command = {
             }
 
         } else {
-            volumeLevel = player.volume
+            volumeLevel = clamp(player.volume * 2, 0, 100)
 
             if (volumeLevel <= 33) {
                 volumeIndicator = ":speaker:" 
