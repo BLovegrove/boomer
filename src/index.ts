@@ -1,6 +1,6 @@
 import { Channel, ChannelManager, Intents, Interaction, TextChannel, VoiceChannel } from "discord.js"
 import { Manager, Player, Track } from "erela.js";
-import customFilter from "erela.js-filters";
+import filter from "erela.js-filters";
 import Spotify from "erela.js-spotify";
 import config from "./config.json"
 import { QueueHelper, VoiceHelper } from "./util/helpers";
@@ -29,7 +29,7 @@ const client = new ExtendedClient({
     },
     plugins: [
         // Load filter presets from erela.js-filters
-        new customFilter(),
+        new filter(),
         new Spotify({
             clientID: config.spotify.clientID,
             clientSecret: config.spotify.secret
