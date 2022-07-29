@@ -32,7 +32,7 @@ export const command: Command = {
         await interaction.deferReply({ephemeral: true})
 
         switch (subCommand) {
-            case "die":
+            case "die": {
                 if (client.playerExists) {
                     await VH.disconnect(VoiceHelper.fetchPlayer(client))
                 }
@@ -40,14 +40,16 @@ export const command: Command = {
                 client.destroy()
                 CommandHelper.deRegister()
                 throw new Error("Shut down")
+            }
 
-            case "ping":
+            case "ping": {
                 await interaction.editReply(`Pong! (${client.ws.ping}ms)`)
 
                 return
+            }
 
-            case "searchex":
-                var player = await VH.ensureVoice(interaction)
+            case "searchex": {
+                const player = await VH.ensureVoice(interaction)
                 if (!player) {
                     return
                 }
@@ -61,38 +63,42 @@ export const command: Command = {
                 console.log("YT Playlist result:");
                 console.log(await player.search("https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=PLCiNIjl_KpQhFwQA3G19w1nmhEOlZQsGF"))
 
-                await interaction.editReply({content: "Logged test results. Go check client log."})
+                await interaction.editReply({ content: "Logged test results. Go check client log." })
 
                 return
+            }
             
-            case "logqueue":
-                var player = await VH.ensureVoice(interaction)
+            case "logqueue": {
+                const player = await VH.ensureVoice(interaction)
                 if (!player) {
                     return
                 }
 
                 console.log(player.queue)
 
-                await interaction.editReply({content: "Logged queue. Go check client log"})
+                await interaction.editReply({ content: "Logged queue. Go check client log" })
 
                 return
+            }
             
-            case "logplayer":
-                var player = await VH.ensureVoice(interaction)
+            case "logplayer": {
+                const player = await VH.ensureVoice(interaction)
                 if (!player) {
                     return
                 }
-                
+
                 console.log(player)
 
-                await interaction.editReply({content: "Logged player object. Go check the client log"})
-                
+                await interaction.editReply({ content: "Logged player object. Go check the client log" })
+
                 return
+            }
             
-            default:
+            default: {
                 await interaction.editReply("Dev command failed. Couldn't find a subcommand.")
 
                 return
+            }
         }
     }
 }
