@@ -36,7 +36,6 @@ export const command: Command = {
             return
         } 
         const filterType = interaction.options.getString("type",true)
-        player.reset()
         switch (filterType) {
             case "nightcore": {
                 player.nightcore = true;
@@ -83,5 +82,6 @@ export const command: Command = {
                 break
             }
         }
+        await interaction.reply(`${filterType.at(0)!.toUpperCase()} filter applied. Please wait a few seconds to apply.` )
     }
 }
