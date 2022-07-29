@@ -25,11 +25,9 @@ export const command: Command = {
                     {name: "Karaoke", value: "karaoke"},
                     {name: "Vibrato", value: "vibrato"},
                     {name: "Tremolo", value: "tremolo"},
-                    {name: "Reset", value: "reset"},
-
+                    {name: "Reset", value: "reset"}
                 )
-
-            )
+        )
         ,
     async execute(interaction: CommandInteraction, client: ExtendedClient) {
         const VH = new VoiceHelper(client)
@@ -37,8 +35,64 @@ export const command: Command = {
         if (!player) {
             return
         } 
-        player.reset()
+        const filterType = interaction.options.getString("type",true)
+        switch (filterType) {
+            case "nightcore": {
+                player.reset()
+                player.nightcore = true;
+                break
+            }
+            case "vaporwave": {
+                player.reset()
+                player.vaporwave = true;
+                break
+            }
+            case "bassboost": {
+                player.reset()
+                player.bassboost = true;
+                break
+            }
+            case "pop": {
+                player.reset()
+                player.pop = true;
+                break
+            }
+            case "soft": {
+                player.reset()
+                player.soft = true;
+                break
+            }
+            case "treblebass": {
+                player.reset()
+                player.treblebass = true;
+                break
+            }
+            case "eightdimension": {
+                player.reset()
+                player.eightdimension = true;
+                break
+            }
+            case "karaoke": {
+                player.reset()
+                player.karaoke = true;
+                break
+            }
+            case "vibrato": {
+                player.reset()
+                player.vibrato = true;
+                break
+            }
+            case "tremolo": {
+                player.reset()
+                player.tremolo = true;
+                break
+            }
+            case "reset": {
+                player.reset()
+                break
+            }
 
-        return interaction.reply("h!")
+        }
+
     }
 }

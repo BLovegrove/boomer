@@ -1,7 +1,16 @@
 import { Player } from "erela.js"
-import customFilter from "erela.js-filters"
 
 export interface ExtendedPlayer extends Player {
+    
     nightcore: boolean
-    reset: Function
+    vaporwave: boolean
+    bassboost: boolean
+    pop: boolean
+    soft: boolean
+    treblebass: boolean
+    eightdimension: boolean
+    karaoke: boolean
+    vibrato: boolean
+    tremolo: boolean
+    reset(): Function
 }
