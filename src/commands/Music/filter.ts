@@ -36,54 +36,45 @@ export const command: Command = {
             return
         } 
         const filterType = interaction.options.getString("type",true)
+        player.reset()
         switch (filterType) {
             case "nightcore": {
-                player.reset()
                 player.nightcore = true;
                 break
             }
             case "vaporwave": {
-                player.reset()
                 player.vaporwave = true;
                 break
             }
             case "bassboost": {
-                player.reset()
                 player.bassboost = true;
                 break
             }
             case "pop": {
-                player.reset()
                 player.pop = true;
                 break
             }
             case "soft": {
-                player.reset()
                 player.soft = true;
                 break
             }
             case "treblebass": {
-                player.reset()
                 player.treblebass = true;
                 break
             }
             case "eightdimension": {
-                player.reset()
                 player.eightdimension = true;
                 break
             }
             case "karaoke": {
-                player.reset()
                 player.karaoke = true;
                 break
             }
             case "vibrato": {
-                player.reset()
                 player.vibrato = true;
                 break
             }
             case "tremolo": {
-                player.reset()
                 player.tremolo = true;
                 break
             }
