@@ -44,7 +44,6 @@ export const command: Command = {
             volumeIndicator = ":speaker:"
 
         } else if (volumeLevel > 33 && volumeLevel <= 66) {
-            volumeIndicator = "sound"
             volumeIndicator = ":sound:"
 
         } else {
