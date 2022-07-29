@@ -126,11 +126,11 @@ export class ProgressEmbedBuilder extends TrackEmbedBuilder {
 
         const durationTotal = player.queue.current!.duration as number
         const durationCurrent = player.position
-        const progress = ProgressBar.filledBar(
+        const progress = ProgressBar.splitBar(
             durationTotal,
             durationCurrent,
             20
-        ).toString()
+        ).at(0)!.toString()
 
         this.data.author!.name = `Info requested by: ${this.sender.displayName}`
         this.data.footer!.text = `🎵 ${timeFormat(durationCurrent, { leading: true })} ${progress} ${timeFormat(durationTotal, { leading: true })} 🎵`
