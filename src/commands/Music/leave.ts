@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
-import { VoiceHelper } from "../../util/helpers";
+import { VoiceHandler } from "../../util/handlers";
 import { ExtendedClient, Command } from "../../util/structures";
 
 export const command: Command = {
@@ -13,7 +13,7 @@ export const command: Command = {
         if (!client.playerExists) {
             interaction.reply({ content: "He's not playing anything - why are you even trying this?" , ephemeral: true})
         } else {
-            const VH = new VoiceHelper(client)
+            const VH = new VoiceHandler(client)
             const player = await VH.ensureVoice(interaction)
             if (!player) {
                 return

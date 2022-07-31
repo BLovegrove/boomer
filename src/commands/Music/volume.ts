@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction, GuildMember, PermissionResolvable } from "discord.js";
-import { VoiceHelper } from "../../util/helpers";
+import { VoiceHandler } from "../../util/handlers";
 import { ExtendedClient, Command } from "../../util/structures";
 import config from "../../config.json"
 
@@ -18,7 +18,7 @@ export const command: Command = {
         ,
     async execute(interaction: CommandInteraction, client: ExtendedClient) {
         const sender = interaction.member as GuildMember
-        const VH = new VoiceHelper(client)
+        const VH = new VoiceHandler(client)
         const player = await VH.ensureVoice(interaction)
         if (!player) {
             return

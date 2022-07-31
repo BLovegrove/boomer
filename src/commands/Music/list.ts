@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
-import { VoiceHelper } from "../../util/helpers";
+import { VoiceHandler } from "../../util/handlers";
 import { ExtendedClient, Command, ListEmbedBuilder } from "../../util/structures";
 
 export const command: Command = {
@@ -19,7 +19,7 @@ export const command: Command = {
             listPage = 1
         }
 
-        const VH = new VoiceHelper(client)
+        const VH = new VoiceHandler(client)
         const player = await VH.ensureVoice(interaction)
         if (!player) {
             return

@@ -2,7 +2,7 @@ import { Client, ClientOptions, Collection } from "discord.js";
 import { Manager } from "erela.js";
 import { Command } from "./command";
 import config from "../../config.json"
-import { CommandHelper } from "../helpers/command";
+import { CommandHandler } from "../handlers/command";
 import path from "path"
 
 export class ExtendedClient extends Client {
@@ -18,9 +18,9 @@ export class ExtendedClient extends Client {
         this._playerExists = false
         
         // grab the command files and generate a collection from them
-        this.commands = CommandHelper.load(path.join(__dirname, "../../commands"))
+        this.commands = CommandHandler.load(path.join(__dirname, "../../commands"))
         // register the commands with the discord API to display them on the server
-        CommandHelper.register(this.commands)
+        CommandHandler.register(this.commands)
     }
 
     get playerExists() {

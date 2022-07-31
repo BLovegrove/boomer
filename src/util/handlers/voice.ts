@@ -7,7 +7,7 @@ import config from "../../config.json"
 /**
  * Helps manage the voice state with common guards and convenient connection/disconnection methods 
  */
-export class VoiceHelper {
+export class VoiceHandler {
 
     client: ExtendedClient
 
@@ -94,7 +94,7 @@ export class VoiceHelper {
         player.setVolume(config.music.volumeDefault)
         player.disconnect()
         player.destroy()
-        await VoiceHelper.updateStatus(this.client, player)
+        await VoiceHandler.updateStatus(this.client, player)
         return
     }
 

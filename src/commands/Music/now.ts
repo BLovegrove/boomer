@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
-import { VoiceHelper } from "../../util/helpers";
+import { VoiceHelper } from "../../util/handlers";
 import { ExtendedClient, Command, ProgressEmbedBuilder } from "../../util/structures";
 
 export const command: Command = {

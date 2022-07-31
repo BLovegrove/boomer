@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
-import { MusicHelper } from "../../util/helpers/music";
+import { MusicHandler } from "../../util/handlers/music";
 import { ExtendedClient, Command } from "../../util/structures";
 
 export const command: Command = {
@@ -14,7 +14,7 @@ export const command: Command = {
         )
         ,
     async execute(interaction: CommandInteraction, client: ExtendedClient) {
-        const MH = new MusicHelper(client)
+        const MH = new MusicHandler(client)
 
         var index = interaction.options.getNumber('index')
 

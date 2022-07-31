@@ -3,7 +3,7 @@ import { Manager, Player, Track } from "erela.js";
 import filter from "erela.js-filters";
 import Spotify from "erela.js-spotify";
 import config from "./config.json"
-import { QueueHelper, VoiceHelper } from "./util/helpers";
+import { QueueHelper, VoiceHelper } from "./util/handlers";
 import { ExtendedClient } from "./util/structures/extendedclient"
 
 const nodes = [{

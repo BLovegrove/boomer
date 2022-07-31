@@ -1,18 +1,18 @@
 import { Player } from "erela.js";
 import { ExtendedClient } from "../structures";
-import { VoiceHelper } from "./voice";
+import { VoiceHandler } from "./voice";
 import config from "../../config.json"
 import { CommandInteraction } from "discord.js";
 import { ClearedEmbedBuilder } from "../structures";
 
-export class QueueHelper {
+export class QueueHandler {
 
     private client: ExtendedClient
-    private VH: VoiceHelper
+    private VH: VoiceHandler
 
     constructor(client: ExtendedClient) {
         this.client = client
-        this.VH = new VoiceHelper(client)
+        this.VH = new VoiceHandler(client)
     }
 
     updatePages(player: Player) {

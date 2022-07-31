@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
-import { MusicHelper } from "../../util/helpers";
+import { MusicHandle4r } from "../../util/handlers";
 import { ExtendedClient, Command } from "../../util/structures";
 
 export const command: Command = {
@@ -14,7 +14,7 @@ export const command: Command = {
         )
         ,
     async execute(interaction: CommandInteraction, client: ExtendedClient) {
-        const MH = new MusicHelper(client)
+        const MH = new MusicHandle4r(client)
 
         const searchString = interaction.options.getString('search', true)
         await MH.play(interaction, searchString)

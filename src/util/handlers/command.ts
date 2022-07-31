@@ -7,7 +7,7 @@ import { Routes } from "discord-api-types/v10";
 import { SlashCommandBuilder } from "@discordjs/builders";
 
 
-export class CommandHelper {
+export class CommandHandler {
 
     // read commands dirs for command modules
     static load(commandPath: fs.PathLike) {

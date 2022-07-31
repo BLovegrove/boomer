@@ -3,22 +3,22 @@ import { ExtendedClient, SkipEmbedBuilder } from "../structures"
 import config from "../../config.json"
 import { Player, SearchResult, Track, TrackUtils, UnresolvedTrack } from "erela.js";
 import { CommandInteraction } from "discord.js";
-import { VoiceHelper } from "./voice";
-import { QueueHelper } from "./queue";
+import { VoiceHandler } from "./voice";
+import { QueueHandler } from "./queue";
 import { PlaylistEmbedBuilder, TrackEmbedBuilder } from "../structures";
 
 // # ----------------------------------Config ---------------------------------- #
 
-export class MusicHelper {
+export class MusicHandler {
 
     private client: ExtendedClient;
-    private VH: VoiceHelper
-    QH: QueueHelper
+    private VH: VoiceHandler
+    QH: QueueHandler
 
     constructor(client: ExtendedClient) {
         this.client = client;
-        this.VH = new VoiceHelper(client)
-        this.QH = new QueueHelper(client)
+        this.VH = new VoiceHandler(client)
+        this.QH = new QueueHandler(client)
     }
 
     private async addTrack (
@@ -188,7 +188,7 @@ export class MusicHelper {
             await interaction.reply({embeds: [embed]}) 
             
             this.QH.updatePages(player) 
-            await VoiceHelper.updateStatus(this.client, player)
+            await VoiceHandler.updateStatus(this.client, player)
 
             return
         }

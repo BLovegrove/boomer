@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
-import { CommandHelper, VoiceHelper } from "../../util/helpers";
+import { CommandHelper, VoiceHelper } from "../../util/handlers";
 import { ExtendedClient, Command } from "../../util/structures";
 import { PermissionFlagsBits } from "discord-api-types/v10";
 import config from "../../config.json"
