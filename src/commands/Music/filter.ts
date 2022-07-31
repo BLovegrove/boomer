@@ -2,7 +2,7 @@ import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
 import { VoiceHandler } from "../../util/handlers";
 import { ExtendedClient, Command } from "../../util/structures";
-import { ExtendedPlayer } from "../../util/structures/extendedplayer";
+import { ExtendedPlayer } from "../../util/structures/extended-player";
 
 
 export const command: Command = {

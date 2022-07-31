@@ -1,5 +1,5 @@
 import { CommandInteraction } from "discord.js"
-import { ExtendedClient } from "./extendedclient"
+import { ExtendedClient } from "./extended-client"
 
 export type Command = {
     data: any,

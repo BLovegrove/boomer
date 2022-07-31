@@ -1,4 +1,5 @@
-export { CommandHandler } from "./command"
+export { CommandHandler } from "./commands"
 export { QueueHandler } from "./queue"
 export { VoiceHandler } from "./voice"
 export { MusicHandler } from "./music"
+export { EventHandler } from "./events"

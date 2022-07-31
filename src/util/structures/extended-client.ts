@@ -2,7 +2,7 @@ import { Client, ClientOptions, Collection } from "discord.js";
 import { Manager } from "erela.js";
 import { Command } from "./command";
 import config from "../../config.json"
-import { CommandHandler } from "../handlers/command";
+import { CommandHandler } from "../handlers/commands";
 import path from "path"
 
 export class ExtendedClient extends Client {
