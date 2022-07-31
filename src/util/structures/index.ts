@@ -1,5 +1,6 @@
+export { ClientEvent } from "./client-event"
 export { Command } from './command'
-export { ExtendedClient } from './extendedclient'
+export { ExtendedClient } from './extended-client'
 export { 
     ListEmbedBuilder, 
     SkipEmbedBuilder, 
@@ -7,4 +8,4 @@ export {
     ClearedEmbedBuilder, 
     PlaylistEmbedBuilder, 
     ProgressEmbedBuilder 
-} from "./embedbuilders"
+} from "./embed-builders"
