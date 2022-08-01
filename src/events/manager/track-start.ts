@@ -1,7 +1,7 @@
 import { VoiceHandler } from "../../util/handlers";
 import { ExtendedClient, ClientEvent } from "../../util/structures";
 
-export const command: ClientEvent = {
+export const event: ClientEvent = {
     name: "trackStart",
     async listen(client: ExtendedClient) {
 

@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
-import { VoiceHelper } from "../../util/handlers";
+import { VoiceHandler } from "../../util/handlers";
 import { ExtendedClient, Command } from "../../util/structures";
 import config from "../../config.json"
 
@@ -16,7 +16,7 @@ export const command: Command = {
         ,
     async execute(interaction: CommandInteraction, client: ExtendedClient) {
 
-        const VH = new VoiceHelper(client)
+        const VH = new VoiceHandler(client)
 
         await interaction.deferReply()
         const player = await VH.ensureVoice(interaction)

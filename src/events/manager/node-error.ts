@@ -1,6 +1,6 @@
 import { ExtendedClient, ClientEvent } from "../../util/structures";
 
-export const command: ClientEvent = {
+export const event: ClientEvent = {
     name: "nodeError",
     async listen(client: ExtendedClient) {
         

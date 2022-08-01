@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
-import { CommandHelper, VoiceHelper } from "../../util/handlers";
+import { CommandHandler, VoiceHandler } from "../../util/handlers";
 import { ExtendedClient, Command } from "../../util/structures";
 import { PermissionFlagsBits } from "discord-api-types/v10";
 import config from "../../config.json"
@@ -27,18 +27,18 @@ export const command: Command = {
     async execute(interaction: CommandInteraction, client: ExtendedClient) {
         const subCommand = interaction.options.getString("subcommand", true)
 
-        const VH = new VoiceHelper(client)
+        const VH = new VoiceHandler(client)
 
         await interaction.deferReply({ephemeral: true})
 
         switch (subCommand) {
             case "die": {
                 if (client.playerExists) {
-                    await VH.disconnect(VoiceHelper.fetchPlayer(client))
+                    await VH.disconnect(VoiceHandler.fetchPlayer(client))
                 }
                 await interaction.editReply(`${config.bot.name} now rebooting. Wait until they're online again before ruing more commands.`)
                 client.destroy()
-                CommandHelper.deRegister()
+                CommandHandler.deRegister()
                 throw new Error("Shut down")
             }
 

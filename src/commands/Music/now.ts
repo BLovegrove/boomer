@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
-import { VoiceHelper } from "../../util/handlers";
+import { VoiceHandler } from "../../util/handlers";
 import { ExtendedClient, Command, ProgressEmbedBuilder } from "../../util/structures";
 
 export const command: Command = {
@@ -9,7 +9,7 @@ export const command: Command = {
         .setDescription("Shows info about the current song! Playtime, title, thumbnail, link, etc.")
         ,
     async execute(interaction: CommandInteraction, client: ExtendedClient) {
-        const VH = new VoiceHelper(client)
+        const VH = new VoiceHandler(client)
         const player = await VH.ensureVoice(interaction)
         if (!player) {
             return

@@ -4,7 +4,7 @@ import config from "../../config.json"
 import { TextChannel } from "discord.js";
 import { Track } from "erela.js";
 
-export const command: ClientEvent = {
+export const event: ClientEvent = {
     name: "queueEnd",
     async listen(client: ExtendedClient) {
 
