@@ -2,10 +2,11 @@ import { EmbedBuilder } from "@discordjs/builders";
 import { Player, PlaylistInfo, SearchResult, Track, TrackUtils, UnresolvedTrack } from "erela.js";
 import config from "../../config.json"
 import truncate from "truncate";
-import { CommandInteraction, GuildMember } from "discord.js";
+import { CommandInteraction, GuildMember, Message } from "discord.js";
 import ProgressBar from "string-progressbar";
 import timeFormat from "format-duration";
 import { APIEmbed } from "discord-api-types/v9";
+import { TikTokResult, Video } from "tiktok-scraper-ts";
 
 export class TrackEmbedBuilder {
     data: APIEmbed
@@ -254,6 +255,38 @@ export class ListEmbedBuilder {
                 value: `${playTime}`,
                 inline: false
             })
+        }
+    }
+
+    toJSON() {
+        return new EmbedBuilder(this.data).toJSON()
+    }
+}
+
+export class TikTokEmbedBuilder {   
+
+    message: Message
+    data: APIEmbed
+    tikTok: Video
+    content: string
+    memberName: string
+
+    constructor(message: Message, tikTok: Video, content: string) {
+        this.message = message
+        this.tikTok = tikTok
+        this.content = content
+
+        this.memberName = (this.message.member?.nickname ? this.message.member.nickname : this.message.author.username)
+
+        this.data = {
+            color: config.server.embedColor,
+            title: `Title: ${this.tikTok.description}`,
+            description: `Original message from @${this.memberName}#${this.message.author.discriminator}:\r\n${content}`,
+            author: {
+                name: `TikTok Sent by: @${this.memberName}#${this.message.author.discriminator}`,
+                icon_url: this.message.author.avatarURL({format: "png"}) as string,
+                url: this.tikTok.downloadURL
+            },
         }
     }
 
