@@ -73,8 +73,8 @@ export class VoiceHandler {
             
         } else if (player.voiceChannel !== interaction.member.voice.channel.id) {
             // ensure player is connected to the same VC as the member interacting with it
-            await interaction.reply({ content: `Already in <#${player.voiceChannel}> :rolling_eyes:`, ephemeral: true})
-            await interaction.followUp({content: `${config.bot.name} can't be in two places at once. Join the linked channel to use ${config.bot.pronoun}.`, ephemeral: true})
+            await interaction.reply(`Already in <#${player.voiceChannel}> :rolling_eyes:`)
+            await interaction.followUp({content: `${config.bot.name} can't be in two places at once. Join the linked channel to use them.`, ephemeral: true})
 
         }
 

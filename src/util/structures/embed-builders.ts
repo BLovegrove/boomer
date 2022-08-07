@@ -262,38 +262,3 @@ export class ListEmbedBuilder {
         return new EmbedBuilder(this.data).toJSON()
     }
 }
-
-export class TikTokEmbedBuilder {   
-
-    message: Message
-    data: APIEmbed
-    tikTok: Video
-    content: string
-    memberName: string
-
-    constructor(message: Message, tikTok: Video, content: string) {
-        this.message = message
-        this.tikTok = tikTok
-        this.content = content
-
-        this.memberName = (this.message.member?.nickname ? this.message.member.nickname : this.message.author.username)
-        if (this.content == "{URL}") {
-            this.content = "No message."
-        }
-
-        this.data = {
-            color: config.server.embedColor,
-            title: `Title: ${this.tikTok.description}`,
-            description: `Original msg: \r\n${content}`,
-            author: {
-                name: `TikTok Sent by: @${this.memberName}#${this.message.author.discriminator}`,
-                icon_url: this.message.author.avatarURL({format: "png"}) as string,
-                url: this.tikTok.downloadURL
-            },
-        }
-    }
-
-    toJSON() {
-        return new EmbedBuilder(this.data).toJSON()
-    }
-}

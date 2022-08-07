@@ -1,9 +1,7 @@
 // Convert / Download / Upload tiktok links automatically
 
 import { ExtendedClient, ClientEvent } from "../../util/structures";
-import { MessageAttachment } from "discord.js";
 import { TTScraper } from "tiktok-scraper-ts";
-import { TikTokEmbedBuilder } from "../../util/structures/embed-builders";
 
 export const event: ClientEvent = {
     name: "tiktokConvert",
@@ -11,42 +9,38 @@ export const event: ClientEvent = {
         client.on("messageCreate", async (message) => {
             
 			// Make sure theres a tiktok link in the mesage and it wasnt sent by a bot or anything
-			if (!message.content.includes("vt.tiktok") || message.author.bot || !message.channel) {
+			// !message.content.includes("vt.tiktok") || 
+			if (message.author.bot || !message.channel || !message.content.includes("tiktok.com")) {
 				return
 			}
-
-			// grab the url using https:// and a consistent query param as the start/finish of the url
-			const urlStart = message.content.indexOf("https://")
-			// ew magic number. +4 is for the length of the substring its indexing for
-			const urlEnd = message.content.indexOf("?k=1") + 4
-			const tikTokUrl = message.content.substring(urlStart, urlEnd)
-
-			// save a clean version of the message
-			const cleanContent = message.content.replace(tikTokUrl, '{URL}')
 
 			// delete the original messsage
 			await message.delete()
 
+			// let user know that their link is loading
 			const tikTokPlaceholder = await message.channel.send("Loading TikTok data... (Might take a few seconds)")
 
-			// download the image
+			// grab urls from message and create a clean version of the message content
+			const extractUrls = require("extract-urls")
+			const urls: string[] = extractUrls(message.content)
+			var cleanContent = "Sender: " + message.member?.toString() + "\r\nMessage: " + message.content + "\r\nLinks: \r\n"
 			const scraper = new TTScraper()
-			const tikTok = await scraper.video(tikTokUrl)
-			const tikTokDirect = await scraper.noWaterMark(tikTokUrl)
 
-			if (tikTokDirect) {
-
-				// send the new one
-				const tikTokEmbed = new TikTokEmbedBuilder(message, tikTok, cleanContent).toJSON()
-				await tikTokPlaceholder.edit({
-					content: "TikTok found! :tada:",
-					embeds: [tikTokEmbed]
-				})
-				await message.channel.send(tikTokDirect)
-
-			} else {
-				await tikTokPlaceholder.edit("Something went wrong fetching a direct link to your TikTok. Please contact your server admin / bot dev.")
+			// purge all urls from message content and add no-watermarked links for discord auto-embed to use
+			for (var i = 0; i < urls.length; i++) {
+				cleanContent = cleanContent.replace(urls[i], "{URL}")
+				cleanContent += await scraper.noWaterMark(urls[i]) + "\r\n"
 			}
+
+			// make sure the no-watermark conversion worked
+			if (!cleanContent.includes("tiktokv.com")) {
+				await tikTokPlaceholder.edit("Something went wrong fetching a direct link to your TikTok. Please contact your server admin / bot dev.")	
+				return
+			}
+
+			await tikTokPlaceholder.edit({
+				content: cleanContent
+			})
 
 			return
         })

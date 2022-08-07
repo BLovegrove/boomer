@@ -36,7 +36,8 @@ export const command: Command = {
                 if (client.playerExists) {
                     await VH.disconnect(VoiceHandler.fetchPlayer(client))
                 }
-                await interaction.editReply(`${config.bot.name} now rebooting. Wait until they're online again before ruing more commands.`)
+                await interaction.editReply("Success.")
+                await interaction.followUp({ content: `${config.bot.name} now rebooting. Wait until they're online again before running more commands.`, ephemeral: false})
                 client.destroy()
                 CommandHandler.deRegister()
                 throw new Error("Shut down")
