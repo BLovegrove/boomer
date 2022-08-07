@@ -277,11 +277,14 @@ export class TikTokEmbedBuilder {
         this.content = content
 
         this.memberName = (this.message.member?.nickname ? this.message.member.nickname : this.message.author.username)
+        if (this.content == "{URL}") {
+            this.content = "No message."
+        }
 
         this.data = {
             color: config.server.embedColor,
             title: `Title: ${this.tikTok.description}`,
-            description: `Original message from @${this.memberName}#${this.message.author.discriminator}:\r\n${content}`,
+            description: `Original msg: \r\n${content}`,
             author: {
                 name: `TikTok Sent by: @${this.memberName}#${this.message.author.discriminator}`,
                 icon_url: this.message.author.avatarURL({format: "png"}) as string,
