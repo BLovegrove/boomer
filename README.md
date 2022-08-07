@@ -71,6 +71,8 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
+⚠️ ~ Project going through a rework - I'll update the readme soon! -Brandon ~ ⚠️
+
 <img src="https://raw.githubusercontent.com/BLovegrove/boomer/main/images/boomer-profile.png" style="border-radius: 10px;"><br />
 
 Boomer's humourous profile picture courtesy of my friend Bastian (IG: @fjaerdefantomen), who (aside from the odd meme like this) creates some fantastic art pieces. Seriously - [check him out](https://www.instagram.com/fjaerdefantomen/).
