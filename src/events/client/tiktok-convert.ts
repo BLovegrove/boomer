@@ -39,7 +39,7 @@ export const event: ClientEvent = {
 				// send the new one
 				const tikTokEmbed = new TikTokEmbedBuilder(message, tikTok, cleanContent).toJSON()
 				await tikTokPlaceholder.edit({
-					content: "",
+					content: "TikTok found! :tada:",
 					embeds: [tikTokEmbed]
 				})
 				await message.channel.send(tikTokDirect)
