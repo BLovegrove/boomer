@@ -24,18 +24,24 @@ export const event: ClientEvent = {
 			const extractUrls = require("extract-urls")
 			const urls: string[] = extractUrls(message.content)
 			var cleanContent = "Sender: " + message.member?.toString() + "\r\nMessage: " + message.content + "\r\nLinks: \r\n"
-			const scraper = new TTScraper()
+			
+			try {
+				const scraper = new TTScraper()
+				// purge all urls from message content and add no-watermarked links for discord auto-embed to use
+				for (var i = 0; i < urls.length; i++) {
+					cleanContent = cleanContent.replace(urls[i], "{URL}")
+					cleanContent += await scraper.noWaterMark(urls[i]) + "\r\n"
+				}
 
-			// purge all urls from message content and add no-watermarked links for discord auto-embed to use
-			for (var i = 0; i < urls.length; i++) {
-				cleanContent = cleanContent.replace(urls[i], "{URL}")
-				cleanContent += await scraper.noWaterMark(urls[i]) + "\r\n"
-			}
-
-			// make sure the no-watermark conversion worked
-			if (!cleanContent.includes("tiktokv.com")) {
-				await tikTokPlaceholder.edit("Something went wrong fetching a direct link to your TikTok. Please contact your server admin / bot dev.")	
-				return
+				// make sure the no-watermark conversion worked
+				if (!cleanContent.includes("tiktokv.com")) {
+					await tikTokPlaceholder.edit("Something went wrong fetching a direct link to your TikTok. Please contact your server admin / bot dev.")
+					return
+				}
+				
+			} catch (e) {
+				await tikTokPlaceholder.edit(`Error! Something went wrong.\r\nSender: ${message.member?.toString()}\r\nOrirignal msg: ${message.content}`)
+				console.log(e)
 			}
 
 			await tikTokPlaceholder.edit({
