@@ -31,12 +31,14 @@ export const event: ClientEvent = {
 
                 const channel = client.channels.cache.get(player.textChannel) as TextChannel
                 channel.send(":warning: Nothing found when looking for idle music! look for a new video.")
+                return
             }
 
             player.set('idle', true)
             player.setTrackRepeat(true)
 
             const track = results.tracks.at(0) as Track
+            console.log(track)
             player.queue.add(track, 0)
 
             if (!player.playing) {
