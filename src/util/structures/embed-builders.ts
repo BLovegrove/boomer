@@ -134,7 +134,9 @@ export class ProgressEmbedBuilder extends TrackEmbedBuilder {
         ).at(0)!.toString()
 
         this.data.author!.name = `Info requested by: ${this.sender.displayName}`
-        this.data.footer!.text = `🎵 ${timeFormat(durationCurrent, { leading: true })} ${progress} ${timeFormat(durationTotal, { leading: true })} 🎵`
+        this.data.footer = {
+            text: `🎵 ${timeFormat(durationCurrent, { leading: true })} ${progress} ${timeFormat(durationTotal, { leading: true })} 🎵`
+        }
     }
 }
 
