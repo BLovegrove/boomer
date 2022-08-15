@@ -34,12 +34,17 @@ export const event: ClientEvent = {
                 return
             }
 
-            player.set('idle', true)
-            player.setTrackRepeat(true)
+            if (player.get("idle")) {
+                player.setTrackRepeat(false)
+                player.queue.clear()
+                player.stop()
+            }
 
             const track = results.tracks.at(0) as Track
-            console.log(track)
             player.queue.add(track, 0)
+
+            player.set('idle', true)
+            player.setTrackRepeat(true)
 
             if (!player.playing) {
                 await player.play()
