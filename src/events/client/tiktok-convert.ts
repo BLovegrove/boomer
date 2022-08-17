@@ -22,26 +22,31 @@ export const event: ClientEvent = {
 
 			// grab urls from message and create a clean version of the message content
 			const extractUrls = require("extract-urls")
+			const turl = require("turl")
 			const urls: string[] = extractUrls(message.content)
-			var cleanContent = "Sender: " + message.member?.toString() + "\r\nMessage: " + message.content + "\r\nLinks: \r\n"
+			var cleanContent = `Sender: ${message.member?.toString()}`
 			
 			try {
 				const scraper = new TTScraper()
 				// purge all urls from message content and add no-watermarked links for discord auto-embed to use
 				for (var i = 0; i < urls.length; i++) {
-					cleanContent = cleanContent.replace(urls[i], "{URL}")
-					cleanContent += await scraper.noWaterMark(urls[i]) + "\r\n"
+					const video = await scraper.video(urls[i])
+					cleanContent += `\r\nDescription #${i+1}: ${video.description}`
+					cleanContent += `\r\nLink: ${await turl.shorten(video.downloadURL)}`
+					cleanContent += '\r\n'
 				}
 
 				// make sure the no-watermark conversion worked
-				if (!cleanContent.includes("tiktokv.com")) {
+				if (!cleanContent.includes("tinyurl")) {
 					await tikTokPlaceholder.edit("Something went wrong fetching a direct link to your TikTok. Please contact your server admin / bot dev.")
+					console.log(cleanContent)
 					return
 				}
 				
 			} catch (e) {
 				await tikTokPlaceholder.edit(`Error! Something went wrong.\r\nSender: ${message.member?.toString()}\r\nOrirignal msg: ${message.content}`)
 				console.log(e)
+				return
 			}
 
 			await tikTokPlaceholder.edit({
