@@ -18,11 +18,13 @@ export const command: Command = {
                     { name: "Coconut Mall", value: "https://www.youtube.com/watch?v=cscuCIzItZQ"},
                     { name: "Crab Rave", value: "https://www.youtube.com/watch?v=mRq_Kldhh28"},
                     { name: "Rickroll", value: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"},
-                    { name: "Earthbound", value: "https://www.youtube.com/watch?v=6M-NkQAo-3E&t=1s"},
+                    { name: "Earthbound", value: "https://www.youtube.com/watch?v=6M-NkQAo-3E"},
                     { name: "Roooocks", value: "https://www.youtube.com/watch?v=ZPjSV-lnqvg"},
                     { name: "Country Calendar", value: "https://www.youtube.com/watch?v=p9i0O-G8Wa8"},
                     { name: "OuiOui", value: "https://www.youtube.com/watch?v=BFxZ15xXVRk"},
-                    { name: "Pizzatime", value: "https://www.youtube.com/watch?v=lpvT-Fciu-4"},
+                    { name: "Pizzatime", value: "https://www.youtube.com/watch?v=czTksCF6X8Y"},
+                    { name: "PIZZATIME 😂", value: "https://www.youtube.com/watch?v=lpvT-Fciu-4"},
+                    { name: "BigEnough", value: "https://www.youtube.com/watch?v=rvrZJ5C_Nwg"},
                 )
         )
         ,
