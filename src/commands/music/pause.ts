@@ -14,8 +14,14 @@ export const command: Command = {
         if (!player) {
             return
         }
+
+        if (player.paused) {
+            await interaction.reply({content: "Already paused.", ephemeral: true})
+            return
+        }
+
         player.pause(true)
         await interaction.reply("Track paused :pause_button:")
-
+        return
     }
 }

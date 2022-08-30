@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
-import { MusicHandler } from "../../util/handlers";
+import { MusicHandler, VoiceHandler } from "../../util/handlers";
 import { ExtendedClient, Command } from "../../util/structures";
 
 export const command: Command = {
@@ -10,13 +10,32 @@ export const command: Command = {
         .addStringOption(option => option
             .setName('search')
             .setDescription('The name/artist/url of the song you want to find')
-            .setRequired(true)
         )
         ,
     async execute(interaction: CommandInteraction, client: ExtendedClient) {
         const MH = new MusicHandler(client)
 
-        const searchString = interaction.options.getString('search', true)
-        await MH.play(interaction, searchString)
+        const searchString = interaction.options.getString('search')
+
+        if (searchString) {
+            await MH.play(interaction, searchString)
+            return
+        }
+
+        const VH = new VoiceHandler(client)
+        const player = await VH.ensureVoice(interaction)
+
+        if (!player) {
+            return
+        }
+
+        if (!player.paused) {
+            await interaction.reply({content: "Nothing is paused - try entering a YouTube or Soundcloud URL to play a new track instead.", ephemeral: true})
+            return
+        }
+
+        player.pause(false)
+        await interaction.reply("Track resumed :arrow_forward:")
+        return
     }
 }
