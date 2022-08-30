@@ -82,6 +82,7 @@ export const command: Command = {
                 break
             }
         }
-        await interaction.reply(`${filterType.at(0)!.toUpperCase()} filter applied. Please wait a few seconds to apply.` )
+        const filterName = filterType.at(0)!.toUpperCase() + filterType.slice(1)
+        await interaction.reply(`${filterName} filter applied. Please wait a few seconds to apply.` )
     }
 }
