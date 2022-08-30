@@ -25,6 +25,7 @@ export const command: Command = {
                     { name: "Pizzatime", value: "https://www.youtube.com/watch?v=czTksCF6X8Y"},
                     { name: "PIZZATIME 😂", value: "https://www.youtube.com/watch?v=lpvT-Fciu-4"},
                     { name: "BigEnough", value: "https://www.youtube.com/watch?v=rvrZJ5C_Nwg"},
+                    { name: "GAS 🚗", value: "https://www.youtube.com/watch?v=ljwUlY9WW1I"},
                 )
         )
         ,
@@ -32,6 +33,7 @@ export const command: Command = {
         const songURL = interaction.options.getString('song', true)
 
         const MH = new MusicHandler(client)
+
         await MH.play(interaction, songURL)
     }
 }

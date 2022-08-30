@@ -71,36 +71,44 @@ export class MusicHandler {
         await interaction.deferReply()
 
         const result = await player.search(query)
+        console.log(result)
 
-        switch(result.loadType) {
-            case "LOAD_FAILED":
-                interaction.editReply("Failed to load track, please use a URL or different search term");
-                break;
+        try {
 
-            case "NO_MATCHES":
-                interaction.editReply("404 Song not found! Try something else.");
-                break;
+            switch (result.loadType) {
+                case "LOAD_FAILED":
+                    interaction.editReply("Failed to load track, please use a URL or different search term");
+                    break;
 
-            case "SEARCH_RESULT":
-                var track = result.tracks.at(0)
-                this.addTrack(interaction, player, track)
-                break;
+                case "NO_MATCHES":
+                    interaction.editReply("404 Song not found! Try something else.");
+                    break;
 
-            case "TRACK_LOADED":
-                var track = result.tracks.at(0)
-                this.addTrack(interaction, player, track)
-                break;
+                case "SEARCH_RESULT":
+                    var track = result.tracks.at(0)
+                    this.addTrack(interaction, player, track)
+                    break;
 
-            case "PLAYLIST_LOADED":
-                var tracks = result.tracks;
-                this.addTrack(interaction, player, undefined, tracks, result)
-                break;
-                
-            default:
-                await interaction.editReply("Something unexpected happen. Contact your server owner immediately and let them know the exact command you tried to run.");
-                console.log(`Load type for play request defaulted. query '${query}' result as follows:`);
-                console.log(result);
-                break;
+                case "TRACK_LOADED":
+                    var track = result.tracks.at(0)
+                    this.addTrack(interaction, player, track)
+                    break;
+
+                case "PLAYLIST_LOADED":
+                    var tracks = result.tracks;
+                    this.addTrack(interaction, player, undefined, tracks, result)
+                    break;
+
+                default:
+                    await interaction.editReply("Something unexpected happen. Contact your server owner immediately and let them know the exact command you tried to run.");
+                    console.log(`Load type for play request defaulted. query '${query}' result as follows:`);
+                    console.log(result);
+                    break;
+            }
+
+        } catch (e) {
+            console.log("Failed to play track. Error:" + e)
+            return
         }
 
         this.QH.updatePages(player)

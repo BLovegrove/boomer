@@ -24,7 +24,7 @@ export class ExtendedClient extends Client {
     }
 
     get playerExists() {
-        this._playerExists = this.manager.players.keyArray().length != 0 ? true : false
+        this._playerExists = this.manager.players.size != 0 ? true : false
         return this._playerExists
     }
 
