@@ -11,8 +11,9 @@ export const command: Command = {
 			.setName("mode")
 			.setDescription("Pick between track and entire playlist to enable repeating on.")
 			.addChoices(
-				{name: "track", value: "track"},
-				{name: "playlist", value: "playlist"},
+				{ name: "track", value: "track" },
+				{ name: "playlist", value: "playlist" },
+				{ name: "clear", value: "clear" },
 			)
 			.setRequired(true)
 		)
@@ -45,6 +46,13 @@ export const command: Command = {
 				player.setTrackRepeat(false)
 
 				await interaction.reply("Looping on playlist :repeat:")
+				return
+			}
+			case "clear": {
+				player.setQueueRepeat(false)
+				player.setTrackRepeat(false)
+
+				await interaction.reply("Looping disabled.")
 				return
 			}
 		}
