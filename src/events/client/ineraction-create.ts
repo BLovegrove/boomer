@@ -39,7 +39,7 @@ export const event: ClientEvent = {
                             break;
                     }
 
-                    throw new Error("Command errored. Shuting down. This could be intentional, but check bot output just in case.")
+                    throw new Error("Command errored. Shutting down. This could be intentional, but check bot output just in case.")
                 }
             }
         })

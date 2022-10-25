@@ -2,11 +2,12 @@ import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
 import { MusicHandler, VoiceHandler } from "../../util/handlers";
 import { ExtendedClient, Command } from "../../util/structures";
+import config from "../../config.json";
 
 export const command: Command = {
     data: new SlashCommandBuilder()
         .setName("play")
-        .setDescription("Plays music! Summons boomer if he isn't running, adds a song to the queue if he is.")
+        .setDescription(`Plays music! Summons ${config.bot.name} if he isn't running, adds a song to the queue if he is.`)
         .addStringOption(option => option
             .setName('search')
             .setDescription('The name/artist/url of the song you want to find')

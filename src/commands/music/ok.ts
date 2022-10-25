@@ -7,11 +7,11 @@ import config from "../../config.json"
 export const command: Command = {
     data: new SlashCommandBuilder()
         .setName("ok")
-        .setDescription("Summons boomer to your voice channel without playing anything.")
+        .setDescription(`Summons ${config.bot.name} to your voice channel without playing anything.`)
         .addSubcommand(command => 
             command
-                .setName("boomer")
-                .setDescription("Summons boomer to your voice channel without playing anything.")
+                .setName(config.bot.name.toLowerCase())
+                .setDescription(`Summons ${config.bot.name} to your voice channel without playing anything.`)
         )
         ,
     async execute(interaction: CommandInteraction, client: ExtendedClient) {

@@ -14,7 +14,7 @@ export class VoiceHandler {
     /**
      * Note: Any command using ensureVoice is deferred to account for lavalink response times.
      * use editReply for any ineraction reply after ensureVoice runs.
-     * @param client modified discord.js client called 'Boomer'.
+     * @param client modified discord.js client for your bot.
      */
     constructor(client: ExtendedClient) {
         this.client = client
@@ -23,7 +23,7 @@ export class VoiceHandler {
     /**
      * make sure you never run this in a scenario where a player doesnt exist.
      * inbuilt guard for that coming soon.
-     * @param client Custom discord.js client Boomer
+     * @param client Custom discord.js client for your bot
      * @returns erela.js player
      */
     static fetchPlayer(client: ExtendedClient) {
@@ -62,7 +62,7 @@ export class VoiceHandler {
         const shouldConnect = config.commands.shouldConnect.includes(interaction.commandName)
         if (player.state == "DISCONNECTED") {
             if (!shouldConnect) {
-                await interaction.reply({ content: "Can't do this without a player running. Try /ok boomer or /play first!" , ephemeral: true})
+                await interaction.reply({ content: `Can't do this without a player running. Try /ok ${config.bot.name} or /play first!` , ephemeral: true})
                 return
             }
 
@@ -99,7 +99,7 @@ export class VoiceHandler {
     }
 
     /**
-     * Updates the activity and status to match what boomer is doing.
+     * Updates the activity and status to match what the bot is doing.
      * playing music: online & shows 'listening to (song). idle: shows 
      * nothing and idle status.
      * @param player erela.js player

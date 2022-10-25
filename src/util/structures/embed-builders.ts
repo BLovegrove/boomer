@@ -24,7 +24,7 @@ export class TrackEmbedBuilder {
         this.sender = interaction.member as GuildMember
 
         this.data = {
-            color: config.server.embedColor,
+            color: config.style.embedColor,
             description: `Song by: ${track.author}`,
             author: {
                 name: `Song queued by ${this.sender.displayName}: `,
@@ -158,11 +158,10 @@ export class PlaylistEmbedBuilder {
         const playlist = result.playlist as PlaylistInfo
 
         this.data = {
-            color: config.server.embedColor,
+            color: config.style.embedColor,
             description: `:notepad_spiral: Playlist: ${playlist.name}`,
             author: {
                 name: `Playlist queued by ${this.sender.displayName}`,
-                url: "https://tinyurl.com/boomermusic",
                 icon_url: this.sender.avatarURL() as string
             },
             thumbnail: {
@@ -221,13 +220,12 @@ export class ListEmbedBuilder {
         }
 
         this.data = {
-            color: config.server.embedColor,
+            color: config.style.embedColor,
             title: `Now playing: ***${track.title}***`,
             description: `Page ${page} of ${player.get<number>("pages")}. Modifiers: ${modifiers}`,
             url: track.uri,
             author: {
                 name: `Current queue: Showing #${listStart + 1} to #${listEnd + 1} of ${player.queue.length} items in queue.`,
-                url: "https://tinyurl.com/boomermusic",
                 icon_url: "https://i.imgur.com/dpVBIer.png"
             },
             footer: {

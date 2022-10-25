@@ -14,7 +14,5 @@ export const command: Command = {
 		if (!player) {
 			return
 		}
-
-		
     }
 }

@@ -8,7 +8,7 @@ import config from "../../config.json"
 export const command: Command = {
     data: new SlashCommandBuilder()
         .setName("dev")
-        .setDescription("Series of dev commands for boomer.")
+        .setDescription(`Series of dev commands for ${config.bot.name}.`)
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
         .addStringOption(option =>
             option
@@ -39,7 +39,7 @@ export const command: Command = {
                 await interaction.editReply("Success.")
                 await interaction.followUp({ content: `${config.bot.name} now rebooting. Wait until they're online again before running more commands.`, ephemeral: false})
                 client.destroy()
-                CommandHandler.deRegister()
+                CommandHandler.deRegister(client)
                 throw new Error("Shut down")
             }
 
@@ -50,47 +50,56 @@ export const command: Command = {
             }
 
             case "searchex": {
-                const player = await VH.ensureVoice(interaction)
-                if (!player) {
-                    return
+
+                if (client.playerExists) {
+                    const player = VoiceHandler.fetchPlayer(client)
+
+                    console.log("Text search result:");
+                    console.log(await player.search("Rick Astley"));
+
+                    console.log("YT Track result:")
+                    console.log(await player.search("https://www.youtube.com/watch?v=dQw4w9WgXcQ"));
+
+                    console.log("YT Playlist result:");
+                    console.log(await player.search("https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=PLCiNIjl_KpQhFwQA3G19w1nmhEOlZQsGF"))
+
+                    await interaction.editReply("Logged test results. Go check client log.")
+
+                } else {
+                    await interaction.editReply("Failed to log player object - no player exists")
                 }
-
-                console.log("Text search result:");
-                console.log(await player.search("Rick Astley"));
-
-                console.log("YT Track result:")
-                console.log(await player.search("https://www.youtube.com/watch?v=dQw4w9WgXcQ"));
-
-                console.log("YT Playlist result:");
-                console.log(await player.search("https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=PLCiNIjl_KpQhFwQA3G19w1nmhEOlZQsGF"))
-
-                await interaction.editReply({ content: "Logged test results. Go check client log." })
 
                 return
             }
             
             case "logqueue": {
-                const player = await VH.ensureVoice(interaction)
-                if (!player) {
-                    return
+                
+                if (client.playerExists) {
+                    const player = VoiceHandler.fetchPlayer(client)
+
+                    console.log(player.queue)
+
+                    await interaction.editReply("Logged queue. Go check client log")
+
+                } else {
+                    await interaction.editReply("Failed to log player object - no player exists")
                 }
-
-                console.log(player.queue)
-
-                await interaction.editReply({ content: "Logged queue. Go check client log" })
 
                 return
             }
             
             case "logplayer": {
-                const player = await VH.ensureVoice(interaction)
-                if (!player) {
-                    return
+
+                if (client.playerExists) {
+                    const player = VoiceHandler.fetchPlayer(client)
+
+                    console.log(player)
+
+                    await interaction.editReply("Logged player object. Go check the client log")
+
+                } else {
+                    await interaction.editReply("Failed to log player object - no player exists")
                 }
-
-                console.log(player)
-
-                await interaction.editReply({ content: "Logged player object. Go check the client log" })
 
                 return
             }
