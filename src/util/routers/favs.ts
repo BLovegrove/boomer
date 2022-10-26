@@ -23,7 +23,7 @@ favsRouter.get("/", async (_request: Request, response: Response) => {
 });
 
 favsRouter.get("/role/:roleID", async (request: Request, result: Response) => {
-	const role = request?.params?.role;
+	const role = request?.params?.roleID;
 
 	try {
 		const query = {_roleID: role};
@@ -32,9 +32,12 @@ favsRouter.get("/role/:roleID", async (request: Request, result: Response) => {
 		if (favs) {
 			result.status(200).send(favs);
 		}
+		else {
+			result.status(404).send('')
+		}
 	} catch (error) {
 		console.log(request.params)
-		result.status(404).send(`Unable to find matching document with role id: ${request.params.role}`)
+		result.status(502).send("Something went wrong with the request.")
 	}
 })
 

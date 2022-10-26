@@ -17,6 +17,7 @@ export const command: Command = {
                 .setRequired(true)
                 .addChoices(
                     {name: 'Kill bot', value: 'die'},
+                    {name: 'Attach a favs list to role', value: 'list'},
                     {name: 'Ping test', value: 'ping'},
                     {name: 'Log Search Example', value: 'searchex'},
                     {name: 'Log queue entries', value: 'logqueue'},
