@@ -1,0 +1,23 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.exclude": {
+			"**/__pycache__": true,
+			"**/.vscode": true
+		},
+		"editor.formatOnSave": true,
+		"python.formatting.provider": "black",
+		"editor.defaultFormatter": "ms-python.black-formatter",
+		"editor.codeActionsOnSave": {
+			"source.organizeImports": true
+		},
+		"isort.args": [
+			"--profile",
+			"black"
+		],
+	}
+}
