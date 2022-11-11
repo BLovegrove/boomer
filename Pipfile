@@ -11,6 +11,8 @@ pynacl = "*"
 pyfiglet = "*"
 termcolor = "*"
 colorama = "*"
+wavelink = "*"
+nextwave = "*"
 
 [dev-packages]
 black = "*"

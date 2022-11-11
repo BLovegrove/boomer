@@ -1,37 +1,34 @@
 import logging
 
-import nextcord
-from nextcord import slash_command
-from nextcord.ext import commands
+import discord
+from discord import app_commands
+from discord.app_commands import checks
+from discord.ext import commands
 
 import config as cfg
 
+from ...util.models.client import LavaBotClient
+
 
 class Dev(commands.Cog):
-    def __init__(self, bot: commands.Bot) -> None:
+    def __init__(self, bot: LavaBotClient) -> None:
         self.bot = bot
 
-    @slash_command(
-        name="dev",
-        description=f"A series of developer commands for {cfg.bot.name}. BE CAREFUL WITH THESE.",
-        guild_ids=[cfg.bot.guild_id],
+    @app_commands.command(
+        description=f"A series of developer commands for {cfg.bot.name}. BE CAREFUL WITH THESE."
     )
-    @commands.has_role(1001722386976084071)
+    @app_commands.describe(
+        subcode="Runs a series of dev actions without cluttering the commands list."
+    )
+    @app_commands.choices(
+        subcode=[
+            app_commands.Choice(name="Kill bot", value="die"),
+            app_commands.Choice(name="Ping test", value="ping"),
+        ]
+    )
+    @checks.has_role(1001722386976084071)
     async def dev(
-        self,
-        interaction: nextcord.Interaction,
-        subcode: str = nextcord.SlashOption(
-            name="subcommand",
-            description="Runs a series of dev actions without cluttering the commands list.",
-            choices={
-                "Kill bot": "die",
-                "Ping test": "ping",
-                "Log Search Example": "searchex",
-                "Log queue entries": "logqueue",
-                "Log player state": "logplayer",
-            },
-            required=True,
-        ),
+        self, interaction: discord.Interaction, subcode: app_commands.Choice[str]
     ):
         await interaction.response.defer(ephemeral=True)
 

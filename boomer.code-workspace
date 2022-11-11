@@ -10,6 +10,8 @@
 			"**/.vscode": true
 		},
 		"editor.formatOnSave": true,
+        "editor.formatOnPaste": false,  
+        "editor.formatOnSaveMode": "file",
 		"python.formatting.provider": "black",
 		"editor.defaultFormatter": "ms-python.black-formatter",
 		"editor.codeActionsOnSave": {
