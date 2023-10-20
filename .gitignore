@@ -162,4 +162,4 @@ cython_debug/
 # custom ignore
 bot.db
 bot.sqlite
-config.py
+*config.py
