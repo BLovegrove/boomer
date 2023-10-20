@@ -17,6 +17,7 @@
 		"editor.codeActionsOnSave": {
 			"source.organizeImports": true
 		},
+        "python.terminal.activateEnvironment": false,
 		"isort.args": [
 			"--profile",
 			"black"

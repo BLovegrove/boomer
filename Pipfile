@@ -5,20 +5,15 @@ name = "pypi"
 
 [packages]
 nextcord = "*"
-toml = "*"
-lavalink = "*"
+mafic = "*"
 pynacl = "*"
-pyfiglet = "*"
-termcolor = "*"
-colorama = "*"
-wavelink = "*"
-nextwave = "*"
+aiodns = "*"
+brotli = "*"
+cchardet = "*"
+orjson = "*"
+stringprogressbar = "*"
 
 [dev-packages]
-black = "*"
 
 [requires]
 python_version = "3.10"
-
-[pipenv]
-allow_prereleases = true
