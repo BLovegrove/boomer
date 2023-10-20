@@ -1,0 +1,19 @@
+import discord
+from discord import app_commands
+from discord.ext import commands
+from ...util.models import LavaBot
+from ...handlers.music import MusicHandler
+from ...handlers.voice import VoiceHandler
+
+class Template(commands.Cog):
+    def __init__(self, bot: LavaBot) -> None:
+        self.bot = bot
+        self.music_handler = MusicHandler(bot)
+        self.voice_handler = VoiceHandler(bot)
+
+    @app_commands.command()
+    async def method(self, interaction: discord.Interaction):
+        return
+
+async def setup(bot: LavaBot):
+    await bot.add_cog(Template(bot))

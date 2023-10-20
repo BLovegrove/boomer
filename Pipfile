@@ -4,14 +4,11 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-nextcord = "*"
-mafic = "*"
+"discord.py" = "*"
 pynacl = "*"
-aiodns = "*"
-brotli = "*"
-cchardet = "*"
-orjson = "*"
+lavalink = "*"
 stringprogressbar = "*"
+loguru = "*"
 
 [dev-packages]
 

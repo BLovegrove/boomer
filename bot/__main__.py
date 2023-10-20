@@ -1,40 +1,75 @@
+import logging
+import logging.handlers
 import os
+import sys
 
-import mafic
-from nextcord.ext import commands
+from loguru import logger
 
 import config as cfg
 
+from .util.models import LavaBot
 
-class MaficBot(commands.Bot):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
 
-        self.pool = mafic.NodePool(self)
-        self.loop.create_task(self.add_nodes())
+class InterceptHandler(logging.Handler):
+    def emit(self, record):
+        # Get corresponding Loguru level if it exists.
+        try:
+            level = logger.level(record.levelname).name
+        except ValueError:
+            level = record.levelno
 
-    async def add_nodes(self):
-        await self.pool.create_node(
-            host=cfg.lavalink.host,
-            port=cfg.lavalink.port,
-            password=cfg.lavalink.password,
-            label=cfg.lavalink.label,
+        # Find caller from where originated the logged message.
+        frame, depth = sys._getframe(6), 6
+        while frame and frame.f_code.co_filename == logging.__file__:
+            frame = frame.f_back
+            depth += 1
+
+        logger.opt(depth=depth, exception=record.exc_info).log(
+            level, record.getMessage()
         )
+
+
+logging.basicConfig(handlers=[InterceptHandler()], level="INFO", force=True)
 
 
 # make sure the main py file is being run as a file and not imported
 def main():
-    bot = MaficBot(default_guild_ids=[cfg.guild.id])
-
-    # register all cogs
-    for folder in os.listdir("bot/cogs"):
-        for filename in os.listdir(f"bot/cogs/{folder}"):
-            if filename.endswith(".py"):
-                bot.load_extension(f"bot.cogs.{folder}.{filename[:-3]}")
-
-    # create mafic node pool
-
-    bot.run(cfg.bot.token)
+    bot = LavaBot()
+    logger.remove()
+    logger_format = "<g>{time:YYYY-MM-DD HH:mm:ss}</> <c>|</> <lvl>{level.name:<8}</> <c>|</> <m>{name:<36}</><y>LINE:{line:<4}</> <c>|</> {message}"
+    logger.add(
+        sink="logs/bot.log",
+        level="INFO",
+        rotation="1 day",
+        compression="zip",
+        colorize=True,
+        enqueue=True,
+        format=logger_format,
+        backtrace=True,
+        diagnose=False,
+    )
+    if cfg.bot.debug:
+        logger.add(
+            sink="logs/bot-debug.log",
+            level="DEBUG",
+            rotation="1 day",
+            compression="zip",
+            colorize=True,
+            enqueue=True,
+            format=logger_format,
+            backtrace=True,
+            diagnose=False,
+        )
+    bot.run(cfg.bot.token, log_handler=None)
+    logger.warning(
+        "# ---------------------------------------------------------------------------- #"
+    )
+    logger.warning(
+        "#                             BOT SHUTDOWN COMPLETE                            #"
+    )
+    logger.warning(
+        "# ---------------------------------------------------------------------------- #"
+    )
 
 
 if __name__ == "__main__":

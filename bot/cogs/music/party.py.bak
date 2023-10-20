@@ -1,0 +1,93 @@
+import discord
+import lavalink
+from discord import app_commands
+from discord.ext import commands
+
+from ...handlers.music import MusicHandler
+from ...handlers.queue import QueueHandler
+from ...handlers.voice import VoiceHandler
+from ...util.models import LavaBot
+
+
+class Party(commands.Cog):
+    def __init__(self, bot: LavaBot) -> None:
+        self.bot = bot
+        self.music_handler = MusicHandler(bot)
+        self.voice_handler = VoiceHandler(bot)
+        self.queue_handler = QueueHandler(bot, self.voice_handler)
+
+    @app_commands.command(
+        description="Clears the queue, adds / shuffles all your favorites and enables 'queue-repeat'"
+    )
+    async def party(self, interaction: discord.Interaction):
+        player = await self.voice_handler.ensure_voice(interaction)
+
+        await interaction.response.defer()
+
+        if player.fetch("partymode"):
+            player.queue.clear()
+            player.set_loop(player.LOOP_NONE)
+            player.set_shuffle(False)
+            await player.skip()
+            player.store("partymode", False)
+            await interaction.followup.send(
+                content=":no_entry_sign: Disabled party mode and set player to idle."
+            )
+            return
+
+        favs_result = self.database_handler.fetch_favs(interaction.user)
+
+        if not favs_result:
+            await interaction.followup.send(
+                ":warning: Failed to engage party mode! Couldn't find your favourites list - talk to an admin if you think thats a mistake."
+            )
+            return
+
+        role_name, favs = favs_result
+
+        tracks_success = []
+        tracks_missing = []
+
+        for name, url in favs.items():
+            result = await player.node.get_tracks(url)
+            match result.load_type:
+                case lavalink.LoadType.LOAD_FAILED:
+                    tracks_missing.append(name)
+                case lavalink.LoadType.NO_MATCHES:
+                    tracks_missing.append(name)
+                case lavalink.LoadType.TRACK:
+                    tracks_success.append(result.tracks[0])
+
+        if tracks_success == []:
+            await interaction.followup.send(
+                content=":warning: Something went wrong queuing your favourites... Either they're all missing or your admin needs to have a look at things."
+            )
+            return
+
+        player.queue.clear()
+
+        for track in tracks_success:
+            player.add(track)
+
+        player.set_shuffle(True)
+        await player.skip()
+
+        player.set_loop(player.LOOP_QUEUE)
+
+        self.queue_handler.update_pages(player)
+
+        await interaction.followup.send(
+            content=":partying_face: Enabled party mode - enjoy your favourite tunes!"
+        )
+
+        if tracks_missing != []:
+            await interaction.followup.send(
+                f"Failed to queue some of your favourites - they were probably taken down: {tracks_missing}"
+            )
+
+        player.store("partymode", True)
+        return
+
+
+async def setup(bot: LavaBot):
+    await bot.add_cog(Party(bot))
