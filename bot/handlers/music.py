@@ -54,17 +54,16 @@ class MusicHandler:
 
         await interaction.followup.send(embed=embed)
 
-    async def play(self, interaction: discord.Interaction, search: str):
-        player: lavalink.DefaultPlayer = await self.voice_handler.ensure_voice(
-            interaction
-        )
+    async def play(self, inter: discord.Interaction, search: str):
+        await inter.response.defer()
+        player: lavalink.DefaultPlayer = await self.voice_handler.ensure_voice(inter)
 
         if "https://" not in search:
             search = "ytsearch:" + search
 
         logger.info(f"Attempting to play song... Query: {search}")
 
-        await interaction.response.defer()
+        # await inter.response.defer()
 
         player.node: lavalink.Node = player.node
 
@@ -73,25 +72,25 @@ class MusicHandler:
         try:
             match result.load_type:
                 case lavalink.LoadType.LOAD_FAILED:
-                    await interaction.followup.send(
+                    await inter.followup.send(
                         content="Failed to load track, please use a different URL or different search term."
                     )
 
                 case lavalink.LoadType.NO_MATCHES:
-                    await interaction.followup.send(
+                    await inter.followup.send(
                         content="404 song not found! Try something else."
                     )
 
                 case lavalink.LoadType.SEARCH | lavalink.LoadType.TRACK:
                     track = result.tracks[0]
-                    await self.__add_track(interaction, player, track)
+                    await self.__add_track(inter, player, track)
 
                 case lavalink.LoadType.PLAYLIST:
                     tracks = result.tracks
-                    await self.__add_track(interaction, player, None, tracks, result)
+                    await self.__add_track(inter, player, None, tracks, result)
 
                 case _:
-                    await interaction.response.edit_message(
+                    await inter.response.edit_message(
                         content="Something unexpected happened. Contact your server owner or local bot dev(s) immediately and let them know the exact command you tried to run."
                     )
                     logger.warning(
