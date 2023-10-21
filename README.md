@@ -15,7 +15,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/BLovegrove/boomer">
-    <img src="https://cdn.discordapp.com/app-icons/887606123782344704/645fae0c7ddee9ddc254464d97531622.png?size=100" style="border-radius:50%;" alt="Logo" width="100" height="100">
+    <img src="https://cdn.discordapp.com/app-icons/887606123782344704/645fae0c7ddee9ddc254464d97531622.png" alt="Logo" width="100" height="100">
   </a>
 
 <h3 align="center">Boomer - A Python-based Discord Music Bot</h3>
