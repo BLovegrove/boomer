@@ -77,7 +77,7 @@
 
 Boomer's humourous profile picture courtesy of my friend Bastian (IG: @fjaerdefantomen), who (aside from the odd meme like this) creates some fantastic art pieces. Seriously - [check him out](https://www.instagram.com/fjaerdefantomen/).
 
-Boomer, on the other hand, is entirely developed by me using the libraries and technologies listed in <a href="#built-with">Built With</a>. 
+Boomer, on the other hand, is entirely developed by myself and James using the libraries and technologies listed in <a href="#built-with">Built With</a>. 
 
 Because my server only needed the music functionality, that's what he's limited to for now - but 
 more features or enhancements would be welcome! See <a href="#contributing">Contributing</a> for more info on that. 
