@@ -20,11 +20,10 @@ class Favs(commands.Cog):
     @app_commands.command(
         description="Let's you pick form the some of the server's favorite tunes."
     )
-    @app_commands.describe(song="The favorite you're like to queue up.")
+    @app_commands.describe(song="The favorite you'd like to queue up.")
     @app_commands.choices(choices=cfg.player.favs)
-    async def jump(self, interaction: discord.Interaction, index: int = None):
-        await self.music_handler.skip(interaction, index if index != None else 1, False)
-
+    async def jump(self, inter: discord.Interaction, song: int):
+        print("boo")
         return
 
 

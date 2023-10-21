@@ -1,3 +1,5 @@
+#!/usr/bin/env -S docker build . --tag=boomer:latest --network=host --file
+
 FROM python:3.10
 
 COPY . /home/boomer
@@ -9,4 +11,4 @@ WORKDIR /home/boomer
 
 RUN python3.10 -m pip install -r requirements.txt
 
-CMD ["python3.10", "-m", "bot"]
+CMD ["python3", "-m", "bot"]
