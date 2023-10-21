@@ -2,10 +2,19 @@ import logging
 import logging.handlers
 import os
 import sys
+from time import sleep
 
 from loguru import logger
 
-import config as cfg
+try:
+    import config as cfg
+except:
+    os.rename("config.txt", "config.py")
+    print(
+        "Config file import failed. Please fill out the config file located in /home/boomer/config.py and restart the container."
+    )
+    while True:
+        sleep(60)
 
 from .util.models import LavaBot
 
@@ -16,8 +25,7 @@ class InterceptHandler(logging.Handler):
         try:
             level = logger.level(record.levelname).name
         except ValueError:
-            level = record.levelno
-
+            level = record.levelnoconfig.py
         # Find caller from where originated the logged message.
         frame, depth = sys._getframe(6), 6
         while frame and frame.f_code.co_filename == logging.__file__:
@@ -38,10 +46,8 @@ def main():
     logger.remove()
     logger_format = "<g>{time:YYYY-MM-DD HH:mm:ss}</> <c>|</> <lvl>{level.name:<8}</> <c>|</> <m>{name:<36}</><y>LINE:{line:<4}</> <c>|</> {message}"
     logger.add(
-        sink="logs/bot.log",
+        sink=sys.stdout,
         level="INFO",
-        rotation="1 day",
-        compression="zip",
         colorize=True,
         enqueue=True,
         format=logger_format,

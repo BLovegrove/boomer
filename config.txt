@@ -1,0 +1,34 @@
+import discord
+
+
+class guild:
+    id = ""
+
+
+class bot:
+    # these details you can get from the discord dev portal
+    name = "Boomer" # This is the name your bot will show up as in command output
+    id = ""
+    token = ""
+    debug = False
+
+
+class style:
+    embed_color = discord.Color.blurple()
+
+
+class lavalink:
+    host = ""
+    port = ""
+    password = ""
+    region = "" # (NZ, US, EU, etc)
+    name = "DEFAULT" # this can be changed, makes no difference though
+
+
+class player:
+    volume_default = 50
+    volume_idle = 5
+    bgm_default = "https://www.youtube.com/watch?v=384dfI0J5DU" # You can chnage this to basically anything, but youtube direct links work best
+    favs = [discord.app_commands.Choice(name="", value="")] 
+    # fill this out with as many app_commands.Choice instances as you like. they show up in the favs and party commands.
+    # Name is what shows when using the command in discord and the value is the url to the track. stick to soundcloud or youtube for best results.
