@@ -18,10 +18,10 @@ class VoiceHandler:
             logger.debug("Failed to find player.")
         return player
 
-    async def ensure_voice(self, interaction: discord.Interaction):
+    async def ensure_voice(self, inter: discord.Interaction):
         """This check ensures that the bot and command author are in the same voicechannel."""
         player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.create(
-            interaction.guild.id
+            inter.guild.id
         )
         # Create returns a player if one exists, otherwise creates.
         # This line is important because it ensures that a player always exists for a guild.
@@ -31,37 +31,37 @@ class VoiceHandler:
 
         # These are commands that require the bot to join a voicechannel (i.e. initiating playback).
         # Commands such as volume/skip etc don't require the bot to be in a voicechannel so don't need listing here.
-        should_connect = interaction.command.name in (
+        should_connect = inter.command.name in (
             "play",
             "join",
             "favs",
             "party",
         )
 
-        if not interaction.user.voice or not interaction.user.voice.channel:
+        if not inter.user.voice or not inter.user.voice.channel:
             # Our cog_command_error handler catches this and sends it to the voicechannel.
             # Exceptions allow us to "short-circuit" command invocation via checks so the
             # execution state of the command goes no further.
-            await interaction.response.send_message("Join a voicechannel first")
+            await inter.followup.send("Join a voicechannel first")
             return
 
-        v_client = interaction.guild.voice_client
+        v_client = inter.guild.voice_client
         if not v_client:
             if not should_connect:
                 # raise commands.CommandInvokeError("Not connected.")
-                await interaction.response.send_message(
+                await inter.followup.send(
                     f"{cfg.bot.name} not running yet. Try /join or /play first"
                 )
 
-            player.store("summoner_id", interaction.user.id)
-            await interaction.user.voice.channel.connect(cls=LavalinkVoiceClient)
+            player.store("summoner_id", inter.user.id)
+            await inter.user.voice.channel.connect(cls=LavalinkVoiceClient)
         else:
-            if v_client.channel.id != interaction.user.voice.channel.id:
-                await interaction.response.send_message(
+            if v_client.channel.id != inter.user.voice.channel.id:
+                await inter.followup.send(
                     f"Not connected to my channel. Join <#{player.channel_id}>"
                 )
 
-        player.store("last_channel", interaction.channel_id)
+        player.store("last_channel", inter.channel_id)
         return player
 
     async def cleanup(self, bot: LavaBot, player: lavalink.DefaultPlayer):

@@ -16,17 +16,18 @@ class Leave(commands.Cog):
         self.voice_handler = VoiceHandler(bot)
 
     @app_commands.command(description="Clears the queue and leaves the call.")
-    async def leave(self, interaction: discord.Interaction):
-        player = await self.voice_handler.ensure_voice(interaction)
+    async def leave(self, inter: discord.Interaction):
+        await inter.response.defer()
+        player = await self.voice_handler.ensure_voice(inter)
 
         if not player:
-            await interaction.response.send_message(
+            await inter.followup.send(
                 f"{cfg.bot.name} isn't in a call - this won't do anything",
                 ephemeral=True,
             )
             return
 
-        await interaction.response.send_message("Leaving call and clearing queue...")
+        await inter.followup.send("Leaving call and clearing queue...")
         await self.voice_handler.cleanup(self.bot, player)
 
         return

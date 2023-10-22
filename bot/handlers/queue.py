@@ -25,15 +25,15 @@ class QueueHandler:
         if not index:
             player.queue.clear()
             player.store("pages", 0)
-            await interaction.response.send_message(":boom: Queue cleared!")
+            await interaction.followup.send(":boom: Queue cleared!")
 
         else:
             cleared = player.queue.pop(index - 1)
 
             if not cleared:
-                await interaction.response.send_message(
+                await interaction.followup.send(
                     f"Failed to clear track: Track at index {index} not found. Index must be between 1 and {len(player.queue)}"
                 )
 
             embed = embeds.ClearedEmbedBuilder(interaction, cleared, player, index)
-            await interaction.response.send_message(embed=embed.construct())
+            await interaction.followup.send(embed=embed.construct())

@@ -15,12 +15,13 @@ class Now(commands.Cog):
     @app_commands.command(
         description="Shows info about the current song! Playtime, title, thumbnail, link, etc."
     )
-    async def now(self, interaction: discord.Interaction):
+    async def now(self, inter: discord.Interaction):
+        await inter.response.defer()
 
-        player = await self.voice_handler.ensure_voice(interaction)
-        embed = ProgressEmbedBuilder(interaction, player).construct()
+        player = await self.voice_handler.ensure_voice(inter)
+        embed = ProgressEmbedBuilder(inter, player).construct()
 
-        await interaction.response.send_message(embed=embed)
+        await inter.followup.send(embed=embed)
         return
 
 

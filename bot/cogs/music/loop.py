@@ -25,12 +25,12 @@ class Loop(commands.Cog):
             Choice(name="clear", value="clear"),
         ]
     )
-    async def loop(self, interaction: discord.Interaction, mode: str):
-
-        player = await self.voice_handler.ensure_voice(interaction)
+    async def loop(self, inter: discord.Interaction, mode: str):
+        await inter.response.defer()
+        player = await self.voice_handler.ensure_voice(inter)
 
         if not player.is_playing or player.fetch("idle"):
-            await interaction.response.send_message(
+            await inter.followup.send(
                 "Idlinng / Nothing playing at the moment. Try queueing up something first.",
                 ephemeral=True,
             )
@@ -39,15 +39,15 @@ class Loop(commands.Cog):
         match (mode):
             case "track":
                 player.set_loop(player.LOOP_SINGLE)
-                await interaction.response.send_message("Looping on track :repeat_one:")
+                await inter.followup.send("Looping on track :repeat_one:")
 
             case "playlist":
                 player.set_loop(player.LOOP_QUEUE)
-                await interaction.response.send_message("Looping on playlist :repeat:")
+                await inter.followup.send("Looping on playlist :repeat:")
 
             case "clear":
                 player.set_loop(player.LOOP_NONE)
-                await interaction.response.send_message("Looping disabled.")
+                await inter.followup.send("Looping disabled.")
 
         return
 

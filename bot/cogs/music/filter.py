@@ -28,10 +28,10 @@ class Filter(commands.Cog):
             Choice(name="Reset", value="reset"),
         ]
     )
-    async def filter(self, interaction: discord.Interaction, type: str):
-        player = await self.voice_handler.ensure_voice(interaction)
+    async def filter(self, inter: discord.Interaction, type: str):
+        await inter.response.defer()
 
-        await interaction.response.defer()
+        player = await self.voice_handler.ensure_voice(inter)
 
         await player.clear_filters()
 
@@ -54,10 +54,10 @@ class Filter(commands.Cog):
 
             case "reset":
                 await player.clear_filters()
-                await interaction.followup.send("Cleared all filters!")
+                await inter.followup.send("Cleared all filters!")
                 return
 
-        await interaction.followup.send(f"{type.capitalize()} filter applied!")
+        await inter.followup.send(f"{type.capitalize()} filter applied!")
         return
 
 

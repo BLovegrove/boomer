@@ -15,16 +15,16 @@ class Pause(commands.Cog):
         self.voice_handler = VoiceHandler(bot)
 
     @app_commands.command(description="Stops the music, to be resumed later with /play")
-    async def pause(self, interaction: discord.Interaction):
-
-        player = await self.voice_handler.ensure_voice(interaction)
+    async def pause(self, inter: discord.Interaction):
+        await inter.response.defer()
+        player = await self.voice_handler.ensure_voice(inter)
 
         if player.paused:
-            await interaction.response.send_message("Already paused", ephemeral=True)
+            await inter.followup.send("Already paused", ephemeral=True)
 
         await player.set_pause(True)
         logger.info("Player paused")
-        await interaction.response.send_message("Track paused :pause_button:")
+        await inter.followup.send("Track paused :pause_button:")
         return
 
 

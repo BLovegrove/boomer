@@ -55,7 +55,6 @@ class MusicHandler:
         await interaction.followup.send(embed=embed)
 
     async def play(self, inter: discord.Interaction, search: str):
-        # await inter.response.defer()
         player: lavalink.DefaultPlayer = await self.voice_handler.ensure_voice(inter)
 
         if "https://" not in search:
@@ -107,13 +106,13 @@ class MusicHandler:
         return
 
     async def skip(
-        self, interaction: discord.Interaction, index: int, trim_queue: bool = True
+        self, inter: discord.Interaction, index: int, trim_queue: bool = True
     ):
-        player = await self.voice_handler.ensure_voice(interaction)
+        player = await self.voice_handler.ensure_voice(inter)
 
         logger.debug(f"Queue length: {len(player.queue)}, loop status: {player.loop}")
         if len(player.queue) == 0 and player.fetch("idle"):
-            await interaction.response.send_message(
+            await inter.followup.send(
                 ":notepad_spiral: End of queue - time for your daily dose of idle tunes!"
             )
             await player.skip()
@@ -123,13 +122,13 @@ class MusicHandler:
             next_track = player.current
 
             if not next_track:
-                await interaction.response.send_message(
+                await inter.followup.send(
                     f"Error! Track not found. Somethign went wrong with playback - try kicking {cfg.bot.name} from the VC and trying again."
                 )
                 return
 
-            embed = SkipEmbedBuilder(interaction, next_track, player, 0)
-            await interaction.response.send_message(
+            embed = SkipEmbedBuilder(inter, next_track, player, 0)
+            await inter.followup.send(
                 ":repeat_one: Repeat enabled - looping song.",
                 embed=embed.construct(),
             )
@@ -138,7 +137,7 @@ class MusicHandler:
             return
 
         if index < 0:
-            await interaction.response.send_message(
+            await inter.followup.send(
                 ":warning: That index is too low! Queue starts at #1.", ephemeral=True
             )
             logger.warning(
@@ -147,7 +146,7 @@ class MusicHandler:
             return
 
         elif index > len(player.queue):
-            await interaction.response.send_message(
+            await inter.followup.send(
                 f":warning: That index is too high! Queue only {len(player.queue)} items long.",
                 ephemeral=True,
             )
@@ -170,7 +169,7 @@ class MusicHandler:
                 jump_track = player.queue.pop(index - 1)
 
                 if not jump_track:
-                    await interaction.response.send_message("Error! Track not found.")
+                    await inter.followup.send("Error! Track not found.")
                     return
 
                 player.add(jump_track, index=0)
@@ -185,16 +184,14 @@ class MusicHandler:
                     logger.error(e)
 
             if not next_track:
-                await interaction.response.send_message(
-                    ":warning: Error! Track not found."
-                )
+                await inter.followup.send(":warning: Error! Track not found.")
                 return
 
             await player.skip()
             logger.info("Skipping current track...")
 
-            embed = SkipEmbedBuilder(interaction, player.current, player)
-            await interaction.response.send_message(embed=embed.construct())
+            embed = SkipEmbedBuilder(inter, player.current, player)
+            await inter.followup.send(embed=embed.construct())
 
             self.queue_handler.update_pages(player)
 

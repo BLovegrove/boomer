@@ -16,10 +16,10 @@ class Clear(commands.Cog):
         self.queue_handler = QueueHandler(bot, self.voice_handler)
 
     @app_commands.command(description="Clears the whole (or part of the) queue")
-    async def clear(self, interaction: discord.Interaction, index: int | None):
-
+    async def clear(self, inter: discord.Interaction, index: int | None):
+        await inter.response.defer()
         if not index:
-            await self.queue_handler.clear(interaction)
+            await self.queue_handler.clear(inter)
             return
 
         else:
@@ -28,20 +28,20 @@ class Clear(commands.Cog):
                 return
 
             if index <= 0:
-                await interaction.response.send_message(
+                await inter.followup.send(
                     ":warning: That index is too low! Queue starts at #1.",
                     ephemeral=True,
                 )
 
             elif index > len(player.queue):
 
-                await interaction.response.send_message(
+                await inter.followup.send(
                     f":warning: That index is too high! Queue only {len(player.queue)} items long.",
                     ephemeral=True,
                 )
 
             else:
-                await self.queue_handler.clear(interaction, index)
+                await self.queue_handler.clear(inter, index)
 
         return
 

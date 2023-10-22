@@ -23,7 +23,6 @@ class PaginationButtons(discord.ui.View):
         self.list = list_interaction
 
     def check_boundaries(self):
-
         if self.page <= 1:
             self.button_prev.disabled = True
         else:
@@ -44,24 +43,22 @@ class PaginationButtons(discord.ui.View):
         label="<", custom_id="page_prev", style=discord.ButtonStyle.blurple
     )
     async def button_prev(
-        self, interaction: discord.Interaction, button: discord.ui.Button
+        self, inter: discord.Interaction, button: discord.ui.Button
     ):
         embed = ListEmbedBuilder(self.player, self.page - 1).construct()
         self.page -= 1
         self.check_boundaries()
-        await interaction.response.edit_message(view=self)
+        await inter.response.edit_message(view=self)
         await self.list.edit_original_response(embed=embed)
 
     @discord.ui.button(
         label=">", custom_id="page_next", style=discord.ButtonStyle.blurple
     )
-    async def button_next(
-        self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
+    async def button_next(self, inter: discord.Interaction, button: discord.ui.Button):
         embed = ListEmbedBuilder(self.player, self.page + 1).construct()
         self.page += 1
         self.check_boundaries()
-        await interaction.response.edit_message(view=self)
+        await inter.response.edit_message(view=self)
         await self.list.edit_original_response(embed=embed)
 
 
@@ -77,15 +74,14 @@ class List(commands.Cog):
     @app_commands.describe(
         page="Page of the queue you want to list off. If you're unsure, just leave this blank."
     )
-    async def list(self, interaction: discord.Interaction, page: int = None):
+    async def list(self, inter: discord.Interaction, page: int = None):
+        await inter.response.defer()
 
-        player = await self.voice_handler.ensure_voice(interaction)
-
-        await interaction.response.defer()
+        player = await self.voice_handler.ensure_voice(inter)
 
         page = page if page != None else 1
 
-        view = PaginationButtons(interaction, player, page)
+        view = PaginationButtons(inter, player, page)
 
         if page <= 1:
             view.button_prev.disabled = True
@@ -94,7 +90,7 @@ class List(commands.Cog):
             view.button_next.disabled = True
 
         embed = ListEmbedBuilder(player, page).construct()
-        await interaction.followup.send(embed=embed, view=view)
+        await inter.followup.send(embed=embed, view=view)
 
         return
 
