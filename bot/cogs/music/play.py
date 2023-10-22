@@ -22,6 +22,7 @@ class Play(commands.Cog):
     )
     @app_commands.describe(search="The name/artist/url of the song you want to find")
     async def play(self, inter: discord.Interaction, search: str = None):
+        await inter.response.defer()
         if search:
             # player = self.bot.lavalink.player_manager.create(interaction.guild_id)
             await self.music_handler.play(inter, search)
@@ -30,7 +31,7 @@ class Play(commands.Cog):
         player = self.voice_handler.fetch_player(self.bot)
 
         if (player and not player.paused) or not player:
-            await inter.response.send_message(
+            await inter.followup.send(
                 "Nothing is paused - try entering a YouTube or Soundcloud URL to play a new track instead.",
                 ephemeral=True,
             )
@@ -38,7 +39,7 @@ class Play(commands.Cog):
 
         await player.set_pause(False)
         logger.info("Player resumed")
-        await inter.response.send_message("Track resumed :arrow_forward:")
+        await inter.followup.send("Track resumed :arrow_forward:")
 
         return
 

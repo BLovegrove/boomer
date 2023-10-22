@@ -17,14 +17,13 @@ class Join(commands.Cog):
     @app_commands.command(
         description=f"Summons {cfg.bot.name} to your voice channel and plays the summoners idle tune.",
     )
-    async def join(self, interaction: discord.Interaction):
-        player = await self.voice_handler.ensure_voice(interaction)
+    async def join(self, inter: discord.Interaction):
+        await inter.response.defer()
+        player = await self.voice_handler.ensure_voice(inter)
         if not player:
             return
 
-        await interaction.response.send_message(
-            content=f"Joined <#{interaction.user.voice.channel.id}>"
-        )
+        await inter.followup.send(content=f"Joined <#{inter.user.voice.channel.id}>")
         await player.set_volume(cfg.player.volume_default)
         await self.bot.lavalink._dispatch_event(lavalink.events.QueueEndEvent(player))
         return

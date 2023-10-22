@@ -64,8 +64,6 @@ class MusicHandler:
         logger.info(f"Attempting to play song... Query: {search}")
 
         player.node: lavalink.Node = player.node
-
-        await inter.response.defer()
         result: lavalink.LoadResult = await player.node.get_tracks(f"{search}")
 
         try:
