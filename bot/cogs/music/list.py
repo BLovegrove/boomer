@@ -2,7 +2,6 @@ import discord
 import lavalink
 from discord import app_commands
 from discord.ext import commands
-from loguru import logger
 
 from ...handlers.embeds import ListEmbedBuilder
 from ...handlers.music import MusicHandler
@@ -32,10 +31,6 @@ class PaginationButtons(discord.ui.View):
             self.button_next.disabled = True
         else:
             self.button_next.disabled = False
-
-        logger.debug(
-            f"Button states: < {self.button_prev.disabled} > {self.button_next.disabled}"
-        )
 
         return
 

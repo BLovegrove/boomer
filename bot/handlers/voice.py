@@ -1,6 +1,5 @@
 import discord
 import lavalink
-from loguru import logger
 
 import config as cfg
 
@@ -15,7 +14,7 @@ class VoiceHandler:
     def fetch_player(self, bot: LavaBot) -> lavalink.DefaultPlayer:
         player = bot.lavalink.player_manager.get(cfg.guild.id)
         if not player:
-            logger.debug("Failed to find player.")
+            pass
         return player
 
     async def ensure_voice(self, inter: discord.Interaction):

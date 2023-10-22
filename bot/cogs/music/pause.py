@@ -1,7 +1,6 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-from loguru import logger
 
 from ...handlers.music import MusicHandler
 from ...handlers.voice import VoiceHandler
@@ -23,7 +22,6 @@ class Pause(commands.Cog):
             await inter.followup.send("Already paused", ephemeral=True)
 
         await player.set_pause(True)
-        logger.info("Player paused")
         await inter.followup.send("Track paused :pause_button:")
         return
 

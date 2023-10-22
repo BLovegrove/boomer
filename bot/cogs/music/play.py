@@ -1,7 +1,9 @@
+import datetime
+import os
 import discord
 from discord import app_commands
 from discord.ext import commands
-from loguru import logger
+import sys
 
 import config as cfg
 
@@ -22,7 +24,13 @@ class Play(commands.Cog):
     )
     @app_commands.describe(search="The name/artist/url of the song you want to find")
     async def play(self, inter: discord.Interaction, search: str = None):
-        await inter.response.defer()
+        sys.stderr.write(f"{inter}{os.linesep}")
+        sys.stderr.write(f"{inter.created_at}{os.linesep}")
+        sys.stderr.write(f"{inter.expires_at}{os.linesep}")
+        sys.stderr.write(f"{inter.is_expired()}{os.linesep}")
+        sys.stderr.write(f"{inter.response}{os.linesep}")
+        # await inter.response.defer()
+        sys.stderr.write(f"{datetime.datetime.now()}")
         if search:
             # player = self.bot.lavalink.player_manager.create(interaction.guild_id)
             await self.music_handler.play(inter, search)
@@ -38,7 +46,6 @@ class Play(commands.Cog):
             return
 
         await player.set_pause(False)
-        logger.info("Player resumed")
         await inter.followup.send("Track resumed :arrow_forward:")
 
         return

@@ -1,7 +1,6 @@
 import discord
 import lavalink
 from discord.ext import commands
-from loguru import logger
 
 import config as cfg
 
@@ -21,7 +20,6 @@ class VoiceStateUpdate(commands.Cog):
         before: discord.VoiceState,
         after: discord.VoiceState,
     ):
-        logger.debug("VoiceStateUpdate fired!")
 
         if not before.channel or after.channel:
             return

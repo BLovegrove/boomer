@@ -3,7 +3,6 @@ import lavalink
 from discord import app_commands
 from discord.app_commands import Choice
 from discord.ext import commands
-from loguru import logger
 
 from ...handlers.music import MusicHandler
 from ...handlers.voice import VoiceHandler

@@ -1,6 +1,5 @@
 import discord
 import lavalink
-from loguru import logger
 from StringProgressBar import progressBar as ProgressBar
 
 import config as cfg
@@ -169,9 +168,6 @@ class PlaylistEmbedBuilder:
 
 class ListEmbedBuilder:
     def __init__(self, player: lavalink.DefaultPlayer, page: int) -> None:
-        logger.debug(
-            f"List embed page number requested: {page}. Total pages: {player.fetch('pages')}"
-        )
 
         self.list_start = (page - 1) * 9
         self.list_end = (

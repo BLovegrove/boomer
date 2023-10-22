@@ -1,7 +1,5 @@
 import lavalink
 from discord.ext import commands
-from loguru import logger
-
 import config as cfg
 
 from ...handlers.music import MusicHandler
@@ -19,7 +17,6 @@ class QueueEnd(commands.Cog):
 
     @lavalink.listener(lavalink.events.QueueEndEvent)
     async def track_hook(self, event: lavalink.events.QueueEndEvent):
-        logger.debug("Queue end event fired!")
 
         # TODO: Followup on issue report so theres no need to manually type player.node
         player: lavalink.DefaultPlayer = event.player
@@ -29,15 +26,10 @@ class QueueEnd(commands.Cog):
         # channel = self.bot.get_guild(player.guild_id).get_channel(cfg.bot.music_channel)
         channel_id = player.fetch("last_channel")
         channel = self.bot.get_channel(channel_id)
-        logger.debug(f"Found channel '{channel}' for player")
 
         summoner_id: int = player.fetch("summoner_id")
 
         bgm_url = cfg.player.bgm_default
-        logger.debug(
-            f"DatabaseHandler got '{bgm_url}' for bgm_url when checking summoners bgm prefs"
-        )
-
         result: lavalink.LoadResult = await player.node.get_tracks(bgm_url)
 
         if (
@@ -49,15 +41,11 @@ class QueueEnd(commands.Cog):
             await self.voice_handler.cleanup(self.bot, player)
 
             if not player.channel_id:
-                logger.warning(f"Failed to find text channel while queuing idle track.")
                 return
 
             await channel.send(
                 ":warning: Nothing found when looking for idle music! Look for a new video."
             )
-
-            logger.debug(f"Lavalink search result: {result.tracks}")
-            logger.debug(f"Lavalink search load_type: {result.load_type}")
             return
 
         if player.fetch("idle"):

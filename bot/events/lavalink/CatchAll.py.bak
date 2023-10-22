@@ -1,6 +1,5 @@
 import lavalink
 from discord.ext import commands
-from loguru import logger
 
 import config as cfg
 
@@ -17,7 +16,6 @@ class CatchAll(commands.Cog):
 
     @lavalink.listener()
     async def track_hook(self, event: lavalink.Event):
-        logger.debug(f"Event fired! Type: {type(event).__name__}.")
         return
 
 

@@ -3,8 +3,6 @@ import discord
 from discord import app_commands
 from discord.app_commands import Choice
 from discord.ext import commands
-from loguru import logger
-
 import config as cfg
 
 from ...handlers.queue import QueueHandler
@@ -53,9 +51,6 @@ class Dev(commands.Cog):
                 await interaction.response.defer(ephemeral=True)
                 voice_handler = VoiceHandler(self.bot)
                 player = voice_handler.fetch_player(self.bot)
-                logger.debug(f"Player: {player}")
-                logger.debug(f"Player guild: {player.guild_id}")
-                logger.debug(f"Player VC: {player.channel_id}")
                 await interaction.edit_original_response(
                     content="Dev command complete."
                 )
@@ -64,9 +59,6 @@ class Dev(commands.Cog):
                 await interaction.response.defer(ephemeral=True)
                 voice_handler = VoiceHandler(self.bot)
                 player = voice_handler.fetch_player(self.bot)
-                logger.debug(
-                    "Spamming tons of entires to fill up the queue. Give this a sec..."
-                )
                 songs = [
                     "https://www.youtube.com/watch?v=YnwfTHpnGLY",
                     "https://www.youtube.com/watch?v=tKi9Z-f6qX4",
@@ -82,8 +74,6 @@ class Dev(commands.Cog):
                             continue
                         else:
                             player.add(result.tracks[0])
-
-                logger.debug("Finished spamming queue entries.")
                 player.store("idle", False)
                 player.set_loop(player.LOOP_NONE)
                 await player.play()

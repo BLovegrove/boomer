@@ -1,6 +1,5 @@
 import discord
 import lavalink
-from loguru import logger
 
 from ..util.models import LavaBot
 
@@ -32,5 +31,4 @@ class PresenceHandler:
             status = discord.Status.idle
 
         await bot.change_presence(activity=activity, status=status)
-        logger.debug(f"Updated presence: {status} - {activity.name}")
         return

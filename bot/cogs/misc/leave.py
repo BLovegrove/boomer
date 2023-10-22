@@ -1,3 +1,6 @@
+import datetime
+import os
+import sys
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -17,7 +20,13 @@ class Leave(commands.Cog):
 
     @app_commands.command(description="Clears the queue and leaves the call.")
     async def leave(self, inter: discord.Interaction):
-        await inter.response.defer()
+        sys.stderr.write(f"{inter}{os.linesep}")
+        sys.stderr.write(f"{inter.created_at}{os.linesep}")
+        sys.stderr.write(f"{inter.expires_at}{os.linesep}")
+        sys.stderr.write(f"{inter.is_expired()}{os.linesep}")
+        sys.stderr.write(f"{inter.response}{os.linesep}")
+        # await inter.response.defer()
+        sys.stderr.write(f"{datetime.datetime.now()}")
         player = await self.voice_handler.ensure_voice(inter)
 
         if not player:

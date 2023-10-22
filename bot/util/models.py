@@ -8,11 +8,6 @@ from . import helper
 
 
 class LavaBot(commands.Bot):
-    """
-    Standard discord.ext.commands.Bot with added lavalink attribute + type for intellisense
-    logger also included as self.logger
-    """
-
     def __init__(self) -> None:
         super().__init__(
             command_prefix=commands.when_mentioned, intents=discord.Intents.all()

@@ -1,6 +1,5 @@
 import lavalink
 from discord.ext import commands
-from loguru import logger
 
 from ...handlers.presence import PresenceHandler
 from ...util.models import LavaBot
@@ -12,7 +11,6 @@ class TrackStart(commands.Cog):
 
     @lavalink.listener(lavalink.events.TrackStartEvent)
     async def track_hook(self, event: lavalink.events.TrackStartEvent):
-        logger.debug("TrackStart event fired!")
 
         player: lavalink.DefaultPlayer = event.player
         await PresenceHandler.update_status(self.bot, player)
