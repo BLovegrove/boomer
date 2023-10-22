@@ -17,7 +17,7 @@ class WebSocketClosed(commands.Cog):
 
         player: lavalink.DefaultPlayer = event.player
 
-        await self.voice_handler.disconnect(self.bot, player)
+        await self.voice_handler.cleanup(self.bot, player)
 
         return
 

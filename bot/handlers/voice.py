@@ -14,6 +14,8 @@ class VoiceHandler:
 
     def fetch_player(self, bot: LavaBot) -> lavalink.DefaultPlayer:
         player = bot.lavalink.player_manager.get(cfg.guild.id)
+        if not player:
+            logger.debug("Failed to find player.")
         return player
 
     async def ensure_voice(self, interaction: discord.Interaction):
@@ -29,7 +31,12 @@ class VoiceHandler:
 
         # These are commands that require the bot to join a voicechannel (i.e. initiating playback).
         # Commands such as volume/skip etc don't require the bot to be in a voicechannel so don't need listing here.
-        should_connect = interaction.command.name in ("play", "join", "favs", "party")
+        should_connect = interaction.command.name in (
+            "play",
+            "join",
+            "favs",
+            "party",
+        )
 
         if not interaction.user.voice or not interaction.user.voice.channel:
             # Our cog_command_error handler catches this and sends it to the voicechannel.
@@ -57,13 +64,16 @@ class VoiceHandler:
         player.store("last_channel", interaction.channel_id)
         return player
 
-    async def disconnect(self, bot: LavaBot, player: lavalink.DefaultPlayer):
+    async def cleanup(self, bot: LavaBot, player: lavalink.DefaultPlayer):
         player.queue.clear()
         await player.stop()
         player.set_repeat(False)
         player.store("track_repeat", False)
         await player.set_volume(cfg.player.volume_default)
         await player.clear_filters()
-        await bot.get_guild(player.guild_id).voice_client.disconnect()
+        try:
+            await bot.get_guild(player.guild_id).voice_client.disconnect()
+        except:
+            pass
         await player.destroy()
         await PresenceHandler.update_status(bot, player)

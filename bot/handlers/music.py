@@ -55,7 +55,7 @@ class MusicHandler:
         await interaction.followup.send(embed=embed)
 
     async def play(self, inter: discord.Interaction, search: str):
-        await inter.response.defer()
+        # await inter.response.defer()
         player: lavalink.DefaultPlayer = await self.voice_handler.ensure_voice(inter)
 
         if "https://" not in search:
@@ -63,10 +63,9 @@ class MusicHandler:
 
         logger.info(f"Attempting to play song... Query: {search}")
 
-        # await inter.response.defer()
-
         player.node: lavalink.Node = player.node
 
+        await inter.response.defer()
         result: lavalink.LoadResult = await player.node.get_tracks(f"{search}")
 
         try:
@@ -90,7 +89,7 @@ class MusicHandler:
                     await self.__add_track(inter, player, None, tracks, result)
 
                 case _:
-                    await inter.response.edit_message(
+                    await inter.followup.send(
                         content="Something unexpected happened. Contact your server owner or local bot dev(s) immediately and let them know the exact command you tried to run."
                     )
                     logger.warning(

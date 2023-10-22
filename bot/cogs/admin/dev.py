@@ -1,3 +1,4 @@
+import os
 import discord
 from discord import app_commands
 from discord.app_commands import Choice
@@ -36,12 +37,16 @@ class Dev(commands.Cog):
                 player = self.bot.lavalink.player_manager.get(interaction.guild_id)
                 if player:
                     voice_handler = VoiceHandler(self.bot)
-                    await voice_handler.disconnect(self.bot, player)
+                    await voice_handler.cleanup(self.bot, player)
                 await self.bot.close()
                 return
             case "ping":
                 await interaction.response.send_message(
-                    f"Pong! ({self.bot.ws.VOICE_PING})"
+                    f"Pong! Here are the round trip times:"
+                    + os.linesep
+                    + f"Voice: {self.bot.ws.VOICE_PING}ms"
+                    + os.linesep
+                    + f"Bot: {round(self.bot.latency * 1000)}ms"
                 )
                 return
             case "fetchplayer":

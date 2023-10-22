@@ -27,7 +27,7 @@ class Leave(commands.Cog):
             return
 
         await interaction.response.send_message("Leaving call and clearing queue...")
-        await self.voice_handler.disconnect(self.bot, player)
+        await self.voice_handler.cleanup(self.bot, player)
 
         return
 
