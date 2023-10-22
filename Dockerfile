@@ -1,6 +1,6 @@
 #!/usr/bin/env -S docker build . --tag=boomer:latest --network=host --file
 
-FROM python:3.10
+FROM gorialis/discord.py:full
 
 COPY . /home/boomer
 
@@ -9,6 +9,6 @@ COPY . /home/boomer
 
 WORKDIR /home/boomer
 
-RUN python3 -m pip install -r requirements.txt
+RUN pip install -r requirements.txt
 
 CMD ["python3", "-m", "bot"]
