@@ -9,6 +9,6 @@ COPY . /home/boomer
 
 WORKDIR /home/boomer
 
-RUN python3.10 -m pip install -r requirements.txt
+RUN python3 -m pip install -r requirements.txt
 
 CMD ["python3", "-m", "bot"]
