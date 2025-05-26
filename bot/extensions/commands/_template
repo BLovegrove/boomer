@@ -1,0 +1,25 @@
+# core imports
+import discord
+from discord.ext import commands
+from discord import app_commands
+
+# custom imports
+from util import models
+
+
+class CustomCommandGoesHere(commands.Cog):
+
+    def __init__(self, bot: models.BoomerBot) -> None:
+        self.bot = bot
+
+    @app_commands.command(
+        name="command_name_goes_here",
+        description=f"command_desc_goes_here",
+    )
+    # @commands.is_owner() # owner check to lock down access to command
+    async def replace_with_command(self, itr: discord.Interaction):
+        await itr.send("msg_response_here")
+
+
+async def setup(bot):
+    await bot.add_cog(CustomCommandGoesHere(bot))

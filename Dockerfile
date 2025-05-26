@@ -1,14 +1,15 @@
-#!/usr/bin/env -S docker build . --tag=boomer:latest --network=host --file
+FROM ghcr.io/astral-sh/uv:python3.13-alpine
 
-FROM gorialis/discord.py:full
 
-COPY . /home/boomer
+WORKDIR /boomer/
 
-# Remove local copies as these files get mounted instead.
-# RUN rm -r /bot/files
+ADD src/bot bot/
+ADD src/util util/
+ADD src/requirements.txt .
+ADD src/config.py .c
 
-WORKDIR /home/boomer
+RUN sudo apt install -y libffi-dev python3.13dev 
+RUN uv sync --locked
 
-RUN pip install -r requirements.txt
 
-CMD ["python3", "-m", "bot"]
+CMD ["uv","run","python","-m","bot"]

@@ -160,6 +160,5 @@ cython_debug/
 #.idea/
 
 # custom ignore
-bot.db
-bot.sqlite
-*config.py
+*.old
+*.vscode

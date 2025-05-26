@@ -1,0 +1,15 @@
+[project]
+name = "boomer"
+version = "0.1.0"
+description = "Music bot"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "discord-py>=2.5.2",
+    "dotenv>=0.9.9",
+    "lavalink>=5.9.0",
+    "loguru>=0.7.3",
+    "mysql-connector-python>=9.3.0",
+    "pynacl>=1.5.0",
+    "stringprogressbar>=1.1.1",
+]

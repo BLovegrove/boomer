@@ -1,45 +1,24 @@
 {
-    "python.analysis.typeCheckingMode": "basic",
-    "python.formatting.provider": "black",
-    "python.analysis.packageIndexDepths": [
-        {
-            "name": "sklearn",
-            "depth": 2
-        },
-        {
-            "name": "matplotlib",
-            "depth": 2
-        },
-        {
-            "name": "scipy",
-            "depth": 2
-        },
-        {
-            "name": "django",
-            "depth": 2
-        }
-    ],
-    "python.analysis.diagnosticSeverityOverrides": {
-        "reportGeneralTypeIssues": "none",
-        "reportOptionalMemberAccess": "none"
+    "python.terminal.activateEnvironment": true,
+    // "python.experiments.optOutFrom": [
+    //     "pythonTerminalEnvVarActivation"
+    // ],
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "**/.classpath": true,
+        "**/.factorypath": true,
+        "**/.project": true,
+        "**/.settings": true,
+        "**LICENSE.md": true,
+        "**/__pycache__": true,
+        "venv": true
     },
-    "editor.defaultFormatter": "ms-python.black-formatter",
-    "python.languageServer": "Pylance",
-    "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-        "source.organizeImports": true
-    },
-    "isort.args": [
-        "--profile",
-        "black"
+    "hide-files.files": [
+        "venv"
     ],
-    "sqltools.connections": [
-        {
-            "previewLimit": 50,
-            "driver": "SQLite",
-            "database": "${workspaceFolder:boomer-prime}/bot.db",
-            "name": "BoomerPrime"
-        }
-    ],
-    "sqltools.useNodeRuntime": true,
+    "editor.wordWrap": "off"
 }
