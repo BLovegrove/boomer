@@ -71,7 +71,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-⚠️ ~ Project going through a rework - I'll update the readme soon! -Brandon ~ ⚠️
+⚠️ ~ Project going through a rework - I'll update the readme soon! -Brandy ~ ⚠️
 
 <img src="https://raw.githubusercontent.com/BLovegrove/boomer/main/images/boomer-profile.png" style="border-radius: 10px;"><br />
 
@@ -195,7 +195,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Brandon Lovegrove - [@B_A_Lovegrove](https://twitter.com/B_A_Lovegrove) - b.lovegrove.wsd@gmail.com
+Brandy Lovegrove - brandy@lovegrove.co.nz
 
 Project Link: [https://github.com/BLovegrove/boomer](https://github.com/BLovegrove/boomer)
 
@@ -220,5 +220,5 @@ Like my work?
 [license-shield]: https://img.shields.io/github/license/BLovegrove/boomer.svg?style=for-the-badge
 [license-url]: https://github.com/BLovegrove/boomer/blob/master/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: linkedin.com/in/brandon-lovegrove-5ab4181a0
+[linkedin-url]: https://www.linkedin.com/in/brandy-lovegrove-5ab4181a0/
 [product-screenshot]: images/screenshot.png
