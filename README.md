@@ -96,6 +96,8 @@ The CPU usage is so low it barely registers above 5% on the Pi's ARM processor a
 * [SpotiPy](https://github.com/plamere/spotipy)
 * [Pandas](https://pandas.pydata.org/)
 * [Discord.py](https://github.com/Rapptz/discord.py)
+* [Mafic.py](https://github.com/ooliver1/mafic)
+* [UV](https://docs.astral.sh/uv/)
 
 
 <p align="right">(<a href="#top">back to top</a>)</p>
@@ -111,8 +113,7 @@ To get a local copy up and running follow these simple example steps.
 ### Prerequisites
 
 * Compatable [LavaLink](https://github.com/freyacodes/Lavalink) (and accompanying java version)
-* [Python 3.8](https://www.python.org/downloads/release/python-380/) (Used because it was my only choice on the hardware I'm using to host Boomer. You could probably update everything here to run on 3.10 without too much trouble) 
-* Python3 [PIP](https://pypi.org/project/pip/) and [Pipenv](https://pipenv.pypa.io/en/latest/) for the dependencies found in the [Pipfile](https://github.com/BLovegrove/boomer/blob/7c00960a6e7b4342bea0e563b387c384002f8881/Pipfile)
+* [Python 3.12](https://www.python.org/downloads/release/python-312/) (minimum 3.8)
 
 ### Installation
 
@@ -147,16 +148,7 @@ To get a local copy up and running follow these simple example steps.
 
 <!-- ROADMAP -->
 ## Roadmap
-
-- [x] ~~Paged list for the queue~~
-- [x] ~~Spotify and Soundcloud search integration~~
-- [x] ~~Idle music when nothing is playing~~
-- [x] ~~'Now Playing' song info~~
-- [x] ~~Differentiate skipping whole queue to a point, or jumping that one song to the front of the queue~~
-- [x] ~~Join queue without playing anything~~
-- [ ] bot-wide favorites lists w/ save and load feature.
-- [ ] Report command to send owner of the bot instance a discord message with a copy of the log and a warning that something went wrong.
-
+- [] eh nothing yet
 
 See the [open issues](https://github.com/BLovegrove/boomer/issues) for a full list of proposed features (and known issues).
 
