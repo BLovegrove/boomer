@@ -17,6 +17,7 @@ class VoiceHandler:
         player = bot.lavalink.player_manager.get(cfg.bot.guild_id)
         if not player:
             logger.debug("Failed to find player.")
+
         return player
 
     async def ensure_voice(self, itr: discord.Interaction):
@@ -37,6 +38,7 @@ class VoiceHandler:
             "join",
             "favs",
             "party",
+            "admin",
         )
 
         if not itr.user.voice or not itr.user.voice.channel:
@@ -47,18 +49,18 @@ class VoiceHandler:
             await itr.followup.send("Join a voicechannel first")
             return
 
-        v_client = itr.guild.voice_client
-        if not v_client:
+        voice_client = itr.guild.voice_client
+        if not voice_client:
             if not should_connect:
                 # raise commands.CommandInvokeError("Not connected.")
                 await itr.followup.send(
-                    f"{cfg.bot.name} not running yet. Try /join or /play first"
+                    f"{cfg.bot.name} not running yet. Try /join or /play first."
                 )
 
             player.store("summoner_id", itr.user.id)
             await itr.user.voice.channel.connect(cls=LavalinkVoiceClient)
         else:
-            if v_client.channel.id != itr.user.voice.channel.id:
+            if voice_client.channel.id != itr.user.voice.channel.id:
                 await itr.followup.send(
                     f"Not connected to my channel. Join <#{player.channel_id}>"
                 )
@@ -71,7 +73,7 @@ class VoiceHandler:
         await player.stop()
         player.set_loop(0)
         player.store("track_repeat", False)
-        # await player.set_volume(cfg.player.volume_default) TODO
+        await player.set_volume(cfg.player.volume_default)
         await player.clear_filters()
         try:
             await bot.get_guild(player.guild_id).voice_client.disconnect()

@@ -14,11 +14,8 @@
         "**/.project": true,
         "**/.settings": true,
         "**LICENSE.md": true,
-        "**/__pycache__": true,
-        "venv": true
+        "**/__pycache__": true
     },
-    "hide-files.files": [
-        "venv"
-    ],
+    "hide-files.files": [],
     "editor.wordWrap": "off"
 }

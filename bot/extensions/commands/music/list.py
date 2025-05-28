@@ -4,10 +4,10 @@ from discord import app_commands
 from discord.ext import commands
 from loguru import logger
 
-from ...handlers.embeds import ListEmbedBuilder
-from ...handlers.music import MusicHandler
-from ...handlers.voice import VoiceHandler
-from ...util.models import LavaBot
+from util.handlers.embeds import ListEmbedBuilder
+from util.handlers.music import MusicHandler
+from util.handlers.voice import VoiceHandler
+from util.models import LavaBot
 
 
 class PaginationButtons(discord.ui.View):
@@ -42,9 +42,7 @@ class PaginationButtons(discord.ui.View):
     @discord.ui.button(
         label="<", custom_id="page_prev", style=discord.ButtonStyle.blurple
     )
-    async def button_prev(
-        self, inter: discord.Interaction, button: discord.ui.Button
-    ):
+    async def button_prev(self, inter: discord.Interaction, button: discord.ui.Button):
         embed = ListEmbedBuilder(self.player, self.page - 1).construct()
         self.page -= 1
         self.check_boundaries()

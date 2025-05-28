@@ -161,4 +161,4 @@ cython_debug/
 
 # custom ignore
 *.old
-*.vscode
+logs

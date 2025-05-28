@@ -22,9 +22,8 @@ class QueueEnd(commands.Cog):
     async def track_hook(self, event: lavalink.events.QueueEndEvent):
         logger.debug("Queue end event fired!")
 
-        # TODO: Followup on issue report so theres no need to manually type player.node
         player: lavalink.DefaultPlayer = event.player
-        # await player.set_volume(cfg.player.volume_idle) # TODO
+        await player.set_volume(cfg.player.volume_idle)
 
         # channel = self.bot.get_guild(player.guild_id).get_channel(cfg.bot.music_channel)
         channel_id = player.fetch("last_channel")

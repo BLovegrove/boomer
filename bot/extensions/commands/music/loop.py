@@ -3,8 +3,8 @@ from discord import app_commands
 from discord.app_commands import Choice
 from discord.ext import commands
 
-from ...handlers.voice import VoiceHandler
-from ...util.models import LavaBot
+from util.handlers.voice import VoiceHandler
+from util.models import LavaBot
 
 
 class Loop(commands.Cog):
@@ -31,22 +31,22 @@ class Loop(commands.Cog):
 
         if not player.is_playing or player.fetch("idle"):
             await inter.followup.send(
-                "Idlinng / Nothing playing at the moment. Try queueing up something first.",
+                "Idling / Nothing playing at the moment. Try queueing up something first.",
                 ephemeral=True,
             )
             return
 
         match (mode):
             case "track":
-                player.set_loop(player.LOOP_SINGLE)
+                player.set_loop(player.set_loop(1))
                 await inter.followup.send("Looping on track :repeat_one:")
 
             case "playlist":
-                player.set_loop(player.LOOP_QUEUE)
+                player.set_loop(player.set_loop(2))
                 await inter.followup.send("Looping on playlist :repeat:")
 
             case "clear":
-                player.set_loop(player.LOOP_NONE)
+                player.set_loop(player.set_loop(0))
                 await inter.followup.send("Looping disabled.")
 
         return

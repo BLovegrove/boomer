@@ -25,7 +25,6 @@ class Play(commands.Cog):
     async def play(self, itr: discord.Interaction, search: str = None):
         await itr.response.defer()
         if search:
-            # player = self.bot.lavalink.player_manager.create(itr.guild_id)
             await self.music_handler.play(itr, search)
             return
 

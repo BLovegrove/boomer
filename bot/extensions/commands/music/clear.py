@@ -18,30 +18,33 @@ class Clear(commands.Cog):
     @app_commands.command(description="Clears the whole (or part of the) queue")
     async def clear(self, itr: discord.Interaction, index: int | None):
         await itr.response.defer()
+
+        player = self.voice_handler.fetch_player(self.bot)
+        if not player:
+            await itr.followup.send(
+                ":warning: Nothing playing right now - there's nothing to clear.",
+                ephemeral=True,
+            )
+            return
+
         if not index:
             await self.queue_handler.clear(itr)
             return
 
+        if index <= 0:
+            await itr.followup.send(
+                ":warning: That index is too low! Queue starts at #1.",
+                ephemeral=True,
+            )
+
+        elif index > len(player.queue):
+            await itr.followup.send(
+                f":warning: That index is too high! Queue only {len(player.queue)} items long.",
+                ephemeral=True,
+            )
+
         else:
-            player = self.voice_handler.fetch_player(self.bot)
-            if not player:
-                return
-
-            if index <= 0:
-                await itr.followup.send(
-                    ":warning: That index is too low! Queue starts at #1.",
-                    ephemeral=True,
-                )
-
-            elif index > len(player.queue):
-
-                await itr.followup.send(
-                    f":warning: That index is too high! Queue only {len(player.queue)} items long.",
-                    ephemeral=True,
-                )
-
-            else:
-                await self.queue_handler.clear(itr, index)
+            await self.queue_handler.clear(itr, index)
 
         return
 

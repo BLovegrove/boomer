@@ -3,9 +3,9 @@ from discord import app_commands
 from discord.ext import commands
 from loguru import logger
 
-from ...handlers.music import MusicHandler
-from ...handlers.voice import VoiceHandler
-from ...util.models import LavaBot
+from util.handlers.music import MusicHandler
+from util.handlers.voice import VoiceHandler
+from util.models import LavaBot
 
 
 class Pause(commands.Cog):

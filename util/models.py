@@ -28,7 +28,7 @@ class LavaBot(commands.Bot):
             port=cfg.lavalink.port,
             password=cfg.lavalink.password,
             name=cfg.lavalink.label,
-            region="au",
+            region=cfg.lavalink.region,
         )
 
         for cog in self.cogs.values():
@@ -113,7 +113,9 @@ class LavalinkVoiceClient(discord.VoiceProtocol):
         Handles the disconnect.
         Cleans up running player and leaves the voice client.
         """
-        player = self.lavalink.player_manager.get(self.channel.guild.id)
+        player: lavalink.player.DefaultPlayer = self.lavalink.player_manager.get(
+            self.channel.guild.id
+        )
 
         # no need to disconnect if we are not connected
         if not force and not player.is_connected:

@@ -16,21 +16,21 @@ class QueueHandler:
     def update_pages(self, player: lavalink.DefaultPlayer):
         player.store("pages", math.ceil(len(player.queue) / 9))
 
-    async def clear(self, interaction: discord.Interaction, index: int = None):
-        player = await self.voice_handler.ensure_voice(interaction)
+    async def clear(self, itr: discord.Interaction, index: int = None):
+        player = await self.voice_handler.ensure_voice(itr)
 
         if not index:
             player.queue.clear()
             player.store("pages", 0)
-            await interaction.followup.send(":boom: Queue cleared!")
+            await itr.followup.send(":boom: Queue cleared!")
 
         else:
             cleared = player.queue.pop(index - 1)
 
             if not cleared:
-                await interaction.followup.send(
+                await itr.followup.send(
                     f"Failed to clear track: Track at index {index} not found. Index must be between 1 and {len(player.queue)}"
                 )
 
-            embed = embeds.ClearedEmbedBuilder(interaction, cleared, player, index)
-            await interaction.followup.send(embed=embed.construct())
+            embed = embeds.ClearedEmbedBuilder(itr, cleared, player, index)
+            await itr.followup.send(embed=embed.construct())
