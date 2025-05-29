@@ -69,7 +69,6 @@ class ClearedEmbedBuilder(TrackEmbedBuilder):
 
         self.embed.set_footer(text=f"Song was #{index} in queue")
 
-
 class SkipEmbedBuilder(TrackEmbedBuilder):
     def __init__(
         self,

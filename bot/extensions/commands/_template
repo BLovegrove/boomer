@@ -9,7 +9,7 @@ from util import models
 
 class CustomCommandGoesHere(commands.Cog):
 
-    def __init__(self, bot: models.BoomerBot) -> None:
+    def __init__(self, bot: models.LavaBot) -> None:
         self.bot = bot
 
     @app_commands.command(
