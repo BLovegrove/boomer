@@ -5,5 +5,7 @@ WORKDIR /boomer/
 
 ADD bot bot/
 ADD util util/
+ADD .python-version .python-version
+ADD pyproject.toml pyproject.toml
 
 CMD ["uv","run","-m","bot"]
