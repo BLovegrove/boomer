@@ -1,0 +1,1 @@
+# seek by +30s by default, but custom number + or - can be entered. ephemeral error if skip is outside song range +, but - excess just takes it to 0

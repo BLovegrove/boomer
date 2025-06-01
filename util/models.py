@@ -1,8 +1,12 @@
+import logging
 import discord
 from discord.ext import commands
 import lavalink
 from lavalink.errors import ClientError
 from loguru import logger
+import mysql.connector as mysqlconn
+import mysql.connector.cursor as mysqlcurs
+import mysql.connector.pooling as mysqlpool
 
 from util.handlers import extensions
 import util.config as cfg
@@ -19,6 +23,7 @@ class LavaBot(commands.Bot):
 
         self.lavalink: lavalink.Client = None
         self.player_exists = False
+        self.db = BotDB()
 
     def update_lavalink(self):
         self.lavalink = lavalink.Client(self.user.id)
@@ -144,3 +149,165 @@ class LavalinkVoiceClient(discord.VoiceProtocol):
             await self.lavalink.player_manager.destroy(self.channel.guild.id)
         except ClientError:
             pass
+
+
+# override MySQLconnectionPool because mysql python devs are fucking stupid and didnt type their fucking class properly (fuck you)
+class MySQLConnectionLeanPool(mysqlpool.MySQLConnectionPool):
+    def __init__(self, pool_size=5, pool_name=None, pool_reset_session=True, **kwargs):
+        super().__init__(pool_size, pool_name, pool_reset_session, **kwargs)
+
+    def get_connection(self) -> mysqlconn.MySQLConnection:
+        return super().get_connection()
+
+
+class BotDB:
+    def __init__(self):
+
+        logging.getLogger("mysql.connector").setLevel("FATAL")
+
+        self.dbconfig = {
+            "host": cfg.db.host,
+            "user": cfg.db.user,
+            "password": cfg.db.password,
+            "database": cfg.db.name,
+        }
+
+        self.test_connection()
+        self.pool = self.create_pool()
+
+    def create_pool(self):
+
+        pool = MySQLConnectionLeanPool(
+            pool_name=cfg.db.pool,
+            pool_reset_session=True,
+            **self.dbconfig,
+        )
+
+        return pool
+
+    def test_connection(self):
+        try:
+            connection = mysqlconn.connect(**self.dbconfig)
+            logger.success(
+                f"Database {cfg.db.name}@{cfg.db.host} connection established"
+            )
+
+            if cfg.log_level == "DEBUG":
+                logger.debug("Debug Mode active. DB commits will be blocked")
+
+            connection.close()
+            return True
+
+        except mysqlconn.Error as e:
+            logger.error(e)
+            return False
+
+    def execute(
+        self,
+        query: str,
+        args: tuple = None,
+        commit: bool = False,
+        fetchone: bool = True,
+    ):
+        """Executes query string. Commits changes if commit = true, otherwise returns result of fetchall()
+
+        Args:
+            query (str): SQL query string. If using palceholdes, don't forget to add args.
+            args (tuple, optional): SQL-compatible arguments for query string placeholders. Defaults to None.
+            commit (bool, optional): Whether or not commit query changes to the DB. Defaults to False.
+            fetch (bool, optional): Whether to fetch one or fetch many if commit = false. Defaults to True
+
+        Returns:
+            _type_: _description_
+        """
+        if args and len(args) != query.count("%"):
+            logger.error(
+                f"Attempted to execute query with mismatched arguments. # of values: {query.count("%")}, # of args: {len(args)}"
+            )
+            return None
+
+        if cfg.log_level == "DEBUG":
+            commit = False
+
+        result = []
+
+        with self.pool.get_connection() as connection:
+            with connection.cursor(dictionary=True) as cursor:
+
+                cursor.execute(query, args)
+
+                if commit:
+                    connection.commit()
+                else:
+                    result = cursor.fetchone() if fetchone else cursor.fetchall()
+
+        return result
+
+    def insert(self, table: str, changes: dict[str], commit: bool = True):
+
+        columns = list(changes.keys())
+        values = list(changes.values())
+
+        query = (
+            "INSERT INTO "
+            + table
+            + " ("
+            + ",".join(columns)
+            + ") VALUES ("
+            + (",".join(["%s" for column in range(len(columns))]))
+            + ")"
+        )
+
+        try:
+            self.execute(query, tuple(values), commit)
+        except mysqlconn.errors.ProgrammingError as e:
+            logger.error(f"MySQL Error #{e.errno} while inserting row into {table}")
+            logger.error(f"Query string: {query}")
+            logger.error(f"Query args: {values}")
+
+        return query % tuple(values)
+
+    def update(
+        self, table: str, changes: dict[str], where: dict[str], commit: bool = True
+    ):
+
+        columns = list(changes.keys())
+        id_column = list(where.keys())[0]
+        id_value = list(where.values())[0]
+
+        query = (
+            "UPDATE "
+            + table
+            + " SET "
+            + ",".join([f"{column}=%s" for column in columns])
+            + " WHERE "
+            + id_column
+            + "=%s"
+        )
+
+        values = tuple(list(changes.values()))
+        values += (id_value,)
+
+        try:
+            self.execute(query, values, commit)
+        except mysqlconn.errors.ProgrammingError as e:
+            logger.error(
+                f"MySQL Error #{e.errno} while updating row {id_value} in {table}"
+            )
+            logger.error(f"Query string: {query}")
+            logger.error(f"Query args: {values}")
+
+        return query % values
+
+    def close(
+        self,
+        connection: mysqlconn.MySQLConnection,
+        cursor: mysqlcurs.MySQLCursorDict,
+    ):
+        try:
+            cursor.close()
+            connection.close()
+            return True
+        except Exception as e:
+            logger.error(e)
+            return False

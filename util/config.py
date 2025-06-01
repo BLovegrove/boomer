@@ -13,6 +13,7 @@ if log_level not in ["DEBUG", "INFO", "WARNING", "ERROR"]:
     log_level = "INFO"
 
 save_log = os.getenv("SAVE_LOG", "0").lower() in ("true", "1", "t", "y")
+dev_mode = os.getenv("DEV_MODE", "0").lower() in ("true", "1", "t", "y")
 
 
 # bot-related variables
@@ -36,3 +37,27 @@ class player:
     volume_default = int(os.getenv("PLAYER_VOLUMEDEFAULT", "33"))
     volume_idle = int(os.getenv("PLAYER_VOLUMEIDLE", "5"))
     loading_emoji = os.getenv("PLAYER_LOADINGEMOJI")
+
+
+class db:
+    host = os.getenv("DB_HOST")
+    user = os.getenv("DB_USER")
+    password = os.getenv("DB_PASSWORD")
+    name = os.getenv("DB_NAME")
+
+
+class db:
+    host = os.getenv("DB_HOST")
+    user = os.getenv("DB_USER")
+    password = os.getenv("DB_PASSWORD")
+    name = os.getenv("DB_NAME")
+    pool = os.getenv("POOL_NAME", "bot_pool")
+
+    class table:
+        members = "members"
+
+
+# file paths
+class path:
+    root = os.getenv("PATH_ROOT", "")
+    avatars = os.getenv("PATH_AVATARS", "avatars").strip("/")

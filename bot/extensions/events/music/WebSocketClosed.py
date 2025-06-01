@@ -6,7 +6,7 @@ from util.handlers.voice import VoiceHandler
 from util.models import LavaBot
 
 
-class WebSocketClosed(commands.Cog):
+class OnWebSocketClosed(commands.Cog):
     def __init__(self, bot: LavaBot) -> None:
         self.bot = bot
         self.voice_handler = VoiceHandler(bot)
@@ -23,4 +23,4 @@ class WebSocketClosed(commands.Cog):
 
 
 async def setup(bot: LavaBot):
-    await bot.add_cog(WebSocketClosed(bot))
+    await bot.add_cog(OnWebSocketClosed(bot))

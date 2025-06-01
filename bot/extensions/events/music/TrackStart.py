@@ -6,7 +6,7 @@ from util.handlers.presence import PresenceHandler
 from util.models import LavaBot
 
 
-class TrackStart(commands.Cog):
+class OnTrackStart(commands.Cog):
 
     def __init__(self, bot: LavaBot) -> None:
         self.bot = bot
@@ -20,4 +20,4 @@ class TrackStart(commands.Cog):
 
 
 async def setup(bot: LavaBot):
-    await bot.add_cog(TrackStart(bot))
+    await bot.add_cog(OnTrackStart(bot))

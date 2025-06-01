@@ -49,7 +49,6 @@ class Filter(commands.Cog):
             case "bassboost":
                 bassboost = lavalink.filters.Equalizer()
                 bassboost.update(bands=[(2, 0.8), (3, 0.8), (4, 0.8), (5, 0.8)])
-                # bassboost.update(band=4, gain=1.0)
                 await player.set_filter(bassboost)
 
             case "reset":
@@ -59,6 +58,23 @@ class Filter(commands.Cog):
 
         await inter.followup.send(f"{type.capitalize()} filter applied!")
         return
+
+
+class Reverb(lavalink.Filter):
+    def __init__(self, length: float = 0.3, decay: float = 0.5):
+        super().__init__([length, decay], True)
+        self.length = decay
+        self.decay = decay
+
+    def update(self, length: float = None, decay: float = None):
+        if length:
+            self.length = length
+        if decay:
+            self.decay = decay
+        return
+
+    def serialize(self):
+        return {"echo": {"echoLength": self.length, "decay": self.decay}}
 
 
 async def setup(bot: LavaBot):

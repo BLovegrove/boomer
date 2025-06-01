@@ -10,7 +10,7 @@ from util.handlers.voice import VoiceHandler
 from util.models import LavaBot
 
 
-class QueueEnd(commands.Cog):
+class OnQueueEnd(commands.Cog):
 
     def __init__(self, bot: LavaBot) -> None:
         self.bot = bot
@@ -75,4 +75,4 @@ class QueueEnd(commands.Cog):
 
 
 async def setup(bot: LavaBot):
-    await bot.add_cog(QueueEnd(bot))
+    await bot.add_cog(OnQueueEnd(bot))

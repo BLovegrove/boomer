@@ -7,7 +7,7 @@ from util import models
 from util.handlers.voice import VoiceHandler
 
 
-class Ready(commands.Cog):
+class OnReady(commands.Cog):
     def __init__(self, bot: models.LavaBot) -> None:
         self.bot = bot
         self.voice_handler = VoiceHandler(bot)
@@ -29,4 +29,4 @@ class Ready(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(Ready(bot))
+    await bot.add_cog(OnReady(bot))
