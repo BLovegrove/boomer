@@ -6,7 +6,7 @@ from loguru import logger
 
 import util.config as cfg
 
-from util.handlers.embeds import (
+from util.handlers.embed import (
     PlaylistEmbedBuilder,
     SkipEmbedBuilder,
     TrackEmbedBuilder,
@@ -58,8 +58,8 @@ class MusicHandler:
 
         await interaction.followup.send(embed=embed)
 
-    async def play(self, inter: discord.Interaction, search: str):
-        player: lavalink.DefaultPlayer = await self.voice_handler.ensure_voice(inter)
+    async def play(self, itr: discord.Interaction, search: str):
+        player: lavalink.DefaultPlayer = await self.voice_handler.ensure_voice(itr)
         if not player:
             return
 
@@ -73,25 +73,25 @@ class MusicHandler:
         try:
             match result.load_type:
                 case lavalink.LoadType.ERROR:
-                    await inter.followup.send(
+                    await itr.followup.send(
                         content="Failed to load track, please use a different URL or different search term."
                     )
 
                 case lavalink.LoadType.EMPTY:
-                    await inter.followup.send(
+                    await itr.followup.send(
                         content="404 song not found! Try something else."
                     )
 
                 case lavalink.LoadType.SEARCH | lavalink.LoadType.TRACK:
                     track = result.tracks[0]
-                    await self.__add_track(inter, player, track)
+                    await self.__add_track(itr, player, track)
 
                 case lavalink.LoadType.PLAYLIST:
                     tracks = result.tracks
-                    await self.__add_track(inter, player, None, tracks, result)
+                    await self.__add_track(itr, player, None, tracks, result)
 
                 case _:
-                    await inter.followup.send(
+                    await itr.followup.send(
                         content="Something unexpected happened. Contact your server owner or local bot dev(s) immediately and let them know the exact command you tried to run."
                     )
                     logger.warning(

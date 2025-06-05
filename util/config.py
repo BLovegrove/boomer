@@ -13,7 +13,6 @@ if log_level not in ["DEBUG", "INFO", "WARNING", "ERROR"]:
     log_level = "INFO"
 
 save_log = os.getenv("SAVE_LOG", "0").lower() in ("true", "1", "t", "y")
-dev_mode = os.getenv("DEV_MODE", "0").lower() in ("true", "1", "t", "y")
 
 
 # bot-related variables
@@ -22,6 +21,10 @@ class bot:
     name = os.getenv("BOT_NAME", "Boomer")
     guild_id = int(os.getenv("BOT_GUILD_ID", "0"))
     accent_color = discord.Color.from_str("#" + os.getenv("BOT_ACCENTCOLOR", "eba4be"))
+
+
+class role:
+    heirarchy = os.getenv("ROLE_HEIRARCHY").split(",")
 
 
 # database schema/connection info
@@ -37,13 +40,10 @@ class player:
     volume_default = int(os.getenv("PLAYER_VOLUMEDEFAULT", "33"))
     volume_idle = int(os.getenv("PLAYER_VOLUMEIDLE", "5"))
     loading_emoji = os.getenv("PLAYER_LOADINGEMOJI")
-
-
-class db:
-    host = os.getenv("DB_HOST")
-    user = os.getenv("DB_USER")
-    password = os.getenv("DB_PASSWORD")
-    name = os.getenv("DB_NAME")
+    bgm_default = os.getenv(
+        "PLAYER_BGMDEFAULT",
+        "https://soundcloud.com/closedonsundayy/201016-star-wars-lofi-mix-1-hour?in=8vukqpvbefqi/sets/no1",
+    )
 
 
 class db:
@@ -55,6 +55,8 @@ class db:
 
     class table:
         members = "members"
+        favs = "fav_lists"
+        bgm = "bgm"
 
 
 # file paths

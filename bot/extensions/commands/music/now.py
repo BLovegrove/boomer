@@ -2,7 +2,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from util.handlers.embeds import ProgressEmbedBuilder
+from util.handlers.embed import ProgressEmbedBuilder
 from util.handlers.voice import VoiceHandler
 from util.models import LavaBot
 

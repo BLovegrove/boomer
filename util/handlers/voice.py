@@ -35,7 +35,12 @@ class VoiceHandler:
         # Commands such as volume/skip etc don't require the bot to be in a voicechannel so don't need listing here.
         should_connect = itr.command.name in (
             "play",
+            "pause",
+            "clear",
+            "skip",
+            "jump",
             "join",
+            "leave",
             "favs",
             "party",
             "admin",
@@ -66,6 +71,7 @@ class VoiceHandler:
                 )
 
         player.store("last_channel", itr.channel_id)
+        player.store("summoner", itr.user)
         return player
 
     async def cleanup(self, bot: LavaBot, player: lavalink.DefaultPlayer):

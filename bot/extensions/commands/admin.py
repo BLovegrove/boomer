@@ -10,13 +10,14 @@ from util import models
 import util.config as cfg
 from util.handlers.queue import QueueHandler
 from util.handlers.voice import VoiceHandler
-import util.handlers.database as dbhandler
+from util.handlers.database import DBHandler
 
 
 class Admin(commands.Cog):
     def __init__(self, bot: models.LavaBot) -> None:
         self.bot = bot
         self.voice_handler = VoiceHandler(bot)
+        self.dbhandler = DBHandler(self.bot.db)
 
     @app_commands.command(
         name="admin",
@@ -39,9 +40,8 @@ class Admin(commands.Cog):
                     f"Restarting the bot. Please wait until {cfg.bot.name} has the 'Online' or 'Idle' status icon before doing any more commands.",
                     ephemeral=True,
                 )
-                if cfg.dev_mode:
-                    self.bot.tree.clear_commands(guild=itr.guild)
-                    await self.bot.tree.sync(guild=itr.guild)
+                # self.bot.tree.clear_commands(guild=itr.guild)
+                # await self.bot.tree.sync(guild=itr.guild)
 
                 logger.info(f"Cleared all commands.")
                 await self.bot.change_presence(status=discord.Status.offline)
@@ -121,7 +121,7 @@ class Admin(commands.Cog):
                 )
 
                 for member in itr.guild.members:
-                    dbhandler.update_member(self.bot.db, member, manual_trigger=True)
+                    self.dbhandler.update_member(member, manual_trigger=True)
 
                     logger.info(
                         f"Member [{str(itr.guild.members.index(member) + 1).zfill(len(str(len(itr.guild.members))))}/{len(itr.guild.members)}] Registered '{member.display_name}'"

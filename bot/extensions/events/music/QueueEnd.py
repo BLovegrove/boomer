@@ -7,6 +7,7 @@ import util.config as cfg
 from util.handlers.music import MusicHandler
 from util.handlers.queue import QueueHandler
 from util.handlers.voice import VoiceHandler
+from util.handlers.database import DBHandler
 from util.models import LavaBot
 
 
@@ -17,6 +18,7 @@ class OnQueueEnd(commands.Cog):
         self.voice_handler = VoiceHandler(bot)
         self.music_handler = MusicHandler(bot)
         self.queue_handler = QueueHandler(bot, self.voice_handler)
+        self.dbhandler = DBHandler(self.bot.db)
 
     @lavalink.listener(lavalink.events.QueueEndEvent)
     async def track_hook(self, event: lavalink.events.QueueEndEvent):
@@ -25,17 +27,15 @@ class OnQueueEnd(commands.Cog):
         player: lavalink.DefaultPlayer = event.player
         await player.set_volume(cfg.player.volume_idle)
 
-        # channel = self.bot.get_guild(player.guild_id).get_channel(cfg.bot.music_channel)
         channel_id = player.fetch("last_channel")
         channel = self.bot.get_channel(channel_id)
         logger.debug(f"Found channel '{channel}' for player")
 
-        summoner_id: int = player.fetch("summoner_id")
+        summoner = player.fetch("summoner")
 
-        bgm_url = "https://soundcloud.com/closedonsundayy/201016-star-wars-lofi-mix-1-hour?in=8vukqpvbefqi/sets/no1"
-        # logger.debug(
-        #     f"DatabaseHandler got '{bgm_url}' for bgm_url when checking summoners bgm prefs"
-        # )
+        bgm_url = self.dbhandler.get_bgm(summoner)
+        if not bgm_url:
+            bgm_url = cfg.player.bgm_default
 
         result: lavalink.LoadResult = await player.node.get_tracks(bgm_url)
 

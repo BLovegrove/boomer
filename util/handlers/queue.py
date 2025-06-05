@@ -3,7 +3,7 @@ import math
 import discord
 import lavalink
 
-from util.handlers import embeds
+from util.handlers import embed
 from util.handlers.voice import VoiceHandler
 from util import models
 
@@ -32,5 +32,5 @@ class QueueHandler:
                     f"Failed to clear track: Track at index {index} not found. Index must be between 1 and {len(player.queue)}"
                 )
 
-            embed = embeds.ClearedEmbedBuilder(itr, cleared, player, index)
+            embed = embed.ClearedEmbedBuilder(itr, cleared, player, index)
             await itr.followup.send(embed=embed.construct())
