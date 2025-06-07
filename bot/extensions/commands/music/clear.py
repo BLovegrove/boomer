@@ -21,16 +21,20 @@ class Clear(commands.Cog):
     async def clear(self, itr: discord.Interaction, index: int | None):
         await itr.response.defer()
 
-        player = self.voicehandler.fetch_player(self.bot)
-        if not player:
+        response = self.voicehandler.fetch_player(self.bot)
+        if not response:
             await itr.followup.send(
                 ":warning: Nothing playing right now - there's nothing to clear.",
                 ephemeral=True,
             )
             return
+        else:
+            player = response.player
 
         if not index:
-            await self.queuehandler.clear(player)
+            cleared = await self.queuehandler.clear(player)
+            if cleared:
+                await itr.followup.send(":boom: Queue cleared!")
             return
 
         if index <= 0:
@@ -49,15 +53,13 @@ class Clear(commands.Cog):
             result = await self.queuehandler.clear(player, index)
             if not result:
                 await itr.followup.send(
-                    "Something went wrogn while clearing the queue. Please contact your server owner or local dev.",
+                    "Something went wrong while clearing the queue. Please contact your server owner or local dev.",
                     ephemeral=True,
                 )
 
             if result.cleared:
                 embed = EmbedHandler.Cleared(itr, result.cleared, player, result.index)
                 await itr.followup.send(embed=embed.construct())
-            else:
-                itr.followup.send(":boom: Queue cleared!")
 
 
 async def setup(bot: models.LavaBot):

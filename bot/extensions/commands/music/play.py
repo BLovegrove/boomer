@@ -10,14 +10,16 @@ from util import models
 from util.handlers.music import MusicHandler
 from util.handlers.voice import VoiceHandler
 from util.handlers.embed import EmbedHandler
+from util.handlers.queue import QueueHandler
 
 
 class Play(commands.Cog):
 
     def __init__(self, bot: models.LavaBot) -> None:
         self.bot = bot
-        self.musichandler = MusicHandler(bot)
-        self.voicehandler = VoiceHandler(bot)
+        self.musichandler = MusicHandler(self.bot)
+        self.voicehandler = VoiceHandler(self.bot)
+        self.queuehandler = QueueHandler(self.bot)
 
     @app_commands.command(
         name="play",
@@ -35,14 +37,19 @@ class Play(commands.Cog):
             player = response.player
 
         if search:
+            queue_start = len(player.queue)
             result = await self.musichandler.play(player, search)
             if len(result.tracks) == 1:
                 embed = EmbedHandler.Track(itr, result.tracks[0], player)
             else:
-                embed = EmbedHandler.Playlist(itr, result.tracks, result.title, player)
+                embed = EmbedHandler.Playlist(
+                    itr, result.tracks, result.title, player, queue_start
+                )
 
             await itr.followup.send(embed=embed.construct())
             return
+
+        self.queuehandler.update_pages(player)
 
         if (player and not player.paused) or not player:
             await itr.followup.send(

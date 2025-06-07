@@ -10,7 +10,7 @@ import lavalink
 from util import cfg, models
 from util.handlers.database import DatabaseHandler
 from util.handlers.voice import VoiceHandler
-from util.handlers.music import MusicHandler
+from util.handlers.queue import QueueHandler
 
 
 class BGM(commands.Cog):
@@ -18,7 +18,7 @@ class BGM(commands.Cog):
     def __init__(self, bot: models.LavaBot) -> None:
         self.bot = bot
         self.voicehandler = VoiceHandler(self.bot)
-        self.musichandler = MusicHandler(self.bot)
+        self.queuehandler = QueueHandler(self.bot)
         self.dbhandler = DatabaseHandler(self.bot.db)
 
     @app_commands.command(
@@ -29,27 +29,35 @@ class BGM(commands.Cog):
     # @commands.is_owner() # owner check to lock down access to command
     @commands.has_any_role([cfg.role.heirarchy[0], cfg.role.heirarchy[1]])
     async def bgm(self, itr: discord.Interaction, link: str):
+        await itr.response.defer()
         if re.match(
             r"^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube(?:-nocookie)?\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|live\/|v\/)?)([\w\-]+)(\S+)?$",
             link,
         ) or re.match(
             r"^https?:\/\/(?:soundcloud\.com|snd\.sc)(?:\/\w+(?:-\w+)*)+$", link
         ):
-            if len(self.bot.lavalink.player_manager.find_all()) == 0:
-                player: lavalink.DefaultPlayer = (
-                    self.bot.lavalink.player_manager.create(itr.guild.id)
-                )
+            response = await self.voicehandler.ensure_voice(itr)
+            if not response.player:
+                await itr.followup.send(response.message)
+                return
             else:
-                player: lavalink.DefaultPlayer = self.bot.lavalink.player_manager.get(
-                    itr.guild.id
-                )
+                player = response.player
 
             result = await player.node.get_tracks(link)
 
             if result.load_type == lavalink.LoadType.TRACK:
                 title = result.tracks[0].title
                 self.dbhandler.set_bgm(itr.user, link)
-                await itr.response.send_message(f"Updated BGM to: {title}")
+                if player.fetch("idle"):
+                    player.queue.insert(0, result.tracks[0])
+                    player.current = result.tracks[0]
+                    await player.play()
+                    self.queuehandler.update_pages(player)
+
+                await itr.followup.send(
+                    f":musical_note: Background music updated! new track: [{title}]({result.tracks[0].uri})"
+                )
+                return
 
             else:
                 await itr.response.send_message(

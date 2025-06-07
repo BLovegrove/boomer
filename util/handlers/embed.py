@@ -134,6 +134,7 @@ class EmbedHandler:
             tracks: list[Union[lavalink.AudioTrack, lavalink.DeferredAudioTrack]],
             name: str,
             player: lavalink.DefaultPlayer,
+            queue_start: int,
         ) -> None:
 
             self.sender: discord.Member = itr.user
@@ -153,7 +154,11 @@ class EmbedHandler:
 
             self.queue_length = len(self.player.queue)
 
-            if not self.player.is_playing or player.fetch("idle"):
+            if (
+                not self.player.is_playing
+                or self.player.fetch("idle")
+                or queue_start == 0
+            ):
                 self.embed.title = f"Now playing: {self.tracks[0].title}"
                 self.embed.set_footer(
                     text=f"Remaining songs are #1 to #{len(self.tracks) - 1} in queue."
@@ -162,7 +167,7 @@ class EmbedHandler:
             else:
                 self.embed.title = f"Added {self.tracks[0].title} and {len(self.tracks) - 1} more to queue."
                 self.embed.set_footer(
-                    text=f"Songs are #{(self.queue_length + 1 if self.queue_length > 0 else 1)} to #{self.queue_length + len(self.tracks)} in queue."
+                    text=f"Songs are #{queue_start + 1} to #{self.queue_length + len(self.tracks)} in queue."
                 )
 
         def construct(self):

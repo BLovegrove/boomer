@@ -9,6 +9,7 @@ from util import cfg, models
 from util.handlers.embed import EmbedHandler
 from util.handlers.voice import VoiceHandler
 from util.handlers.queue import QueueHandler
+from util.handlers.database import DatabaseHandler
 
 __all__ = ["MusicHandler"]
 
@@ -18,6 +19,7 @@ class MusicHandler:
         self.bot = bot
         self.voicehandler = VoiceHandler(self.bot)
         self.queuehandler = QueueHandler(self.bot)
+        self.dbhandler = DatabaseHandler(self.bot.db)
 
     class PlayResult:
         def __init__(
@@ -81,12 +83,21 @@ class MusicHandler:
             return
 
     async def play(
-        self, player: lavalink.DefaultPlayer, links: Union[str, list[str]]
+        self,
+        player: lavalink.DefaultPlayer,
+        tracks: Union[
+            str,
+            list[str],
+            PlayResult,
+        ],
     ) -> PlayResult:
 
-        result = await self.load_tracks(player, links)
-        if not result:
-            return
+        if isinstance(tracks, self.PlayResult):
+            result = tracks
+        else:
+            result = await self.load_tracks(player, tracks)
+            if not result:
+                return
 
         for track in result.tracks:
             player.add(track)
@@ -128,7 +139,7 @@ class MusicHandler:
 
             if not next_track:
                 await itr.followup.send(
-                    f"Error! Track not found. Somethign went wrong with playback - try kicking {cfg.bot.name} from the VC and trying again.",
+                    f"Error! Track not found. Something went wrong with playback - try kicking {cfg.bot.name} from the VC and trying again.",
                     ephemeral=True,
                 )
                 return
@@ -139,7 +150,7 @@ class MusicHandler:
                 embed=embed.construct(),
             )
             await player.seek(0)
-            logger.info("Skipped song (repeat enabled).")
+            logger.debug("Skipped song (repeat enabled).")
             return
 
         if index < 0:
@@ -163,7 +174,7 @@ class MusicHandler:
 
         else:
             if trim_queue:
-                logger.info(
+                logger.debug(
                     f"Skipped queue to track {index} of {len(player.queue) + 1}"
                 )
 
@@ -171,7 +182,9 @@ class MusicHandler:
                     player.queue = player.queue[index - 1 :]
 
             else:
-                logger.info(f"Jumped to track {index} of {len(player.queue)} in queue.")
+                logger.debug(
+                    f"Jumped to track {index} of {len(player.queue)} in queue."
+                )
                 jump_track = player.queue.pop(index - 1)
 
                 if not jump_track:
@@ -194,7 +207,7 @@ class MusicHandler:
                 return
 
             await player.skip()
-            logger.info("Skipping current track...")
+            logger.debug("Skipping current track...")
 
             embed = EmbedHandler.Skip(itr, player.current, player)
             await itr.followup.send(embed=embed.construct())

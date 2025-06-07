@@ -23,12 +23,12 @@ class Favs(commands.Cog):
         self.voicehandler = VoiceHandler(self.bot)
 
     group = app_commands.Group(
-        name="favs", description="Play, edit, and view your favorites list!"
+        name="favs", description="Play, edit, and view your favorites!"
     )
 
     @group.command(
         name="play",
-        description="Play a favorites list! Will look in order of personal > role-based > global depending on whats set",
+        description="Play a favorite songs! Will look in order of personal > role-based > global depending on whats set",
     )
     async def play(self, itr: discord.Interaction):
         await itr.response.defer()
@@ -46,11 +46,14 @@ class Favs(commands.Cog):
             return
 
         list_decoded: dict = json.loads(favs["entries"])
-        logger.info(list_decoded)
         list_links = list(list_decoded.values())
 
+        queue_start = len(player.queue)
+
         result = await self.musichandler.play(player, list_links)
-        embed = EmbedHandler.Playlist(itr, result.tracks, favs["name"], player)
+        embed = EmbedHandler.Playlist(
+            itr, result.tracks, favs["name"], player, queue_start
+        )
 
         await itr.followup.send(embed=embed.construct())
 
@@ -66,9 +69,9 @@ class Favs(commands.Cog):
             await itr.followup.send("No favs list found - sorry", ephemeral=True)
             return
 
-        embed = EmbedHandler.Favs(self.bot, list).construct()
+        embed = EmbedHandler.Favs(self.bot, list)
 
-        await itr.followup.send(embed=embed)
+        await itr.followup.send(embed=embed.construct())
 
 
 async def setup(bot: models.LavaBot):

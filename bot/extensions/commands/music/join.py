@@ -7,12 +7,14 @@ import util.cfg as cfg
 
 from util import models
 from util.handlers.voice import VoiceHandler
+from util.handlers.queue import QueueHandler
 
 
 class Join(commands.Cog):
     def __init__(self, bot: models.LavaBot) -> None:
         self.bot = bot
-        self.voicehandler = VoiceHandler(bot)
+        self.voicehandler = VoiceHandler(self.bot)
+        self.queuehandler = QueueHandler(self.bot)
 
     @app_commands.command(
         description=f"Summons {cfg.bot.name} to your voice channel and plays the summoners idle tune.",
@@ -33,6 +35,7 @@ class Join(commands.Cog):
         await itr.followup.send(content=f"Joined <#{itr.user.voice.channel.id}>")
         await player.set_volume(cfg.player.volume_default)
         self.bot.lavalink._dispatch_event(lavalink.events.QueueEndEvent(player))
+        self.queuehandler.update_pages(player)
         return
 
 

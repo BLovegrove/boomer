@@ -69,7 +69,7 @@ class VoiceHandler:
             player.store("summoner", itr.user)
             await itr.user.voice.channel.connect(cls=models.LavalinkVoiceClient)
 
-        if voice_client.channel.id != itr.user.voice.channel.id:
+        elif voice_client.channel.id != itr.user.voice.channel.id:
             return self.PlayerResponse(
                 None, f"Not connected to my channel. Join <#{player.channel_id}>"
             )

@@ -97,31 +97,38 @@ class DatabaseHandler:
             return cfg.player.bgm_default
 
         bgm = self.db.execute(
-            f"SELECT url FROM {cfg.db.table.bgm} WHERE role_id={role_id}"
+            f"SELECT url FROM {cfg.db.table.bgm} WHERE owner_id={role_id}"
         )
 
         if not bgm:
-            return False
+            bgm = self.db.execute(
+                f"SELECT url FROM {cfg.db.table.bgm} WHERE owner_id='!DEFAULT'"
+            )
 
-        return bgm["url"]
+        if not bgm:
+            return
+        else:
+            return bgm["url"]
 
     def set_bgm(self, member: discord.Member, url: str, commit: bool = True):
 
         role_id = _get_heirarchy(member)
 
-        bgm = self.get_bgm(member)
+        bgm = self.db.execute(
+            f"SELECT url FROM {cfg.db.table.bgm} WHERE owner_id={role_id}"
+        )
         logger.debug(bgm)
 
         if not bgm:
             result = self.db.insert(
                 cfg.db.table.bgm,
-                {"role_id": role_id, "url": url},
+                {"owner_id": role_id, "url": url},
                 commit,
             )
             logger.debug(result)
         else:
             result = self.db.update(
-                cfg.db.table.bgm, {"url": url}, {"role_id": role_id}, commit
+                cfg.db.table.bgm, {"url": url}, {"owner_id": role_id}, commit
             )
             logger.debug(result)
 
