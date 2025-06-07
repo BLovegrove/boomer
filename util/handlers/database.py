@@ -76,17 +76,16 @@ class DatabaseHandler:
 
     def get_favorites(self, member: discord.Member):
 
-        id = member.id
-        query = f"SELECT * FROM {cfg.db.table.favs} WHERE owner_id='{id}'"
+        query = f"SELECT * FROM {cfg.db.table.favs} WHERE owner_id='{member.id}'"
         fav = self.db.execute(query)
 
         if not fav:
             heirarchy = _get_heirarchy(member)
-            id = heirarchy if heirarchy else id
+            query = f"SELECT * FROM {cfg.db.table.favs} WHERE owner_id='{heirarchy if heirarchy else member.id}'"
             fav = self.db.execute(query)
 
         if not fav:
-            id = "!DEFAULT"
+            query = f"SELECT * FROM {cfg.db.table.favs} WHERE owner_id='!DEFAULT'"
             fav = self.db.execute(query)
 
         return fav if fav else None

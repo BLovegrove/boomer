@@ -1,14 +1,24 @@
+import json
+import os
+from typing import Union
 import discord
 import lavalink
 from loguru import logger
 from StringProgressBar import progressBar as ProgressBar
 
-from util import cfg
+from util import cfg, models
 
 __all__ = ["EmbedHandler"]
 
 
 class EmbedHandler:
+
+    @staticmethod
+    def get_artwork_url(track: Union[lavalink.AudioTrack, lavalink.DeferredAudioTrack]):
+        if track.artwork_url and isinstance(track, lavalink.AudioTrack):
+            return track.artwork_url
+        else:
+            return cfg.image.unknown
 
     class Track:
         def __init__(
@@ -32,13 +42,7 @@ class EmbedHandler:
             )
 
             # update thumbnail based on deferred status
-            if isinstance(track, lavalink.AudioTrack):
-                self.embed.set_thumbnail(
-                    url=f"https://i.ytimg.com/vi/{track.identifier}/mqdefault.jpg"
-                )
-
-            else:
-                self.embed.set_thumbnail(url="https://i.imgur.com/hpjK2ym.png")
+            self.embed.set_thumbnail(url=EmbedHandler.get_artwork_url(track))
 
             # update title based on idle status
             if not player.current or player.fetch("idle"):
@@ -56,12 +60,12 @@ class EmbedHandler:
     class Cleared(Track):
         def __init__(
             self,
-            interaction: discord.Interaction,
+            itr: discord.Interaction,
             track: lavalink.AudioTrack | lavalink.DeferredAudioTrack,
             player: lavalink.DefaultPlayer,
             index: int,
         ) -> None:
-            super().__init__(interaction, track, player)
+            super().__init__(itr, track, player)
 
             if not track:
                 return
@@ -77,11 +81,11 @@ class EmbedHandler:
     class Skip(Track):
         def __init__(
             self,
-            interaction: discord.Interaction,
+            itr: discord.Interaction,
             track: lavalink.AudioTrack | lavalink.DeferredAudioTrack,
             player: lavalink.DefaultPlayer,
         ) -> None:
-            super().__init__(interaction, track, player)
+            super().__init__(itr, track, player)
 
             self.embed.set_author(
                 name=f"Track(s) skipped by {self.sender.display_name}",
@@ -89,9 +93,7 @@ class EmbedHandler:
                 icon_url=self.embed.author.icon_url,
             )
             self.embed.title = f"Now playing: {track.title}"
-            self.embed.set_footer(
-                text=f"{max(0, len(player.queue) - 1)} track(s) left in queue."
-            )
+            self.embed.set_footer(text=f"{len(player.queue)} track(s) left in queue.")
 
     class Progress(Track):
         def __init__(
@@ -128,33 +130,30 @@ class EmbedHandler:
     class Playlist:
         def __init__(
             self,
-            interaction: discord.Interaction,
-            result: lavalink.LoadResult,
+            itr: discord.Interaction,
+            tracks: list[Union[lavalink.AudioTrack, lavalink.DeferredAudioTrack]],
+            name: str,
             player: lavalink.DefaultPlayer,
         ) -> None:
-            if result.load_type != lavalink.LoadType.PLAYLIST:
-                return
 
-            self.sender: discord.Member = interaction.user
-            self.tracks = result.tracks
-            self.playlist = result.playlist_info
+            self.sender: discord.Member = itr.user
+            self.tracks = tracks
             self.player = player
 
             self.embed = discord.Embed(
                 color=cfg.bot.accent_color,
-                description=f":notepad_spiral: Playlist: {self.playlist.name}",
+                description=f":notepad_spiral: Playlist: {name}",
             )
             self.embed.set_author(
                 name=f"Playlest queued by {self.sender.display_name}",
                 icon_url=self.sender.display_avatar.url,
             )
-            self.embed.set_thumbnail(
-                url=f"https://i.ytimg.com/vi/{self.tracks[0].identifier}/mqdefault.jpg"
-            )
 
-            self.queue_length = len(player.queue)
+            self.embed.set_thumbnail(url=EmbedHandler.get_artwork_url(tracks[0]))
 
-            if player.is_playing or player.fetch("idle"):
+            self.queue_length = len(self.player.queue)
+
+            if not self.player.is_playing or player.fetch("idle"):
                 self.embed.title = f"Now playing: {self.tracks[0].title}"
                 self.embed.set_footer(
                     text=f"Remaining songs are #1 to #{len(self.tracks) - 1} in queue."
@@ -163,7 +162,7 @@ class EmbedHandler:
             else:
                 self.embed.title = f"Added {self.tracks[0].title} and {len(self.tracks) - 1} more to queue."
                 self.embed.set_footer(
-                    text=f"Songs are #{(self.queue_length + 1 if self.queue_length > 0 else 1)} to #{len(self.player.queue) + len(self.tracks)} in queue."
+                    text=f"Songs are #{(self.queue_length + 1 if self.queue_length > 0 else 1)} to #{self.queue_length + len(self.tracks)} in queue."
                 )
 
         def construct(self):
@@ -201,18 +200,12 @@ class EmbedHandler:
                 url=self.track.uri,
             )
             self.embed.set_author(
-                name=f"Current queue: Showing #{self.list_start + 1} to #{self.list_end + 1} of #{len(player.queue)} items in queue.",
-                icon_url="https://i.imgur.com/dpVBIer.png",
+                name=f"Current queue: Showing #{self.list_start + 1 if len(player.queue) > 0 else 0} to #{self.list_end + 1} of #{len(player.queue)} items in queue.",
+                icon_url=cfg.image.boombox,
             )
             self.embed.set_footer(text="<> for page +/-")
 
-            if isinstance(self.track, lavalink.AudioTrack):
-                self.embed.set_thumbnail(
-                    url=f"https://i.ytimg.com/vi/{self.track.identifier}/mqdefault.jpg"
-                )
-
-            else:
-                self.embed.set_thumbnail(url="https://i.imgur.com/hpjK2ym.png")
+            self.embed.set_thumbnail(url=EmbedHandler.get_artwork_url(self.track))
 
             for i in range(self.list_start, self.list_end + 1):
                 track = player.queue[i]
@@ -227,20 +220,56 @@ class EmbedHandler:
             return self.embed
 
     class Favs:
-        def __init__(self, title: str, favs: dict[str, str]) -> None:
+        def __init__(self, bot: models.LavaBot, favs: dict[str, any]) -> None:
+            owner = favs["owner_id"]
+
+            try:
+                if discord.utils.get(
+                    bot.get_guild(cfg.bot.guild_id).members, id=int(owner)
+                ):
+                    owner = (
+                        discord.utils.get(
+                            bot.get_guild(cfg.bot.guild_id).members, id=int(owner)
+                        ).display_name
+                        + " - "
+                    )
+
+                elif discord.utils.get(
+                    bot.get_guild(cfg.bot.guild_id).roles, id=int(owner)
+                ):
+                    owner = (
+                        discord.utils.get(
+                            bot.get_guild(cfg.bot.guild_id).roles, id=int(owner)
+                        ).name
+                        + " - "
+                    )
+
+                else:
+                    owner = "Unknown - "
+
+            except:
+                owner = "Global Default - "
+
+            favs_list: dict[str, str] = json.loads(favs["entries"])
+            desc = []
+            for key, value in list(favs_list.items()):
+                desc.append(f"- **[{key}]({value})**")
+
             self.embed = discord.Embed(
                 color=cfg.bot.accent_color,
-                title=title,
-                description="Simply click the buttons below to ready up that song and hit submit to add all ready songs to the queue!",
+                title=owner + favs["name"],
+                description="\n".join(desc),
             )
             # self.embed.set_author(
             #     name="This is still a WIP. For now, this only prints a list of all your favourites. Sorry!"
             # )
             # self.embed.set_footer(text="Keep in mind you can only ready each song once!")
-            for key, value in list(favs.items()):
-                self.embed.add_field(
-                    name=key, value=f"[{value}]({value})", inline=False
-                )
+            # for key, value in list(favs.items()):
+            #     self.embed.add_field(
+            #         name=key,
+            #         value=f"[{value}]({value})",
+            #         inline=False,
+            #     )
 
         def construct(self):
             return self.embed

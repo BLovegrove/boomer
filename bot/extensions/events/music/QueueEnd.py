@@ -7,7 +7,6 @@ import util.cfg as cfg
 from util import models
 from util.handlers.database import DatabaseHandler
 from util.handlers.music import MusicHandler
-from util.handlers.queue import QueueHandler
 from util.handlers.voice import VoiceHandler
 
 
@@ -15,9 +14,8 @@ class OnQueueEnd(commands.Cog):
 
     def __init__(self, bot: models.LavaBot) -> None:
         self.bot = bot
-        self.voice_handler = VoiceHandler(bot)
-        self.music_handler = MusicHandler(bot)
-        self.queue_handler = QueueHandler(bot, self.voice_handler)
+        self.voicehandler = VoiceHandler(bot)
+        self.musichandler = MusicHandler(bot)
         self.dbhandler = DatabaseHandler(self.bot.db)
 
     @lavalink.listener(lavalink.events.QueueEndEvent)
@@ -45,7 +43,7 @@ class OnQueueEnd(commands.Cog):
             or result.load_type != result.load_type.TRACK
         ):
             player.queue.clear()
-            await self.voice_handler.cleanup(self.bot, player)
+            await self.voicehandler.cleanup(self.bot, player)
 
             if not player.channel_id:
                 logger.warning(f"Failed to find text channel while queuing idle track.")

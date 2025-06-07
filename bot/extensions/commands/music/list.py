@@ -43,7 +43,7 @@ class PaginationButtons(discord.ui.View):
         label="<", custom_id="page_prev", style=discord.ButtonStyle.blurple
     )
     async def button_prev(self, inter: discord.Interaction, button: discord.ui.Button):
-        embed = List(self.player, self.page - 1).construct()
+        embed = EmbedHandler.List(self.player, self.page - 1).construct()
         self.page -= 1
         self.check_boundaries()
         await inter.response.edit_message(view=self)
@@ -53,7 +53,7 @@ class PaginationButtons(discord.ui.View):
         label=">", custom_id="page_next", style=discord.ButtonStyle.blurple
     )
     async def button_next(self, inter: discord.Interaction, button: discord.ui.Button):
-        embed = List(self.player, self.page + 1).construct()
+        embed = EmbedHandler.List(self.player, self.page + 1).construct()
         self.page += 1
         self.check_boundaries()
         await inter.response.edit_message(view=self)

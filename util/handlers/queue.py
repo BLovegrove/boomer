@@ -1,37 +1,39 @@
 import math
-import discord
 import lavalink
 
 from util import models
-from util.handlers.embed import EmbedHandler
-from util.handlers.voice import VoiceHandler
 
 __all__ = ["QueueHandler"]
 
 
 class QueueHandler:
-    def __init__(self, bot: models.LavaBot, voice_handler: VoiceHandler) -> None:
+    def __init__(self, bot: models.LavaBot) -> None:
         self.bot = bot
-        self.voice_handler = voice_handler
+
+    class ClearResult:
+        def __init__(self, cleared: lavalink.AudioTrack, index: int):
+            self.cleared = cleared
+            self.index = index
 
     def update_pages(self, player: lavalink.DefaultPlayer):
-        player.store("pages", math.ceil(len(player.queue) / 9))
+        player.store("pages", max(math.ceil(len(player.queue) / 9), 0))
 
-    async def clear(self, itr: discord.Interaction, index: int = None):
-        player = await self.voice_handler.ensure_voice(itr)
+    async def clear(self, player: lavalink.DefaultPlayer, index: int = None):
 
         if not index:
             player.queue.clear()
             player.store("pages", 0)
-            await itr.followup.send(":boom: Queue cleared!")
+            return self.ClearResult(None, None)
 
         else:
             cleared = player.queue.pop(index - 1)
-
             if not cleared:
-                await itr.followup.send(
-                    f"Failed to clear track: Track at index {index} not found. Index must be between 1 and {len(player.queue)}"
-                )
+                return
 
-            embed = EmbedHandler.Cleared(itr, cleared, player, index).construct()
-            await itr.followup.send(embed=embed)
+            return self.ClearResult(cleared, index)
+
+    async def shuffle(self, player: lavalink.DefaultPlayer):
+
+        player.set_shuffle(not player.shuffle)
+
+        return player.shuffle

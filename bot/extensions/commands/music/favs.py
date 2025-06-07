@@ -1,12 +1,14 @@
 # core imports
+import json
 import discord
 from discord.ext import commands
 from discord import app_commands
-import json
+import lavalink
 
 # custom imports
 from util import models
 from util.handlers.music import MusicHandler
+from util.handlers.voice import VoiceHandler
 from util.handlers.embed import EmbedHandler
 from util.handlers.database import DatabaseHandler
 
@@ -17,6 +19,7 @@ class Favs(commands.Cog):
         self.bot = bot
         self.dbhandler = DatabaseHandler(self.bot.db)
         self.musichandler = MusicHandler(self.bot)
+        self.voicehandler = VoiceHandler(self.bot)
 
     group = app_commands.Group(
         name="favs", description="Play, edit, and view your favorites list!"
@@ -29,23 +32,20 @@ class Favs(commands.Cog):
     async def play(self, itr: discord.Interaction):
         await itr.response.defer()
 
+        player: lavalink.DefaultPlayer = await self.voicehandler.ensure_voice(itr)
+
         list = self.dbhandler.get_favorites(itr.user)
         if not list:
             await itr.followup.send("No favs list found - sorry", ephemeral=True)
+            return
 
-        name = list["name"]
-        list: dict[str, str] = json.loads(list["entries"])
+        list_decoded: dict[str, str] = json.loads(list["entries"])
+        list_links = list(list_decoded.values())
 
-        for key, value in list.items():
-            await self.musichandler.play(itr, value)
-
-        embed = Favs(name, list).construct()
+        result = await self.musichandler.play(player, list_links)
+        embed = EmbedHandler.Playlist(itr, result.tracks, list["name"], player)
 
         await itr.followup.send(embed=embed)
-        # get info for user id in fav_list
-        # if none, try role id
-        # if none, go to !DEFAULT
-        # if none, complain
 
     @group.command(
         name="view",
@@ -59,10 +59,7 @@ class Favs(commands.Cog):
             await itr.followup.send("No favs list found - sorry", ephemeral=True)
             return
 
-        name = list["name"]
-        list: dict[str, str] = json.loads(list["entries"])
-
-        embed = EmbedHandler.Favs(name, list).construct()
+        embed = EmbedHandler.Favs(self.bot, list).construct()
 
         await itr.followup.send(embed=embed)
 

@@ -9,6 +9,7 @@ from loguru import logger
 from util import cfg, models
 from util.handlers.queue import QueueHandler
 from util.handlers.voice import VoiceHandler
+from util.handlers.music import MusicHandler
 from util.handlers.database import DatabaseHandler
 
 
@@ -17,6 +18,8 @@ class Admin(commands.Cog):
         self.bot = bot
         self.voice_handler = VoiceHandler(bot)
         self.dbhandler = DatabaseHandler(self.bot.db)
+        self.musichandler = MusicHandler(self.bot)
+        self.queuehandler = QueueHandler(self.bot)
 
     @app_commands.command(
         name="admin",
@@ -41,8 +44,8 @@ class Admin(commands.Cog):
                 )
                 # self.bot.tree.clear_commands(guild=itr.guild)
                 # await self.bot.tree.sync(guild=itr.guild)
+                # logger.info(f"Cleared all commands.")
 
-                logger.info(f"Cleared all commands.")
                 await self.bot.change_presence(status=discord.Status.offline)
                 await self.bot.lavalink.close()
                 await self.bot.close()
@@ -95,20 +98,13 @@ class Admin(commands.Cog):
                     "https://www.youtube.com/watch?v=CqnU_sJ8V-E",
                 ]
 
-                for i in range(5):
-                    for song in songs:
-                        result = await player.node.get_tracks(song)
-                        if result.load_type != result.load_type.TRACK:
-                            continue
-                        else:
-                            player.add(result.tracks[0])
+                result = await self.musichandler.play(player, songs)
 
                 logger.debug("Spammed queue entries.")
                 player.store("idle", False)
                 player.set_loop(player.LOOP_NONE)
                 await player.play()
-                queue_handler = QueueHandler(self.bot, voice_handler)
-                queue_handler.update_pages(player)
+                self.queuehandler.update_pages(player)
                 await itr.edit_original_response(
                     content=f"{len(player.queue)} entries added to the queue. Now playing: {player.current.title}"
                 )

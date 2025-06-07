@@ -5,12 +5,14 @@ from discord.ext import commands
 
 from util import cfg, models
 from util.handlers.voice import VoiceHandler
+from util.handlers.queue import QueueHandler
 
 
 class Leave(commands.Cog):
     def __init__(self, bot: models.LavaBot) -> None:
         self.bot = bot
         self.voicehandler = VoiceHandler(bot)
+        self.queuehandler = QueueHandler(self.bot)
 
     @app_commands.command(
         description=f"Requests {cfg.bot.name} to leave your voice channel and stop playing.",
@@ -20,6 +22,8 @@ class Leave(commands.Cog):
 
         player = await self.voicehandler.ensure_voice(itr)
         if player:
+            await self.queuehandler.clear(player)
+            self.queuehandler.update_pages(player)
             await self.voicehandler.cleanup(self.bot, player)
 
         await itr.followup.send(f"Leaving <#{itr.user.voice.channel.id}>")

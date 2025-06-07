@@ -64,3 +64,8 @@ class db:
 class path:
     root = os.getenv("PATH_ROOT", "")
     avatars = os.getenv("PATH_AVATARS", "avatars").strip("/")
+
+
+class image:
+    unknown = "https://imgur.com/a/jql8DP5"
+    boombox = "https://imgur.com/a/33ed4oY"

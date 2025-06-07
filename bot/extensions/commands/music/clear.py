@@ -6,21 +6,22 @@ from util import models
 from util.handlers.music import MusicHandler
 from util.handlers.queue import QueueHandler
 from util.handlers.voice import VoiceHandler
+from util.handlers.embed import EmbedHandler
 
 
 class Clear(commands.Cog):
 
     def __init__(self, bot: models.LavaBot) -> None:
         self.bot = bot
-        self.music_handler = MusicHandler(bot)
-        self.voice_handler = VoiceHandler(bot)
-        self.queue_handler = QueueHandler(bot, self.voice_handler)
+        self.musichandler = MusicHandler(bot)
+        self.voicehandler = VoiceHandler(bot)
+        self.queuehandler = QueueHandler(bot)
 
     @app_commands.command(description="Clears the whole (or part of the) queue")
     async def clear(self, itr: discord.Interaction, index: int | None):
         await itr.response.defer()
 
-        player = self.voice_handler.fetch_player(self.bot)
+        player = self.voicehandler.fetch_player(self.bot)
         if not player:
             await itr.followup.send(
                 ":warning: Nothing playing right now - there's nothing to clear.",
@@ -29,7 +30,7 @@ class Clear(commands.Cog):
             return
 
         if not index:
-            await self.queue_handler.clear(itr)
+            await self.queuehandler.clear(player)
             return
 
         if index <= 0:
@@ -45,9 +46,18 @@ class Clear(commands.Cog):
             )
 
         else:
-            await self.queue_handler.clear(itr, index)
+            result = await self.queuehandler.clear(player, index)
+            if not result:
+                await itr.followup.send(
+                    "Something went wrogn while clearing the queue. Please contact your server owner or local dev.",
+                    ephemeral=True,
+                )
 
-        return
+            if result.cleared:
+                embed = EmbedHandler.Cleared(itr, result.cleared, player, result.index)
+                await itr.followup.send(embed=embed.construct())
+            else:
+                itr.followup.send(":boom: Queue cleared!")
 
 
 async def setup(bot: models.LavaBot):

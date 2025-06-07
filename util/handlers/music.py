@@ -1,4 +1,5 @@
 import traceback
+from typing import Union
 
 import discord
 import lavalink
@@ -15,26 +16,114 @@ __all__ = ["MusicHandler"]
 class MusicHandler:
     def __init__(self, bot: models.LavaBot) -> None:
         self.bot = bot
-        self.voice_handler = VoiceHandler(self.bot)
-        self.queue_handler = QueueHandler(self.bot, self.voice_handler)
+        self.voicehandler = VoiceHandler(self.bot)
+        self.queuehandler = QueueHandler(self.bot)
 
-    async def __add_track(
+    class PlayResult:
+        def __init__(
+            self,
+            title: str,
+            tracks: list[Union[lavalink.AudioTrack, lavalink.DeferredAudioTrack]],
+        ):
+            self.title = title
+            self.tracks = tracks
+
+    async def load_tracks(
         self,
-        interaction: discord.Interaction,
         player: lavalink.DefaultPlayer,
-        track: lavalink.AudioTrack = None,
-        tracks: list[lavalink.AudioTrack] = None,
+        queries: Union[str, list[str]],
+    ) -> PlayResult | None:
+        if isinstance(queries, str):
+            queries = [queries]
+
+        loaded = []
+        title = ""
+
+        for query in queries:
+
+            if "https://" not in query:
+                query = "ytsearch:" + query
+
+            result = await player.node.get_tracks(query)
+
+            try:
+                match result.load_type:
+                    case lavalink.LoadType.ERROR:
+                        return
+
+                    case lavalink.LoadType.EMPTY:
+                        return
+
+                    case lavalink.LoadType.SEARCH | lavalink.LoadType.TRACK:
+                        loaded.append(result.tracks[0])
+                        title = result.tracks[0].title
+
+                    case lavalink.LoadType.PLAYLIST:
+                        for track in result.tracks:
+                            loaded.append(track)
+
+                        title = result.playlist_info.name
+
+                    case _:
+                        logger.warning(
+                            f"Load type for play request defaulted. Query '{query}' result as follows:"
+                        )
+                        logger.warning(result)
+                        return
+
+            except Exception as e:
+                logger.error(f"Failed to get track from query: {query}")
+                return
+
+        if loaded != []:
+            return self.PlayResult(title, loaded)
+        else:
+            return
+
+    async def play(
+        self, player: lavalink.DefaultPlayer, links: Union[str, list[str]]
+    ) -> PlayResult:
+
+        result = await self.load_tracks(player, links)
+        if not result:
+            return
+
+        for track in result.tracks:
+            player.add(track)
+            logger.debug(f"Track added to queue: {track.title}")
+
+        if player.fetch("idle"):
+            player.store("idle", False)
+            player.set_loop(player.LOOP_NONE)
+            await player.set_volume(cfg.player.volume_default)
+            await player.skip()
+
+        elif not player.is_playing:
+            await player.set_volume(cfg.player.volume_default)
+            await player.play()
+
+        self.queuehandler.update_pages(player)
+        return result
+
+    async def __play_track(
+        self,
+        itr: discord.Interaction,
+        player: lavalink.DefaultPlayer,
+        tracks: Union[lavalink.AudioTrack, list[lavalink.AudioTrack]] = None,
         result: lavalink.LoadResult = None,
     ):
         embed = discord.Embed()
 
-        if track:
-            embed = EmbedHandler.Track(interaction, track, player).construct()
+        if isinstance(tracks, lavalink.AudioTrack) or isinstance(
+            tracks, lavalink.DeferredAudioTrack
+        ):
+            track = tracks
+            embed = EmbedHandler.Track(itr, track, player).construct()
             player.add(track)
             logger.info(f"Track added to queue: {track.title}")
 
         elif tracks and result:
-            embed = Playlist(interaction, result, player).construct()
+            embed = EmbedHandler.Playlist(itr, result, player).construct()
 
             for track in tracks:
                 player.add(track)
@@ -51,65 +140,13 @@ class MusicHandler:
             await player.set_volume(cfg.player.volume_default)
             await player.play()
 
-        await interaction.followup.send(embed=embed)
-
-    async def play(self, itr: discord.Interaction, search: str):
-        player: lavalink.DefaultPlayer = await self.voice_handler.ensure_voice(itr)
-        if not player:
-            return
-
-        if "https://" not in search:
-            search = "ytsearch:" + search
-
-        logger.info(f"Attempting to play song... Query: {search}")
-
-        result = await player.node.get_tracks(f"{search}")
-
-        try:
-            match result.load_type:
-                case lavalink.LoadType.ERROR:
-                    await itr.followup.send(
-                        content="Failed to load track, please use a different URL or different search term."
-                    )
-
-                case lavalink.LoadType.EMPTY:
-                    await itr.followup.send(
-                        content="404 song not found! Try something else."
-                    )
-
-                case lavalink.LoadType.SEARCH | lavalink.LoadType.TRACK:
-                    track = result.tracks[0]
-                    await self.__add_track(itr, player, track)
-
-                case lavalink.LoadType.PLAYLIST:
-                    tracks = result.tracks
-                    await self.__add_track(itr, player, None, tracks, result)
-
-                case _:
-                    await itr.followup.send(
-                        content="Something unexpected happened. Contact your server owner or local bot dev(s) immediately and let them know the exact command you tried to run."
-                    )
-                    logger.warning(
-                        f"Load type for play request defaulted. Query '{search}' result as follows:"
-                    )
-                    logger.warning(result)
-
-        except Exception as e:
-            stacktrace = traceback.extract_stack(e.__traceback__.tb_frame)
-            logger.exception(
-                f'Error while attempting to play track from "{stacktrace[-2].filename}", line {stacktrace[-2].lineno}'
-            )
-            return
-
-        self.queue_handler.update_pages(player)
-
-        return
+        await itr.followup.send(embed=embed)
 
     async def skip(self, itr: discord.Interaction, index: int, trim_queue: bool = True):
-        player = await self.voice_handler.ensure_voice(itr)
+        player: lavalink.DefaultPlayer = await self.voicehandler.ensure_voice(itr)
 
         logger.debug(f"Queue length: {len(player.queue)}, loop status: {player.loop}")
-        if len(player.queue) == 0:
+        if len(player.queue) == 0 and player.loop == 0:
             await itr.followup.send(
                 ":notepad_spiral: End of queue - time for your daily dose of idle tunes!"
             )
@@ -118,16 +155,17 @@ class MusicHandler:
 
             return
 
-        if player.loop == player.LOOP_SINGLE:
+        if player.loop == 1 or (player.loop == 2 and len(player.queue) <= 1):
             next_track = player.current
 
             if not next_track:
                 await itr.followup.send(
-                    f"Error! Track not found. Somethign went wrong with playback - try kicking {cfg.bot.name} from the VC and trying again."
+                    f"Error! Track not found. Somethign went wrong with playback - try kicking {cfg.bot.name} from the VC and trying again.",
+                    ephemeral=True,
                 )
                 return
 
-            embed = EmbedHandler.Skip(itr, next_track, player, 0)
+            embed = EmbedHandler.Skip(itr, next_track, player)
             await itr.followup.send(
                 ":repeat_one: Repeat enabled - looping song.",
                 embed=embed.construct(),
@@ -193,6 +231,6 @@ class MusicHandler:
             embed = EmbedHandler.Skip(itr, player.current, player)
             await itr.followup.send(embed=embed.construct())
 
-            self.queue_handler.update_pages(player)
+            self.queuehandler.update_pages(player)
 
             return
