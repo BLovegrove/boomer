@@ -2,16 +2,15 @@ import os
 from enum import Enum
 from loguru import logger
 
-__all__ = []
+__all__ = ["ExtensionHandler"]
 
 
-class Type(Enum):
-    COMMAND = "commands"
-    EVENT = "events"
-    TASK = "tasks"
+class ExtensionHandler:
+    class Type(Enum):
+        COMMAND = "commands"
+        EVENT = "events"
+        TASK = "tasks"
 
-
-class Load:
     def search(ext_type: Type) -> list[str]:
 
         extension_list = []

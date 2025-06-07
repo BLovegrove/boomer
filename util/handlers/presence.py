@@ -2,9 +2,9 @@ import discord
 import lavalink
 from loguru import logger
 
-from util import Models
+from util import models
 
-__all__ = []
+__all__ = ["PresenceHandler"]
 
 
 class PresenceHandler:
@@ -12,7 +12,7 @@ class PresenceHandler:
         pass
 
     @staticmethod
-    async def update_status(bot: Models.LavaBot, player: lavalink.DefaultPlayer = None):
+    async def update_status(bot: models.LavaBot, player: lavalink.DefaultPlayer = None):
         suffix = ""
 
         if player and player.fetch("track_repeat"):

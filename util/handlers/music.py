@@ -4,13 +4,16 @@ import discord
 import lavalink
 from loguru import logger
 
-from util import cfg, Models, EmbedHandler, QueueHandler, VoiceHandler
+from util import cfg, models
+from util.handlers.embed import EmbedHandler
+from util.handlers.voice import VoiceHandler
+from util.handlers.queue import QueueHandler
 
-__all__ = []
+__all__ = ["MusicHandler"]
 
 
 class MusicHandler:
-    def __init__(self, bot: Models.LavaBot) -> None:
+    def __init__(self, bot: models.LavaBot) -> None:
         self.bot = bot
         self.voice_handler = VoiceHandler(self.bot)
         self.queue_handler = QueueHandler(self.bot, self.voice_handler)

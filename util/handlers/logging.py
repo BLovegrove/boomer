@@ -4,7 +4,7 @@ from loguru import logger
 
 from util import cfg
 
-__all__ = []
+__all__ = ["LogHandler"]
 
 
 class InterceptHandler(logging.Handler):
@@ -25,46 +25,47 @@ class InterceptHandler(logging.Handler):
         )
 
 
-def init_logging():
-    logging.basicConfig(
-        handlers=[InterceptHandler()],
-        level="DEBUG" if cfg.log_level == "DEBUG" else "ERROR",
-        force=True,
-    )
-    logger.remove()
+class LogHandler:
+    def init_logging():
+        logging.basicConfig(
+            handlers=[InterceptHandler()],
+            level="DEBUG" if cfg.log_level == "DEBUG" else "ERROR",
+            force=True,
+        )
+        logger.remove()
 
-    logger_format = "<g>{time:YYYY-MM-DD HH:mm:ss}</> <c>|</> <lvl>{level.name:<8}</> <c>|</> <m>{file:>36}</><y>:{line:<4}</> <c>|</> {message}"
-    logger.add(
-        sink=sys.stdout,
-        level=cfg.log_level,
-        colorize=True,
-        enqueue=True,
-        format=logger_format,
-        backtrace=True,
-        diagnose=False,
-    )
-    if cfg.save_log:
+        logger_format = "<g>{time:YYYY-MM-DD HH:mm:ss}</> <c>|</> <lvl>{level.name:<8}</> <c>|</> <m>{file:>36}</><y>:{line:<4}</> <c>|</> {message}"
         logger.add(
-            sink="logs/bot.log",
+            sink=sys.stdout,
             level=cfg.log_level,
-            rotation="1 day",
-            compression="zip",
             colorize=True,
             enqueue=True,
             format=logger_format,
             backtrace=True,
             diagnose=False,
         )
+        if cfg.save_log:
+            logger.add(
+                sink="logs/bot.log",
+                level=cfg.log_level,
+                rotation="1 day",
+                compression="zip",
+                colorize=True,
+                enqueue=True,
+                format=logger_format,
+                backtrace=True,
+                diagnose=False,
+            )
 
-    if cfg.log_level != "DEBUG" and cfg.save_log:
-        logger.add(
-            sink="logs/debug.log",
-            level="DEBUG",
-            rotation="1 day",
-            compression="zip",
-            colorize=True,
-            enqueue=True,
-            format=logger_format,
-            backtrace=True,
-            diagnose=False,
-        )
+        if cfg.log_level != "DEBUG" and cfg.save_log:
+            logger.add(
+                sink="logs/debug.log",
+                level="DEBUG",
+                rotation="1 day",
+                compression="zip",
+                colorize=True,
+                enqueue=True,
+                format=logger_format,
+                backtrace=True,
+                diagnose=False,
+            )

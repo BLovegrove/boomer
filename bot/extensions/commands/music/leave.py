@@ -3,11 +3,12 @@ import lavalink
 from discord import app_commands
 from discord.ext import commands
 
-from util import cfg, Models, VoiceHandler
+from util import cfg, models
+from util.handlers.voice import VoiceHandler
 
 
 class Leave(commands.Cog):
-    def __init__(self, bot: Models.LavaBot) -> None:
+    def __init__(self, bot: models.LavaBot) -> None:
         self.bot = bot
         self.voicehandler = VoiceHandler(bot)
 
@@ -24,5 +25,5 @@ class Leave(commands.Cog):
         await itr.followup.send(f"Leaving <#{itr.user.voice.channel.id}>")
 
 
-async def setup(bot: Models.LavaBot):
+async def setup(bot: models.LavaBot):
     await bot.add_cog(Leave(bot))

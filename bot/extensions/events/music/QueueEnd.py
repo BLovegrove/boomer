@@ -2,19 +2,23 @@ import lavalink
 from discord.ext import commands
 from loguru import logger
 
-import util.config as cfg
+import util.cfg as cfg
 
-from util import Models, DBHandler, MusicHandler, QueueHandler, VoiceHandler
+from util import models
+from util.handlers.database import DatabaseHandler
+from util.handlers.music import MusicHandler
+from util.handlers.queue import QueueHandler
+from util.handlers.voice import VoiceHandler
 
 
 class OnQueueEnd(commands.Cog):
 
-    def __init__(self, bot: Models.LavaBot) -> None:
+    def __init__(self, bot: models.LavaBot) -> None:
         self.bot = bot
         self.voice_handler = VoiceHandler(bot)
         self.music_handler = MusicHandler(bot)
         self.queue_handler = QueueHandler(bot, self.voice_handler)
-        self.dbhandler = DBHandler(self.bot.db)
+        self.dbhandler = DatabaseHandler(self.bot.db)
 
     @lavalink.listener(lavalink.events.QueueEndEvent)
     async def track_hook(self, event: lavalink.events.QueueEndEvent):
@@ -70,5 +74,5 @@ class OnQueueEnd(commands.Cog):
             await player.play()
 
 
-async def setup(bot: Models.LavaBot):
+async def setup(bot: models.LavaBot):
     await bot.add_cog(OnQueueEnd(bot))

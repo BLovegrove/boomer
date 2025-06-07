@@ -2,13 +2,15 @@ import math
 import discord
 import lavalink
 
-from util import EmbedHandler, VoiceHandler, Models
+from util import models
+from util.handlers.embed import EmbedHandler
+from util.handlers.voice import VoiceHandler
 
-__all__ = []
+__all__ = ["QueueHandler"]
 
 
 class QueueHandler:
-    def __init__(self, bot: Models.LavaBot, voice_handler: VoiceHandler) -> None:
+    def __init__(self, bot: models.LavaBot, voice_handler: VoiceHandler) -> None:
         self.bot = bot
         self.voice_handler = voice_handler
 

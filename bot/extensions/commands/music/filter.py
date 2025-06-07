@@ -5,11 +5,14 @@ from discord.app_commands import Choice
 from discord.ext import commands
 from loguru import logger
 
-from util import Models, MusicHandler, VoiceHandler
+from util import models
+from util.handlers.music import MusicHandler
+from util.handlers.voice import VoiceHandler
 
 
 class Filter(commands.Cog):
-    def __init__(self, bot: Models.LavaBot) -> None:
+
+    def __init__(self, bot: models.LavaBot) -> None:
         self.bot = bot
         self.music_handler = MusicHandler(bot)
         self.voice_handler = VoiceHandler(bot)
@@ -75,5 +78,5 @@ class Reverb(lavalink.Filter):
         return {"echo": {"echoLength": self.length, "decay": self.decay}}
 
 
-async def setup(bot: Models.LavaBot):
+async def setup(bot: models.LavaBot):
     await bot.add_cog(Filter(bot))

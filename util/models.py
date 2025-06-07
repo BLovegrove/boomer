@@ -8,9 +8,11 @@ import mysql.connector as mysqlconn
 import mysql.connector.cursor as mysqlcurs
 import mysql.connector.pooling as mysqlpool
 
-from util import cfg, ExtensionHandler
+# import config as cfg, handlers.extensions as Ext
+from util import cfg
+from util.handlers.extensions import ExtensionHandler as Ext
 
-__all__ = []
+__all__ = ["LavaBot", "LavalinkVoiceClient", "BotDB"]
 
 
 class LavaBot(commands.Bot):
@@ -18,9 +20,9 @@ class LavaBot(commands.Bot):
         super().__init__(
             intents=discord.Intents.all(), command_prefix=commands.when_mentioned
         )
-        self.command_list = ExtensionHandler.search(ExtensionHandler.Type.COMMAND)
-        self.event_list = ExtensionHandler.search(ExtensionHandler.Type.EVENT)
-        self.task_list = ExtensionHandler.search(ExtensionHandler.Type.TASK)
+        self.command_list = Ext.search(Ext.Type.COMMAND)
+        self.event_list = Ext.search(Ext.Type.EVENT)
+        self.task_list = Ext.search(Ext.Type.TASK)
 
         self.lavalink: lavalink.Client = None
         self.player_exists = False

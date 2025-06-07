@@ -2,12 +2,13 @@ import discord
 from discord.ext import commands
 from loguru import logger
 
-from util import Models, VoiceHandler
+from util import models
+from util.handlers.voice import VoiceHandler
 
 
 class OnVoiceStateUpdate(commands.Cog):
 
-    def __init__(self, bot: Models.LavaBot) -> None:
+    def __init__(self, bot: models.LavaBot) -> None:
         self.bot = bot
         self.voice_handler = VoiceHandler(bot)
 
@@ -33,5 +34,5 @@ class OnVoiceStateUpdate(commands.Cog):
             await voice_client.disconnect()
 
 
-async def setup(bot: Models.LavaBot):
+async def setup(bot: models.LavaBot):
     await bot.add_cog(OnVoiceStateUpdate(bot))

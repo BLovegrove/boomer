@@ -1,9 +1,10 @@
 import discord
 from loguru import logger
 
-from util import cfg, DownloadHandler, Models
+from util import cfg, models
+from util.handlers import download as DownloadHandler
 
-__all__ = []
+__all__ = ["DatabaseHandler"]
 
 
 def _get_heirarchy(member: discord.Member):
@@ -17,9 +18,9 @@ def _get_heirarchy(member: discord.Member):
     return id
 
 
-class DBHandler:
-    def __init__(self, db: Models.BotDB):
-        self.db: Models.BotDB = db
+class DatabaseHandler:
+    def __init__(self, db: models.BotDB):
+        self.db: models.BotDB = db
 
     def update_member(
         self,
@@ -76,7 +77,7 @@ class DBHandler:
     def get_favorites(self, member: discord.Member):
 
         id = member.id
-        query = f"SELECT * FROM {cfg.db.table.favs} WHERE owner_id={id}"
+        query = f"SELECT * FROM {cfg.db.table.favs} WHERE owner_id='{id}'"
         fav = self.db.execute(query)
 
         if not fav:

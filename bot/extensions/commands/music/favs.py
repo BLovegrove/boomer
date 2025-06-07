@@ -5,14 +5,17 @@ from discord import app_commands
 import json
 
 # custom imports
-from util import Models, MusicHandler, DBHandler, EmbedHandler
+from util import models
+from util.handlers.music import MusicHandler
+from util.handlers.embed import EmbedHandler
+from util.handlers.database import DatabaseHandler
 
 
 class Favs(commands.Cog):
 
-    def __init__(self, bot: Models.LavaBot) -> None:
+    def __init__(self, bot: models.LavaBot) -> None:
         self.bot = bot
-        self.dbhandler = DBHandler(self.bot.db)
+        self.dbhandler = DatabaseHandler(self.bot.db)
         self.musichandler = MusicHandler(self.bot)
 
     group = app_commands.Group(
@@ -54,6 +57,7 @@ class Favs(commands.Cog):
         list = self.dbhandler.get_favorites(itr.user)
         if not list:
             await itr.followup.send("No favs list found - sorry", ephemeral=True)
+            return
 
         name = list["name"]
         list: dict[str, str] = json.loads(list["entries"])
@@ -63,5 +67,5 @@ class Favs(commands.Cog):
         await itr.followup.send(embed=embed)
 
 
-async def setup(bot):
+async def setup(bot: models.LavaBot):
     await bot.add_cog(Favs(bot))
