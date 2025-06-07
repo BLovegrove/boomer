@@ -14,8 +14,8 @@ class Filter(commands.Cog):
 
     def __init__(self, bot: models.LavaBot) -> None:
         self.bot = bot
-        self.music_handler = MusicHandler(bot)
-        self.voice_handler = VoiceHandler(bot)
+        self.musichandler = MusicHandler(bot)
+        self.voicehandler = VoiceHandler(bot)
 
     @app_commands.command(
         description="Adds filters to your songs - bare in mind it can take a few seconds for the filter to kick in!"
@@ -29,10 +29,15 @@ class Filter(commands.Cog):
             Choice(name="Reset", value="reset"),
         ]
     )
-    async def filter(self, inter: discord.Interaction, type: str):
-        await inter.response.defer()
+    async def filter(self, itr: discord.Interaction, type: str):
+        await itr.response.defer()
 
-        player = await self.voice_handler.ensure_voice(inter)
+        response = await self.voicehandler.ensure_voice(itr)
+        if not response.player:
+            await itr.followup.send(response.message)
+            return
+        else:
+            player = response.player
 
         await player.clear_filters()
 
@@ -54,10 +59,10 @@ class Filter(commands.Cog):
 
             case "reset":
                 await player.clear_filters()
-                await inter.followup.send("Cleared all filters!")
+                await itr.followup.send("Cleared all filters!")
                 return
 
-        await inter.followup.send(f"{type.capitalize()} filter applied!")
+        await itr.followup.send(f"{type.capitalize()} filter applied!")
         return
 
 

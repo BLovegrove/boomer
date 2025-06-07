@@ -105,45 +105,13 @@ class MusicHandler:
         self.queuehandler.update_pages(player)
         return result
 
-    async def __play_track(
-        self,
-        itr: discord.Interaction,
-        player: lavalink.DefaultPlayer,
-        tracks: Union[lavalink.AudioTrack, list[lavalink.AudioTrack]] = None,
-        result: lavalink.LoadResult = None,
-    ):
-        embed = discord.Embed()
-
-        if isinstance(tracks, lavalink.AudioTrack) or isinstance(
-            tracks, lavalink.DeferredAudioTrack
-        ):
-            track = tracks
-            embed = EmbedHandler.Track(itr, track, player).construct()
-            player.add(track)
-            logger.info(f"Track added to queue: {track.title}")
-
-        elif tracks and result:
-            embed = EmbedHandler.Playlist(itr, result, player).construct()
-
-            for track in tracks:
-                player.add(track)
-
-            logger.info(f"Playlist added to queue.")
-
-        if player.fetch("idle"):
-            player.store("idle", False)
-            player.set_loop(player.LOOP_NONE)
-            await player.set_volume(cfg.player.volume_default)
-            await player.skip()
-
-        elif not player.is_playing:
-            await player.set_volume(cfg.player.volume_default)
-            await player.play()
-
-        await itr.followup.send(embed=embed)
-
     async def skip(self, itr: discord.Interaction, index: int, trim_queue: bool = True):
-        player: lavalink.DefaultPlayer = await self.voicehandler.ensure_voice(itr)
+        response = await self.voicehandler.ensure_voice(itr)
+        if not response.player:
+            await itr.followup.send(response.message)
+            return
+        else:
+            player = response.player
 
         logger.debug(f"Queue length: {len(player.queue)}, loop status: {player.loop}")
         if len(player.queue) == 0 and player.loop == 0:

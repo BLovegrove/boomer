@@ -9,16 +9,21 @@ __all__ = ["VoiceHandler"]
 
 
 class VoiceHandler:
-
     def __init__(self, bot: models.LavaBot) -> None:
         self.bot = bot
+        # self.errormessage = "Something went wrong while fetching the player. Please contact your local bot dev or server owner."
 
-    def fetch_player(self, bot: models.LavaBot) -> lavalink.DefaultPlayer:
+    class PlayerResponse:
+        def __init__(self, player: lavalink.DefaultPlayer, message: str):
+            self.player = player
+            self.message = message
+
+    def fetch_player(self, bot: models.LavaBot):
         player = bot.lavalink.player_manager.get(cfg.bot.guild_id)
         if not player:
-            logger.debug("Failed to find player.")
+            return self.PlayerResponse(None, "Failed to find player")
 
-        return player
+        return self.PlayerResponse(player, "")
 
     async def ensure_voice(self, itr: discord.Interaction):
         """This check ensures that the bot and command author are in the same voicechannel."""
@@ -51,28 +56,27 @@ class VoiceHandler:
             # Our cog_command_error handler catches this and sends it to the voicechannel.
             # Exceptions allow us to "short-circuit" command invocation via checks so the
             # execution state of the command goes no further.
-            await itr.followup.send("Join a voicechannel first")
-            return
+            return self.PlayerResponse(None, "Join a voicechannel first")
 
         voice_client = itr.guild.voice_client
         if not voice_client:
             if not should_connect:
                 # raise commands.CommandInvokeError("Not connected.")
-                await itr.followup.send(
-                    f"{cfg.bot.name} not running yet. Try /join or /play first."
+                return self.PlayerResponse(
+                    None, f"{cfg.bot.name} not running yet. Try /join or /play first."
                 )
 
-            player.store("summoner_id", itr.user.id)
+            player.store("summoner", itr.user)
             await itr.user.voice.channel.connect(cls=models.LavalinkVoiceClient)
-        else:
-            if voice_client.channel.id != itr.user.voice.channel.id:
-                await itr.followup.send(
-                    f"Not connected to my channel. Join <#{player.channel_id}>"
-                )
+
+        if voice_client.channel.id != itr.user.voice.channel.id:
+            return self.PlayerResponse(
+                None, f"Not connected to my channel. Join <#{player.channel_id}>"
+            )
 
         player.store("last_channel", itr.channel_id)
         player.store("summoner", itr.user)
-        return player
+        return self.PlayerResponse(player, "")
 
     async def cleanup(self, bot: models.LavaBot, player: lavalink.DefaultPlayer):
         player.queue.clear()

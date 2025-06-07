@@ -63,8 +63,8 @@ class PaginationButtons(discord.ui.View):
 class List(commands.Cog):
     def __init__(self, bot: models.LavaBot) -> None:
         self.bot = bot
-        self.music_handler = MusicHandler(bot)
-        self.voice_handler = VoiceHandler(bot)
+        self.musichandler = MusicHandler(bot)
+        self.voicehandler = VoiceHandler(bot)
 
     @app_commands.command(
         description="Displays an interactive queue listing! Click the buttons to cycle through pages."
@@ -72,14 +72,19 @@ class List(commands.Cog):
     @app_commands.describe(
         page="Page of the queue you want to list off. If you're unsure, just leave this blank."
     )
-    async def list(self, inter: discord.Interaction, page: int = None):
-        await inter.response.defer()
+    async def list(self, itr: discord.Interaction, page: int = None):
+        await itr.response.defer()
 
-        player = await self.voice_handler.ensure_voice(inter)
+        response = await self.voicehandler.ensure_voice(itr)
+        if not response.player:
+            await itr.followup.send(response.message)
+            return
+        else:
+            player = response.player
 
         page = page if page != None else 1
 
-        view = PaginationButtons(inter, player, page)
+        view = PaginationButtons(itr, player, page)
 
         if page <= 1:
             view.button_prev.disabled = True
@@ -88,7 +93,7 @@ class List(commands.Cog):
             view.button_next.disabled = True
 
         embed = EmbedHandler.List(player, page).construct()
-        await inter.followup.send(embed=embed, view=view)
+        await itr.followup.send(embed=embed, view=view)
 
         return
 

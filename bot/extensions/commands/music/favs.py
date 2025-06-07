@@ -4,6 +4,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 import lavalink
+from loguru import logger
 
 # custom imports
 from util import models
@@ -32,20 +33,26 @@ class Favs(commands.Cog):
     async def play(self, itr: discord.Interaction):
         await itr.response.defer()
 
-        player: lavalink.DefaultPlayer = await self.voicehandler.ensure_voice(itr)
+        response = await self.voicehandler.ensure_voice(itr)
+        if not response.player:
+            await itr.followup.send(response.message)
+            return
+        else:
+            player = response.player
 
-        list = self.dbhandler.get_favorites(itr.user)
-        if not list:
+        favs = self.dbhandler.get_favorites(itr.user)
+        if not favs:
             await itr.followup.send("No favs list found - sorry", ephemeral=True)
             return
 
-        list_decoded: dict[str, str] = json.loads(list["entries"])
+        list_decoded: dict = json.loads(favs["entries"])
+        logger.info(list_decoded)
         list_links = list(list_decoded.values())
 
         result = await self.musichandler.play(player, list_links)
-        embed = EmbedHandler.Playlist(itr, result.tracks, list["name"], player)
+        embed = EmbedHandler.Playlist(itr, result.tracks, favs["name"], player)
 
-        await itr.followup.send(embed=embed)
+        await itr.followup.send(embed=embed.construct())
 
     @group.command(
         name="view",

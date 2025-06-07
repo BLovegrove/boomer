@@ -12,20 +12,25 @@ class Pause(commands.Cog):
 
     def __init__(self, bot: models.LavaBot) -> None:
         self.bot = bot
-        self.music_handler = MusicHandler(bot)
-        self.voice_handler = VoiceHandler(bot)
+        self.musichandler = MusicHandler(bot)
+        self.voicehandler = VoiceHandler(bot)
 
     @app_commands.command(description="Stops the music, to be resumed later with /play")
-    async def pause(self, inter: discord.Interaction):
-        await inter.response.defer()
-        player = await self.voice_handler.ensure_voice(inter)
+    async def pause(self, itr: discord.Interaction):
+        await itr.response.defer()
+        response = await self.voicehandler.ensure_voice(itr)
+        if not response.player:
+            await itr.followup.send(response.message)
+            return
+        else:
+            player = response.player
 
         if player.paused:
-            await inter.followup.send("Already paused", ephemeral=True)
+            await itr.followup.send("Already paused", ephemeral=True)
 
         await player.set_pause(True)
         logger.info("Player paused")
-        await inter.followup.send("Track paused :pause_button:")
+        await itr.followup.send("Track paused :pause_button:")
         return
 
 

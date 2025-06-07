@@ -16,7 +16,7 @@ from util.handlers.database import DatabaseHandler
 class Admin(commands.Cog):
     def __init__(self, bot: models.LavaBot) -> None:
         self.bot = bot
-        self.voice_handler = VoiceHandler(bot)
+        self.voicehandler = VoiceHandler(bot)
         self.dbhandler = DatabaseHandler(self.bot.db)
         self.musichandler = MusicHandler(self.bot)
         self.queuehandler = QueueHandler(self.bot)
@@ -61,8 +61,9 @@ class Admin(commands.Cog):
             case "fetchplayer":
                 await itr.response.defer(ephemeral=True)
 
-                player = self.voice_handler.fetch_player(self.bot)
-                if player:
+                response = self.voicehandler.fetch_player(self.bot)
+                if response.player:
+                    player = response.player
                     player_data = [
                         f"- Name: {player.node.name}",
                         f"- Guild ID: {player.guild_id}",
@@ -85,10 +86,7 @@ class Admin(commands.Cog):
                     f"{cfg.player.loading_emoji} Spamming tons of entires to fill up the queue...",
                     ephemeral=True,
                 )
-                voice_handler = VoiceHandler(self.bot)
-                player = voice_handler.fetch_player(self.bot)
-                if not player:
-                    player = await voice_handler.ensure_voice(itr)
+                response = self.voicehandler
 
                 songs = [
                     "https://www.youtube.com/watch?v=YnwfTHpnGLY",
@@ -98,15 +96,15 @@ class Admin(commands.Cog):
                     "https://www.youtube.com/watch?v=CqnU_sJ8V-E",
                 ]
 
-                result = await self.musichandler.play(player, songs)
+                result = await self.musichandler.play(response, songs)
 
                 logger.debug("Spammed queue entries.")
-                player.store("idle", False)
-                player.set_loop(player.LOOP_NONE)
-                await player.play()
-                self.queuehandler.update_pages(player)
+                response.store("idle", False)
+                response.set_loop(response.LOOP_NONE)
+                await response.play()
+                self.queuehandler.update_pages(response)
                 await itr.edit_original_response(
-                    content=f"{len(player.queue)} entries added to the queue. Now playing: {player.current.title}"
+                    content=f"{len(response.queue)} entries added to the queue. Now playing: {response.current.title}"
                 )
 
             case "forceregister":

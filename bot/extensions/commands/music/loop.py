@@ -12,7 +12,7 @@ class Loop(commands.Cog):
 
     def __init__(self, bot: models.LavaBot) -> None:
         self.bot = bot
-        self.voice_handler = VoiceHandler(bot)
+        self.voicehandler = VoiceHandler(bot)
 
     @app_commands.command(
         description="Starts looping either the current track, or the entire playlist."
@@ -27,12 +27,17 @@ class Loop(commands.Cog):
             Choice(name="clear", value="clear"),
         ]
     )
-    async def loop(self, inter: discord.Interaction, mode: str):
-        await inter.response.defer()
-        player: lavalink.DefaultPlayer = await self.voice_handler.ensure_voice(inter)
+    async def loop(self, itr: discord.Interaction, mode: str):
+        await itr.response.defer()
+        response = await self.voicehandler.ensure_voice(itr)
+        if not response.player:
+            await itr.followup.send(response.message)
+            return
+        else:
+            player = response.player
 
         if not player.is_playing or player.fetch("idle"):
-            await inter.followup.send(
+            await itr.followup.send(
                 "Idling / Nothing playing at the moment. Try queueing up something first.",
                 ephemeral=True,
             )
@@ -41,15 +46,15 @@ class Loop(commands.Cog):
         match (mode):
             case "track":
                 player.set_loop(1)
-                await inter.followup.send("Looping on track :repeat_one:")
+                await itr.followup.send("Looping on track :repeat_one:")
 
             case "playlist":
                 player.set_loop(2)
-                await inter.followup.send("Looping on playlist :repeat:")
+                await itr.followup.send("Looping on playlist :repeat:")
 
             case "clear":
                 player.set_loop(0)
-                await inter.followup.send("Looping disabled.")
+                await itr.followup.send("Looping disabled.")
 
         return
 

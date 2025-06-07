@@ -20,11 +20,16 @@ class Leave(commands.Cog):
     async def leave(self, itr: discord.Interaction):
         await itr.response.defer()
 
-        player = await self.voicehandler.ensure_voice(itr)
-        if player:
-            await self.queuehandler.clear(player)
-            self.queuehandler.update_pages(player)
-            await self.voicehandler.cleanup(self.bot, player)
+        response = await self.voicehandler.ensure_voice(itr)
+        if not response.player:
+            await itr.followup.send(response.message)
+            return
+        else:
+            player = response.player
+
+        await self.queuehandler.clear(player)
+        self.queuehandler.update_pages(player)
+        await self.voicehandler.cleanup(self.bot, player)
 
         await itr.followup.send(f"Leaving <#{itr.user.voice.channel.id}>")
 

@@ -27,9 +27,12 @@ class Play(commands.Cog):
     async def play(self, itr: discord.Interaction, search: str = None):
         await itr.response.defer()
 
-        player: lavalink.DefaultPlayer = await self.voicehandler.ensure_voice(itr)
-        if not player:
+        response = await self.voicehandler.ensure_voice(itr)
+        if not response.player:
+            await itr.followup.send(response.message)
             return
+        else:
+            player = response.player
 
         if search:
             result = await self.musichandler.play(player, search)

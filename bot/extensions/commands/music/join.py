@@ -12,7 +12,7 @@ from util.handlers.voice import VoiceHandler
 class Join(commands.Cog):
     def __init__(self, bot: models.LavaBot) -> None:
         self.bot = bot
-        self.voice_handler = VoiceHandler(bot)
+        self.voicehandler = VoiceHandler(bot)
 
     @app_commands.command(
         description=f"Summons {cfg.bot.name} to your voice channel and plays the summoners idle tune.",
@@ -23,9 +23,12 @@ class Join(commands.Cog):
     async def join_voice(self, itr: discord.Interaction):
         await itr.response.defer()
 
-        player = await self.voice_handler.ensure_voice(itr)
-        if not player:
+        response = await self.voicehandler.ensure_voice(itr)
+        if not response.player:
+            await itr.followup.send(response.message)
             return
+        else:
+            player = response.player
 
         await itr.followup.send(content=f"Joined <#{itr.user.voice.channel.id}>")
         await player.set_volume(cfg.player.volume_default)

@@ -24,11 +24,12 @@ class Shuffle(commands.Cog):
     async def shuffle(self, itr: discord.Interaction):
         await itr.response.defer()
 
-        player = await self.voicehandler.ensure_voice(itr)
-        if not player:
-            itr.followup.send(
-                "Something went wrong while grabbing the player. Pass this on to your server owner or local bot dev."
-            )
+        response = await self.voicehandler.ensure_voice(itr)
+        if not response.player:
+            await itr.followup.send(response.message)
+            return
+        else:
+            player = response.player
 
         shuffled = await self.queuehandler.shuffle(player)
         if shuffled:

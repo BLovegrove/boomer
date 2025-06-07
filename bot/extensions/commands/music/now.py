@@ -10,18 +10,24 @@ from util.handlers.voice import VoiceHandler
 class Now(commands.Cog):
     def __init__(self, bot: models.LavaBot) -> None:
         self.bot = bot
-        self.voice_handler = VoiceHandler(bot)
+        self.voicehandler = VoiceHandler(bot)
 
     @app_commands.command(
         description="Shows info about the current song! Playtime, title, thumbnail, link, etc."
     )
-    async def now(self, inter: discord.Interaction):
-        await inter.response.defer()
+    async def now(self, itr: discord.Interaction):
+        await itr.response.defer()
 
-        player = await self.voice_handler.ensure_voice(inter)
-        embed = EmbedHandler.Progress(inter, player).construct()
+        response = await self.voicehandler.ensure_voice(itr)
+        if not response.player:
+            await itr.followup.send(response.message)
+            return
+        else:
+            player = response.player
 
-        await inter.followup.send(embed=embed)
+        embed = EmbedHandler.Progress(itr, player).construct()
+
+        await itr.followup.send(embed=embed)
         return
 
 
