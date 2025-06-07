@@ -86,7 +86,9 @@ class Admin(commands.Cog):
                     f"{cfg.player.loading_emoji} Spamming tons of entires to fill up the queue...",
                     ephemeral=True,
                 )
-                response = self.voicehandler
+                response = self.voicehandler.fetch_player(self.bot)
+                if response.player:
+                    player = response.player
 
                 songs = [
                     "https://www.youtube.com/watch?v=YnwfTHpnGLY",
@@ -96,15 +98,15 @@ class Admin(commands.Cog):
                     "https://www.youtube.com/watch?v=CqnU_sJ8V-E",
                 ]
 
-                result = await self.musichandler.play(response, songs)
+                result = await self.musichandler.play(player, songs)
 
                 logger.debug("Spammed queue entries.")
-                response.store("idle", False)
-                response.set_loop(response.LOOP_NONE)
-                await response.play()
-                self.queuehandler.update_pages(response)
+                player.store("idle", False)
+                player.set_loop(response.LOOP_NONE)
+                await player.play()
+                self.queuehandler.update_pages(player)
                 await itr.edit_original_response(
-                    content=f"{len(response.queue)} entries added to the queue. Now playing: {response.current.title}"
+                    content=f"{len(player.queue)} entries added to the queue. Now playing: {player.current.title}"
                 )
 
             case "forceregister":
