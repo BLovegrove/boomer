@@ -7,16 +7,12 @@ import re
 import lavalink
 
 # custom imports
-from util import models
-from util.handlers.database import DBHandler
-from util.handlers.voice import VoiceHandler
-from util.handlers.music import MusicHandler
-import util.config as cfg
+from util import cfg, Models, DBHandler, VoiceHandler, MusicHandler
 
 
 class BGM(commands.Cog):
 
-    def __init__(self, bot: models.LavaBot) -> None:
+    def __init__(self, bot: Models.LavaBot) -> None:
         self.bot = bot
         self.voicehandler = VoiceHandler(self.bot)
         self.musichandler = MusicHandler(self.bot)

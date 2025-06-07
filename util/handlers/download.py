@@ -2,10 +2,12 @@ import os
 from loguru import logger
 import requests
 
-import util.config as cfg
+from util import cfg
+
+__all__ = []
 
 
-class discord:
+class Discord:
     def pfp(url: str, commit: bool = True):
         logger.debug("Downloading image...")
         logger.debug(f"URL: {url}")

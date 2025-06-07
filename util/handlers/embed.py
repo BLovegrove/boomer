@@ -3,10 +3,12 @@ import lavalink
 from loguru import logger
 from StringProgressBar import progressBar as ProgressBar
 
-import util.config as cfg
+from util import cfg
+
+__all__ = []
 
 
-class TrackEmbedBuilder:
+class Track:
     def __init__(
         self,
         itr: discord.Interaction,
@@ -48,7 +50,7 @@ class TrackEmbedBuilder:
         return self.embed
 
 
-class ClearedEmbedBuilder(TrackEmbedBuilder):
+class Cleared(Track):
     def __init__(
         self,
         interaction: discord.Interaction,
@@ -70,7 +72,7 @@ class ClearedEmbedBuilder(TrackEmbedBuilder):
         self.embed.set_footer(text=f"Song was #{index} in queue")
 
 
-class SkipEmbedBuilder(TrackEmbedBuilder):
+class Skip(Track):
     def __init__(
         self,
         interaction: discord.Interaction,
@@ -90,7 +92,7 @@ class SkipEmbedBuilder(TrackEmbedBuilder):
         )
 
 
-class ProgressEmbedBuilder(TrackEmbedBuilder):
+class Progress(Track):
     def __init__(
         self,
         itr: discord.Interaction,
@@ -123,7 +125,7 @@ class ProgressEmbedBuilder(TrackEmbedBuilder):
         )
 
 
-class PlaylistEmbedBuilder:
+class Playlist:
     def __init__(
         self,
         interaction: discord.Interaction,
@@ -168,7 +170,7 @@ class PlaylistEmbedBuilder:
         return self.embed
 
 
-class ListEmbedBuilder:
+class List:
     def __init__(self, player: lavalink.DefaultPlayer, page: int) -> None:
         logger.debug(
             f"List embed page number requested: {page}. Total pages: {player.fetch('pages')}"
@@ -226,7 +228,7 @@ class ListEmbedBuilder:
         return self.embed
 
 
-class FavsEmbedBuilder:
+class Favs:
     def __init__(self, title: str, favs: dict[str, str]) -> None:
         self.embed = discord.Embed(
             color=cfg.bot.accent_color,

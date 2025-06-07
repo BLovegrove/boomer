@@ -1,8 +1,9 @@
 import discord
 from loguru import logger
-import util.config as cfg
-from util.handlers import download
-from util.models import BotDB
+
+from util import cfg, DownloadHandler, Models
+
+__all__ = []
 
 
 def _get_heirarchy(member: discord.Member):
@@ -17,8 +18,8 @@ def _get_heirarchy(member: discord.Member):
 
 
 class DBHandler:
-    def __init__(self, db: BotDB):
-        self.db: BotDB = db
+    def __init__(self, db: Models.BotDB):
+        self.db: Models.BotDB = db
 
     def update_member(
         self,
@@ -42,7 +43,7 @@ class DBHandler:
             changes["display_name"] = member.display_name
 
         if avatar_changed:
-            changes["display_avatar"] = download.discord.pfp(
+            changes["display_avatar"] = DownloadHandler.Discord.pfp(
                 member.display_avatar.url, commit
             )
 
@@ -62,7 +63,7 @@ class DBHandler:
         elif not existing_member:
             changes["id"] = member.id
             changes["display_name"] = member.display_name
-            changes["display_avatar"] = download.discord.pfp(
+            changes["display_avatar"] = DownloadHandler.Discord.pfp(
                 member.display_avatar.url, commit
             )
 

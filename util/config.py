@@ -2,6 +2,7 @@ import os
 import discord
 from dotenv import load_dotenv
 
+__all__ = ["log_level", "save_log", "bot", "role", "lavalink", "player", "db", "path"]
 
 env = load_dotenv(os.path.join(os.getcwd(), ".env"))
 

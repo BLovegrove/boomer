@@ -2,19 +2,15 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-from discord.app_commands import Choice
 import json
 
 # custom imports
-from util import models
-from util.handlers.database import DBHandler
-from util.handlers.music import MusicHandler
-from util.handlers.embed import FavsEmbedBuilder
+from util import Models, MusicHandler, DBHandler, EmbedHandler
 
 
 class Favs(commands.Cog):
 
-    def __init__(self, bot: models.LavaBot) -> None:
+    def __init__(self, bot: Models.LavaBot) -> None:
         self.bot = bot
         self.dbhandler = DBHandler(self.bot.db)
         self.musichandler = MusicHandler(self.bot)
@@ -40,7 +36,7 @@ class Favs(commands.Cog):
         for key, value in list.items():
             await self.musichandler.play(itr, value)
 
-        embed = FavsEmbedBuilder(name, list).construct()
+        embed = Favs(name, list).construct()
 
         await itr.followup.send(embed=embed)
         # get info for user id in fav_list
@@ -62,7 +58,7 @@ class Favs(commands.Cog):
         name = list["name"]
         list: dict[str, str] = json.loads(list["entries"])
 
-        embed = FavsEmbedBuilder(name, list).construct()
+        embed = EmbedHandler.Favs(name, list).construct()
 
         await itr.followup.send(embed=embed)
 

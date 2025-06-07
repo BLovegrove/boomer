@@ -6,15 +6,11 @@ from discord.app_commands import Choice
 from loguru import logger
 
 # custom imports
-from util import models
-import util.config as cfg
-from util.handlers.queue import QueueHandler
-from util.handlers.voice import VoiceHandler
-from util.handlers.database import DBHandler
+from util import cfg, Models, QueueHandler, VoiceHandler, DBHandler
 
 
 class Admin(commands.Cog):
-    def __init__(self, bot: models.LavaBot) -> None:
+    def __init__(self, bot: Models.LavaBot) -> None:
         self.bot = bot
         self.voice_handler = VoiceHandler(bot)
         self.dbhandler = DBHandler(self.bot.db)

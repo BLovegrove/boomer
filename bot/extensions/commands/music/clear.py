@@ -2,14 +2,11 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from util.handlers.music import MusicHandler
-from util.handlers.queue import QueueHandler
-from util.handlers.voice import VoiceHandler
-from util.models import LavaBot
+from util import Models, MusicHandler, QueueHandler, VoiceHandler
 
 
 class Clear(commands.Cog):
-    def __init__(self, bot: LavaBot) -> None:
+    def __init__(self, bot: Models.LavaBot) -> None:
         self.bot = bot
         self.music_handler = MusicHandler(bot)
         self.voice_handler = VoiceHandler(bot)
@@ -49,5 +46,5 @@ class Clear(commands.Cog):
         return
 
 
-async def setup(bot: LavaBot):
+async def setup(bot: Models.LavaBot):
     await bot.add_cog(Clear(bot))

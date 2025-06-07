@@ -2,12 +2,11 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from util.handlers.music import MusicHandler
-from util.models import LavaBot
+from util import Models, MusicHandler
 
 
 class Skip(commands.Cog):
-    def __init__(self, bot: LavaBot) -> None:
+    def __init__(self, bot: Models.LavaBot) -> None:
         self.bot = bot
         self.music_handler = MusicHandler(bot)
 
@@ -20,5 +19,5 @@ class Skip(commands.Cog):
         return
 
 
-async def setup(bot: LavaBot):
+async def setup(bot: Models.LavaBot):
     await bot.add_cog(Skip(bot))

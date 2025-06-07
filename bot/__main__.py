@@ -2,16 +2,14 @@
 from loguru import logger
 
 # custom imports
-import util.config as cfg
-from util import models
-from util.handlers import logging
+from util import cfg, Models, LogHandler
 
 
-logging.init_logging()
+LogHandler.init_logging()
 
 
 def main():
-    bot = models.LavaBot()
+    bot = Models.LavaBot()
 
     bot.run(cfg.bot.token, log_handler=None)
     logger.info(

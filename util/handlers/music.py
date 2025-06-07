@@ -4,21 +4,13 @@ import discord
 import lavalink
 from loguru import logger
 
-import util.config as cfg
+from util import cfg, Models, EmbedHandler, QueueHandler, VoiceHandler
 
-from util.handlers.embed import (
-    PlaylistEmbedBuilder,
-    SkipEmbedBuilder,
-    TrackEmbedBuilder,
-)
-from util.handlers.presence import PresenceHandler
-from util.handlers.queue import QueueHandler
-from util.handlers.voice import VoiceHandler
-from util import models
+__all__ = []
 
 
 class MusicHandler:
-    def __init__(self, bot: models.LavaBot) -> None:
+    def __init__(self, bot: Models.LavaBot) -> None:
         self.bot = bot
         self.voice_handler = VoiceHandler(self.bot)
         self.queue_handler = QueueHandler(self.bot, self.voice_handler)
@@ -34,12 +26,12 @@ class MusicHandler:
         embed = discord.Embed()
 
         if track:
-            embed = TrackEmbedBuilder(interaction, track, player).construct()
+            embed = EmbedHandler.Track(interaction, track, player).construct()
             player.add(track)
             logger.info(f"Track added to queue: {track.title}")
 
         elif tracks and result:
-            embed = PlaylistEmbedBuilder(interaction, result, player).construct()
+            embed = Playlist(interaction, result, player).construct()
 
             for track in tracks:
                 player.add(track)
@@ -132,7 +124,7 @@ class MusicHandler:
                 )
                 return
 
-            embed = SkipEmbedBuilder(itr, next_track, player, 0)
+            embed = EmbedHandler.Skip(itr, next_track, player, 0)
             await itr.followup.send(
                 ":repeat_one: Repeat enabled - looping song.",
                 embed=embed.construct(),
@@ -195,7 +187,7 @@ class MusicHandler:
             await player.skip()
             logger.info("Skipping current track...")
 
-            embed = SkipEmbedBuilder(itr, player.current, player)
+            embed = EmbedHandler.Skip(itr, player.current, player)
             await itr.followup.send(embed=embed.construct())
 
             self.queue_handler.update_pages(player)

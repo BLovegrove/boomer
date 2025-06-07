@@ -3,12 +3,11 @@ from discord import app_commands
 from discord.app_commands import Choice
 from discord.ext import commands
 
-from util.handlers.voice import VoiceHandler
-from util.models import LavaBot
+from util import Models, VoiceHandler
 
 
 class Loop(commands.Cog):
-    def __init__(self, bot: LavaBot) -> None:
+    def __init__(self, bot: Models.LavaBot) -> None:
         self.bot = bot
         self.voice_handler = VoiceHandler(bot)
 
@@ -52,5 +51,5 @@ class Loop(commands.Cog):
         return
 
 
-async def setup(bot: LavaBot):
+async def setup(bot: Models.LavaBot):
     await bot.add_cog(Loop(bot))

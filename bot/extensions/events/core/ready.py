@@ -2,13 +2,11 @@ import discord
 from discord.ext import commands
 from loguru import logger
 
-import util.config as cfg
-from util import models
-from util.handlers.voice import VoiceHandler
+from util import cfg, Models, VoiceHandler
 
 
 class OnReady(commands.Cog):
-    def __init__(self, bot: models.LavaBot) -> None:
+    def __init__(self, bot: Models.LavaBot) -> None:
         self.bot = bot
         self.voice_handler = VoiceHandler(bot)
 
@@ -28,5 +26,5 @@ class OnReady(commands.Cog):
             return
 
 
-async def setup(bot):
+async def setup(bot: Models.LavaBot):
     await bot.add_cog(OnReady(bot))

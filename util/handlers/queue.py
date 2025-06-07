@@ -1,15 +1,14 @@
 import math
-
 import discord
 import lavalink
 
-from util.handlers import embed
-from util.handlers.voice import VoiceHandler
-from util import models
+from util import EmbedHandler, VoiceHandler, Models
+
+__all__ = []
 
 
 class QueueHandler:
-    def __init__(self, bot: models.LavaBot, voice_handler: VoiceHandler) -> None:
+    def __init__(self, bot: Models.LavaBot, voice_handler: VoiceHandler) -> None:
         self.bot = bot
         self.voice_handler = voice_handler
 
@@ -32,5 +31,5 @@ class QueueHandler:
                     f"Failed to clear track: Track at index {index} not found. Index must be between 1 and {len(player.queue)}"
                 )
 
-            embed = embed.ClearedEmbedBuilder(itr, cleared, player, index)
-            await itr.followup.send(embed=embed.construct())
+            embed = EmbedHandler.Cleared(itr, cleared, player, index).construct()
+            await itr.followup.send(embed=embed)

@@ -4,10 +4,7 @@ from discord import app_commands
 from discord.ext import commands
 from loguru import logger
 
-from util.handlers.embed import ListEmbedBuilder
-from util.handlers.music import MusicHandler
-from util.handlers.voice import VoiceHandler
-from util.models import LavaBot
+from util import Models, EmbedHandler, MusicHandler, VoiceHandler
 
 
 class PaginationButtons(discord.ui.View):
@@ -43,7 +40,7 @@ class PaginationButtons(discord.ui.View):
         label="<", custom_id="page_prev", style=discord.ButtonStyle.blurple
     )
     async def button_prev(self, inter: discord.Interaction, button: discord.ui.Button):
-        embed = ListEmbedBuilder(self.player, self.page - 1).construct()
+        embed = List(self.player, self.page - 1).construct()
         self.page -= 1
         self.check_boundaries()
         await inter.response.edit_message(view=self)
@@ -53,7 +50,7 @@ class PaginationButtons(discord.ui.View):
         label=">", custom_id="page_next", style=discord.ButtonStyle.blurple
     )
     async def button_next(self, inter: discord.Interaction, button: discord.ui.Button):
-        embed = ListEmbedBuilder(self.player, self.page + 1).construct()
+        embed = List(self.player, self.page + 1).construct()
         self.page += 1
         self.check_boundaries()
         await inter.response.edit_message(view=self)
@@ -61,7 +58,7 @@ class PaginationButtons(discord.ui.View):
 
 
 class List(commands.Cog):
-    def __init__(self, bot: LavaBot) -> None:
+    def __init__(self, bot: Models.LavaBot) -> None:
         self.bot = bot
         self.music_handler = MusicHandler(bot)
         self.voice_handler = VoiceHandler(bot)
@@ -87,11 +84,11 @@ class List(commands.Cog):
         if page >= player.fetch("pages"):
             view.button_next.disabled = True
 
-        embed = ListEmbedBuilder(player, page).construct()
+        embed = EmbedHandler.List(player, page).construct()
         await inter.followup.send(embed=embed, view=view)
 
         return
 
 
-async def setup(bot: LavaBot):
+async def setup(bot: Models.LavaBot):
     await bot.add_cog(List(bot))

@@ -2,13 +2,12 @@ import lavalink
 from discord.ext import commands
 from loguru import logger
 
-from util.handlers.presence import PresenceHandler
-from util.models import LavaBot
+from util import Models, PresenceHandler
 
 
 class OnTrackStart(commands.Cog):
 
-    def __init__(self, bot: LavaBot) -> None:
+    def __init__(self, bot: Models.LavaBot) -> None:
         self.bot = bot
 
     @lavalink.listener(lavalink.events.TrackStartEvent)
@@ -19,5 +18,5 @@ class OnTrackStart(commands.Cog):
         await PresenceHandler.update_status(self.bot, player)
 
 
-async def setup(bot: LavaBot):
+async def setup(bot: Models.LavaBot):
     await bot.add_cog(OnTrackStart(bot))

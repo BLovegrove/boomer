@@ -2,18 +2,17 @@ import discord
 import lavalink
 from loguru import logger
 
-import util.config as cfg
+from util import cfg, PresenceHandler, Models
 
-from util.handlers.presence import PresenceHandler
-from util.models import LavaBot, LavalinkVoiceClient
+__all__ = []
 
 
 class VoiceHandler:
 
-    def __init__(self, bot: LavaBot) -> None:
+    def __init__(self, bot: Models.LavaBot) -> None:
         self.bot = bot
 
-    def fetch_player(self, bot: LavaBot) -> lavalink.DefaultPlayer:
+    def fetch_player(self, bot: Models.LavaBot) -> lavalink.DefaultPlayer:
         player = bot.lavalink.player_manager.get(cfg.bot.guild_id)
         if not player:
             logger.debug("Failed to find player.")
@@ -63,7 +62,7 @@ class VoiceHandler:
                 )
 
             player.store("summoner_id", itr.user.id)
-            await itr.user.voice.channel.connect(cls=LavalinkVoiceClient)
+            await itr.user.voice.channel.connect(cls=Models.LavalinkVoiceClient)
         else:
             if voice_client.channel.id != itr.user.voice.channel.id:
                 await itr.followup.send(
@@ -74,7 +73,7 @@ class VoiceHandler:
         player.store("summoner", itr.user)
         return player
 
-    async def cleanup(self, bot: LavaBot, player: lavalink.DefaultPlayer):
+    async def cleanup(self, bot: Models.LavaBot, player: lavalink.DefaultPlayer):
         player.queue.clear()
         await player.stop()
         player.set_loop(0)

@@ -4,16 +4,12 @@ from loguru import logger
 
 import util.config as cfg
 
-from util.handlers.music import MusicHandler
-from util.handlers.queue import QueueHandler
-from util.handlers.voice import VoiceHandler
-from util.handlers.database import DBHandler
-from util.models import LavaBot
+from util import Models, DBHandler, MusicHandler, QueueHandler, VoiceHandler
 
 
 class OnQueueEnd(commands.Cog):
 
-    def __init__(self, bot: LavaBot) -> None:
+    def __init__(self, bot: Models.LavaBot) -> None:
         self.bot = bot
         self.voice_handler = VoiceHandler(bot)
         self.music_handler = MusicHandler(bot)
@@ -74,5 +70,5 @@ class OnQueueEnd(commands.Cog):
             await player.play()
 
 
-async def setup(bot: LavaBot):
+async def setup(bot: Models.LavaBot):
     await bot.add_cog(OnQueueEnd(bot))

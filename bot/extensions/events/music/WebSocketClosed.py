@@ -2,12 +2,11 @@ import lavalink
 from discord.ext import commands
 from loguru import logger
 
-from util.handlers.voice import VoiceHandler
-from util.models import LavaBot
+from util import Models, VoiceHandler
 
 
 class OnWebSocketClosed(commands.Cog):
-    def __init__(self, bot: LavaBot) -> None:
+    def __init__(self, bot: Models.LavaBot) -> None:
         self.bot = bot
         self.voice_handler = VoiceHandler(bot)
 
@@ -22,5 +21,5 @@ class OnWebSocketClosed(commands.Cog):
         return
 
 
-async def setup(bot: LavaBot):
+async def setup(bot: Models.LavaBot):
     await bot.add_cog(OnWebSocketClosed(bot))

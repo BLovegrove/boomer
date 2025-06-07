@@ -1,7 +1,10 @@
 import logging
 import sys
 from loguru import logger
-import util.config as cfg
+
+from util import cfg
+
+__all__ = []
 
 
 class InterceptHandler(logging.Handler):

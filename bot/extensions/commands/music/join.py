@@ -5,12 +5,11 @@ from discord.ext import commands
 
 import util.config as cfg
 
-from util.handlers.voice import VoiceHandler
-from util.models import LavaBot
+from util import Models, VoiceHandler
 
 
 class Join(commands.Cog):
-    def __init__(self, bot: LavaBot) -> None:
+    def __init__(self, bot: Models.LavaBot) -> None:
         self.bot = bot
         self.voice_handler = VoiceHandler(bot)
 
@@ -33,5 +32,5 @@ class Join(commands.Cog):
         return
 
 
-async def setup(bot: LavaBot):
+async def setup(bot: Models.LavaBot):
     await bot.add_cog(Join(bot))
