@@ -16,7 +16,6 @@ if log_level not in ["DEBUG", "INFO", "WARNING", "ERROR"]:
 save_log = os.getenv("SAVE_LOG", "0").lower() in ("true", "1", "t", "y")
 
 
-# bot-related variables
 class bot:
     token = os.getenv("BOT_TOKEN")
     name = os.getenv("BOT_NAME", "Boomer")
