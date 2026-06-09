@@ -51,31 +51,35 @@ class MusicHandler:
             try:
                 match result.load_type:
                     case lavalink.LoadType.ERROR:
-                        return
+                        logger.error(result.error.message)
+                        logger.error(f"Track request: {query}")
+                        continue
 
                     case lavalink.LoadType.EMPTY:
-                        return
+                        continue
 
                     case lavalink.LoadType.SEARCH | lavalink.LoadType.TRACK:
                         loaded.append(result.tracks[0])
                         title = result.tracks[0].title
+                        continue
 
                     case lavalink.LoadType.PLAYLIST:
                         for track in result.tracks:
                             loaded.append(track)
 
                         title = result.playlist_info.name
+                        continue
 
                     case _:
                         logger.warning(
                             f"Load type for play request defaulted. Query '{query}' result as follows:"
                         )
                         logger.warning(result)
-                        return
+                        continue
 
             except Exception as e:
                 logger.error(f"Failed to get track from query: {query}")
-                return
+                pass
 
         if loaded != []:
             return self.PlayResult(title, loaded)

@@ -66,5 +66,5 @@ class path:
 
 
 class image:
-    unknown = "https://imgur.com/a/jql8DP5"
-    boombox = "https://imgur.com/a/33ed4oY"
+    unknown = "https://i.imgur.com/0dNJqwT.png"
+    boombox = "https://i.imgur.com/GHdd3aN.png"

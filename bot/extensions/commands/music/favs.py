@@ -51,11 +51,32 @@ class Favs(commands.Cog):
         queue_start = len(player.queue)
 
         result = await self.musichandler.play(player, list_links)
+
+        # guard if no results come back
+        if not result:
+            embed = EmbedHandler.TrackLoadFailed(itr, list_decoded)
+            await itr.followup.send(embed=embed.construct())
+            return
+
         embed = EmbedHandler.Playlist(
             itr, result.tracks, favs["name"], player, queue_start
         )
 
         await itr.followup.send(embed=embed.construct())
+
+        # Extra alert for missing tracks if only some come back
+        if len(result.tracks) < len(list_links):
+            missing_tracks = {}
+            loaded_tracks = []
+            for track in result.tracks:
+                loaded_tracks.append(track.uri)
+
+            for name, url in list_decoded.items():
+                if url not in loaded_tracks:
+                    missing_tracks[name] = url
+
+            embed = EmbedHandler.TrackLoadFailed(itr, missing_tracks)
+            await itr.followup.send(embed=embed.construct())
 
     @group.command(
         name="view",

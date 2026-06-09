@@ -146,7 +146,7 @@ class EmbedHandler:
                 description=f":notepad_spiral: Playlist: {name}",
             )
             self.embed.set_author(
-                name=f"Playlest queued by {self.sender.display_name}",
+                name=f"Playlist queued by {self.sender.display_name}",
                 icon_url=self.sender.display_avatar.url,
             )
 
@@ -205,7 +205,7 @@ class EmbedHandler:
                 url=self.track.uri,
             )
             self.embed.set_author(
-                name=f"Current queue: Showing #{self.list_start + 1 if len(player.queue) > 0 else 0} to #{self.list_end + 1} of #{len(player.queue)} items in queue.",
+                name=f"Current queue: Showing #{self.list_start + 1 if len(player.queue) > 0 else 0} to #{self.list_end + 1} of {len(player.queue)} songs total.",
                 icon_url=cfg.image.boombox,
             )
             self.embed.set_footer(text="<> for page +/-")
@@ -275,6 +275,51 @@ class EmbedHandler:
             #         value=f"[{value}]({value})",
             #         inline=False,
             #     )
+
+        def construct(self):
+            return self.embed
+
+    class TrackLoadFailed:
+
+        def __init__(
+            self,
+            itr: discord.Interaction,
+            tracks: str | list[str] | dict[str, str],
+        ) -> None:
+
+            # create core template
+            self.sender: discord.Member = itr.user
+            self.embed = discord.Embed(
+                color=cfg.bot.accent_color,
+                description=f"Below are a list of missing track(s). It's most likely that the URL you're trying to use is invalid or something is wrong with the YouTube API. Please contact your bot admin about this.",
+            )
+
+            # add failed track info for item(s)
+            if type(tracks) == str:
+                self.embed.add_field(name=tracks, inline=False)
+            elif type(tracks) == list:
+                for track in tracks:
+                    self.embed.add_field(
+                        name=f"{tracks.index(track) + 1}. Unknown Name",
+                        value=track,
+                        inline=False,
+                    )
+            elif type(tracks) == dict:
+                for track_name, track_url in tracks.items():
+                    self.embed.add_field(
+                        name=f"{list(tracks.keys()).index(track_name) + 1}. {track_name}",
+                        value=track_url,
+                        inline=False,
+                    )
+            else:
+                logger.error(
+                    "Unknown tracks datatype provided for TrackLoadFailed embed."
+                )
+
+            # add requester details to author segment
+            self.embed.set_author(
+                name=f"⚠️ Track(s) missing! ⚠️",
+            )
 
         def construct(self):
             return self.embed
