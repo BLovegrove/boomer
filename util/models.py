@@ -212,7 +212,7 @@ class BotDB:
         commit: bool = False,
         fetchone: bool = True,
     ):
-        """Executes query string. Commits changes if commit = true, otherwise returns result of fetchall()
+        """Executes query string. Commits changes if commit = True, otherwise returns result of fetchall()
 
         Args:
             query (str): SQL query string. If using palceholdes, don't forget to add args.
@@ -247,6 +247,11 @@ class BotDB:
         return result
 
     def insert(self, table: str, changes: dict[str], commit: bool = True):
+        """Inserts data into a specified table. Can set commit = False to dry-run the query but this currently does nothing.
+
+        Returns:
+            str: A copy of the query executed.
+        """
 
         columns = list(changes.keys())
         values = list(changes.values())
