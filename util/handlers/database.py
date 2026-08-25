@@ -44,7 +44,7 @@ class DatabaseHandler:
                 member.display_avatar.url, commit
             )
 
-        if roles_changed:
+        if roles_changed or manual_trigger:
             logger.debug(f"Role heirarchy is: {cfg.role.heirarchy}")
             hierarchy_id = cfg.role.heirarchy[-1]
             for role_id in cfg.role.heirarchy:
