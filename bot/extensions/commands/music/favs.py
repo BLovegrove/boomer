@@ -1,13 +1,11 @@
 # core imports
 import json
+import random
 from typing import List
 import discord
 from discord.ext import commands
 from discord import app_commands
 from discord.app_commands import Choice
-from discord.utils import MISSING
-import lavalink
-from loguru import logger
 
 # custom imports
 from util import models
@@ -266,7 +264,6 @@ class Favs(commands.Cog):
             if current.lower() in favslist.lower()
         ]
 
-    # adds a favslist to the queue TODO: Make the 'shuffled' flag functional using this command
     @group.command(
         name="play",
         description="Play a list of your favorite songs! start typing to narrow down your search.",
@@ -292,6 +289,9 @@ class Favs(commands.Cog):
 
         list_decoded: dict = json.loads(favs["entries"])
         list_links = list(list_decoded.values())
+
+        if favs["shuffled"] == 1:
+            random.shuffle(list_links)
 
         queue_start = len(player.queue)
 

@@ -2,19 +2,14 @@ import discord
 from loguru import logger
 
 from util import cfg, models
-from util.handlers import download as DownloadHandler
+from util.handlers.download import DownloadHandler
 
 __all__ = ["DatabaseHandler"]
 
 
-def _get_heirarchy(member: discord.Member):
-    logger.debug(f"Role heirarchy is: {cfg.role.heirarchy}")
-    id = cfg.role.heirarchy[-1]
-    for role_id in cfg.role.heirarchy:
-        if member.guild.get_role(int(role_id)) in member.roles:
-            id = role_id
-            break
-
+def _get_heirarchy(member: discord.Member, db: models.BotDB):
+    query = f"SELECT hierarchy FROM {cfg.db.table.members} WHERE id={member.id}"
+    id = db.execute(query, fetchone=True)
     return id
 
 
@@ -27,11 +22,12 @@ class DatabaseHandler:
         member: discord.Member,
         name_changed: bool = False,
         avatar_changed: bool = False,
+        roles_changed: bool = False,
         manual_trigger: bool = False,
         commit: bool = True,
     ):
 
-        if not (name_changed or avatar_changed or manual_trigger):
+        if not (name_changed or avatar_changed or roles_changed or manual_trigger):
             return False
 
         existing_member = self.db.execute(
@@ -40,13 +36,23 @@ class DatabaseHandler:
 
         changes = {}
 
-        if name_changed:
+        if name_changed or manual_trigger:
             changes["display_name"] = member.display_name
 
-        if avatar_changed:
+        if avatar_changed or manual_trigger:
             changes["display_avatar"] = DownloadHandler.Discord.pfp(
                 member.display_avatar.url, commit
             )
+
+        if roles_changed:
+            logger.debug(f"Role heirarchy is: {cfg.role.heirarchy}")
+            hierarchy_id = cfg.role.heirarchy[-1]
+            for role_id in cfg.role.heirarchy:
+                if member.guild.get_role(int(role_id)) in member.roles:
+                    hierarchy_id = role_id
+                    break
+
+            changes["hierarchy"] = hierarchy_id
 
         activity = discord.utils.get(
             member.activities, type=discord.ActivityType.custom
@@ -55,9 +61,8 @@ class DatabaseHandler:
         if changes["status"] == "":
             changes["status"] == "NULL"
 
-        if existing_member and (name_changed or avatar_changed or not commit):
+        if existing_member and (name_changed or avatar_changed or not commit or manual_trigger):
             where = {"id": member.id}
-
             response = self.db.update(cfg.db.table.members, changes, where, commit)
             return True if commit else response
 
