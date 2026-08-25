@@ -52,7 +52,7 @@ class Modals:
                 urls = list_entries.values()
                 if response in urls:
                     await itr.response.send_message(
-                        f"Error! '{response}' is already in the facorites list. Try another",
+                        f"Error! '{response}' is already in the favorites list. Try another",
                         ephemeral=True,
                     )
                     return

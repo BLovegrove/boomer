@@ -8,8 +8,11 @@ __all__ = ["DatabaseHandler"]
 
 
 def _get_heirarchy(member: discord.Member, db: models.BotDB):
-    query = f"SELECT hierarchy FROM {cfg.db.table.members} WHERE id={member.id}"
-    id = db.execute(query, fetchone=True)
+    query = f"SELECT hierarchy FROM {cfg.db.table.members} WHERE id = {member.id}"
+    id = db.execute(query)
+    if id:
+        id = id["hierarchy"]
+    logger.debug(f"Found hierarchy {id} for user {member.id}")
     return id
 
 
@@ -31,7 +34,12 @@ class DatabaseHandler:
             return False
 
         existing_member = self.db.execute(
-            f"SELECT id FROM {cfg.db.table.members} WHERE id = `{member.id}`"
+            f"SELECT id FROM `{cfg.db.table.members}` WHERE id = %s", (str(member.id),)
+        )
+
+        logger.debug(f"Found existing member {existing_member}")
+        logger.debug(
+            f"Using query: {f"SELECT id FROM {cfg.db.table.members} WHERE id = %s".format(str(member.id))}"
         )
 
         changes = {}
@@ -62,10 +70,11 @@ class DatabaseHandler:
             changes["status"] == "NULL"
 
         if existing_member and (
-            name_changed or avatar_changed or not commit or manual_trigger
+            name_changed or avatar_changed or (not commit) or manual_trigger
         ):
             where = {"id": member.id}
             response = self.db.update(cfg.db.table.members, changes, where, commit)
+            logger.debug(f"Updating DB user {member.id}")
             return True if commit else response
 
         elif not existing_member:
@@ -74,7 +83,7 @@ class DatabaseHandler:
             changes["display_avatar"] = DownloadHandler.Discord.pfp(
                 member.display_avatar.url, commit
             )
-
+            logger.debug(f"Inserting DB user {member.id}")
             response = self.db.insert(cfg.db.table.members, changes, commit)
             return True if commit else response
 

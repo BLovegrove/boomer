@@ -244,7 +244,7 @@ class BotDB:
                 else:
                     result = cursor.fetchone() if fetchone else cursor.fetchall()
 
-        return result
+        return result if result and len(result) > 0 else None
 
     def insert(self, table: str, changes: dict[str], commit: bool = True):
         """Inserts data into a specified table. Can set commit = False to dry-run the query but this currently does nothing.
