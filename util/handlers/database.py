@@ -61,7 +61,9 @@ class DatabaseHandler:
         if changes["status"] == "":
             changes["status"] == "NULL"
 
-        if existing_member and (name_changed or avatar_changed or not commit or manual_trigger):
+        if existing_member and (
+            name_changed or avatar_changed or not commit or manual_trigger
+        ):
             where = {"id": member.id}
             response = self.db.update(cfg.db.table.members, changes, where, commit)
             return True if commit else response
@@ -89,7 +91,7 @@ class DatabaseHandler:
         changes = {
             "name": name,
             "owner_id": member.id,
-            "role_id": _get_heirarchy(member),
+            "role_id": _get_heirarchy(member, self.db),
             "entries": "{}",
             "private": private,
             "shuffled": shuffled,
@@ -113,7 +115,7 @@ class DatabaseHandler:
             query = f"SELECT name FROM {cfg.db.table.favs} WHERE owner_id={member.id}"
             favs = self.db.execute(query, fetchone=False)
         else:
-            heirarchy = _get_heirarchy(member)
+            heirarchy = _get_heirarchy(member, self.db)
             query = f"SELECT name FROM {cfg.db.table.favs} WHERE owner_id={member.id} OR (role_id={heirarchy} AND private=0)"
             favs = self.db.execute(query, fetchone=False)
 
@@ -166,7 +168,7 @@ class DatabaseHandler:
 
     def get_bgm(self, member: discord.Member):
 
-        role_id = _get_heirarchy(member)
+        role_id = _get_heirarchy(member, self.db)
         if not role_id:
             return cfg.player.bgm_default
 
@@ -186,7 +188,7 @@ class DatabaseHandler:
 
     def set_bgm(self, member: discord.Member, url: str, commit: bool = True):
 
-        role_id = _get_heirarchy(member)
+        role_id = _get_heirarchy(member, self.db)
 
         bgm = self.db.execute(
             f"SELECT url FROM `{cfg.db.table.bgm}` WHERE owner_id={role_id}"
