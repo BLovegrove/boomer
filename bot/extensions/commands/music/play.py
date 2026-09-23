@@ -21,6 +21,7 @@ class Play(commands.Cog):
         self.voicehandler = VoiceHandler(self.bot)
         self.queuehandler = QueueHandler(self.bot)
 
+    # TODO: Make this queue up the first sing right away, then play it, then async handle the rest of them. currently has to load all songs before playing first. oops
     @app_commands.command(
         name="play",
         description=f"Plays music! Summons {cfg.bot.name} if they aren't running, adds a song to the queue if they are.",
