@@ -71,18 +71,16 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-⚠️ ~ Project going through a rework - I'll update the readme soon! -Brandy ~ ⚠️
-
 <img src="https://raw.githubusercontent.com/BLovegrove/boomer/main/images/boomer-profile.png" style="border-radius: 10px;"><br />
 
-Boomer's humourous profile picture courtesy of my friend Bastian (IG: @fjaerdefantomen), who (aside from the odd meme like this) creates some fantastic art pieces. Seriously - [check him out](https://www.instagram.com/fjaerdefantomen/).
+Boomer's humorous profile picture courtesy of my friend Bastian (IG: @fjaerdefantomen), who (aside from the odd meme like this) creates some fantastic art pieces. Seriously - [check him out](https://www.instagram.com/fjaerdefantomen/).
 
 Boomer, on the other hand, is entirely developed by myself and James using the libraries and technologies listed in <a href="#built-with">Built With</a>. 
 
 Because my server only needed the music functionality, that's what he's limited to for now - but 
 more features or enhancements would be welcome! See <a href="#contributing">Contributing</a> for more info on that. 
 
-Boomer also has a miniscule memory/computing footprint. I've been running him at home with a Raspberry Pi on 2GB of RAM and still managing to squeeze almost 20 instances playing at once out of him in testing (with wiggle-room to spare).
+Boomer also has a minuscule memory/computing footprint. I've been running him at home with a Raspberry Pi on 2GB of RAM and still managing to squeeze almost 20 instances playing at once out of him in testing (with wiggle-room to spare).
 
 The CPU usage is so low it barely registers above 5% on the Pi's ARM processor at 700-800 MHz.
 
